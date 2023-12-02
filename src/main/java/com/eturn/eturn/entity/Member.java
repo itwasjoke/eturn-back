@@ -7,16 +7,19 @@ import lombok.Getter;
 import java.util.UUID;
 
 @Getter
-@Table
 @Entity
+@Table(name = "member")
 public class Member {
     // mapstruct
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private Long idUser;
+
     private Long idTurn;
-    @Enumerated(EnumType.ORDINAL)
+
+    @Enumerated(EnumType.STRING)
     private AccessEnum accessEnum;
 
     public void setId(Long id) {

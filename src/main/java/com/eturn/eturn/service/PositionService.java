@@ -4,11 +4,13 @@ import com.eturn.eturn.entity.Position;
 import com.eturn.eturn.entity.User;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public interface PositionService {
     Position getPositionById(Long id);
 
-    Position getLastPosition(Long idUser, Long idTurn);
+    Optional<Position> getLastPosition(Long idUser, Long idTurn);
 
     Position createPosition(Position position);
 }

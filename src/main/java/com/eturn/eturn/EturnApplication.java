@@ -9,11 +9,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import javax.swing.*;
 
 @SpringBootApplication
-public class EturnApplication extends SpringBootServletInitializer {
-
+public class EturnApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(EturnApplication.class, args);
-
 	}
-
 }

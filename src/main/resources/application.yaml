@@ -1,26 +1,12 @@
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/postgres
-    username: postgres
-    password: 0000
-
-  thymeleaf:
-    cache: false
+    username: v.snigirev
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: create-drop
-      jpa.open-in-view: false
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
-        jdbc:
-          lob:
-            non_contextual_creation=true
+      ddl-auto: create
     generate-ddl: true
-
-  main:
-    web-application-type: none
 
 server:
   port: 8089
@@ -34,3 +20,4 @@ server:
 #log4j.logger.org.hibernate.type.descriptor.sql=TRACE
 
 #hostname=localhost:8080
+

@@ -7,9 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 @Repository
 public interface TurnRepository extends JpaRepository<Turn, Long> {
-    List<Turn> findByIdUser(Long id_user);
-    void deleteByIdUser(Long id_user);
+    boolean existsTurnById(Long id);
 
-    boolean existsByIdUser(Long id_user);
-
+    void deleteTurnById(Long id);
 }

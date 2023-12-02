@@ -3,10 +3,9 @@ package com.eturn.eturn.service;
 import com.eturn.eturn.entity.Turn;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-@Service
+@Service // TODO здесь аннотацию лучше убрать
 public interface TurnService {
     List<Turn> getAllTurns();
     Turn getTurn(Long id);

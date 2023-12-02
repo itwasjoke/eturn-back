@@ -6,6 +6,9 @@ import com.eturn.eturn.repository.PositionRepository;
 import com.eturn.eturn.repository.UserRepository;
 import com.eturn.eturn.service.PositionService;
 import com.eturn.eturn.service.UserService;
+import org.springframework.data.domain.Pageable;
+
+import java.util.Optional;
 
 public class PositionServiceImpl implements PositionService {
     PositionRepository positionRepository;
@@ -16,7 +19,9 @@ public class PositionServiceImpl implements PositionService {
     }
 
     @Override
-    public Position getLastPosition(Long idUser, Long idTurn) {
+    // TODO int pageSize, int pageNumber
+    public Optional<Position> getLastPosition(Long idUser, Long idTurn) {
+        // TODO positionRepository.findAllByUser(new User(), Pageable.ofSize(pageSize).withPage(pageNumber));
         User user = userService.getUser(idUser);
         return positionRepository.findFirstByUserByOrderByCreatedAtDesc(user);
     }
