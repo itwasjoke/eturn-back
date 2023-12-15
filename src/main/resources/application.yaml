@@ -1,7 +1,7 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/eturn
-    username: ${POSTGRES_USERNAME:postgres}
+    url: jdbc:postgresql://127.0.0.1:5432/eturn
+    username: ${POSTGRES_USERNAME:postgresql}
     password: ${POSTGRES_PASSWORD:12345678}
   jpa:
     show-sql: true
