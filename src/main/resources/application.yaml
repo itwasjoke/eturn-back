@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
-#    username: v.snigirev
-    username: postgres
+    url: jdbc:postgresql://localhost:5432/eturn
+    username: ${POSTGRES_USERNAME:postgres}
+    password: ${POSTGRES_PASSWORD:12345678}
   jpa:
     show-sql: true
     hibernate:
