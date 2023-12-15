@@ -1,11 +1,12 @@
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/postgres
-    username: v.snigirev
+#    username: v.snigirev
+    username: postgres
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: create
+      ddl-auto: create-drop
     generate-ddl: true
 
 server:

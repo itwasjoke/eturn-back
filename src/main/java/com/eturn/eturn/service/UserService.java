@@ -6,11 +6,13 @@ import com.eturn.eturn.enums.RoleEnum;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-@Service
+import java.util.Set;
+
 public interface UserService {
     RoleEnum checkRoot(Long id);
     User getUser(Long id);
+    User getUserFrom(Long id);
     User createUser(User user);
 
-    List<Turn> getUserTurns(Long id);
+    Set<Turn> getUserTurns(Long id);
 }

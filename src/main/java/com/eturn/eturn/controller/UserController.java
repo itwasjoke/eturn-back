@@ -1,26 +1,32 @@
 package com.eturn.eturn.controller;
 
 
-import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
-import com.eturn.eturn.repository.*;
+import com.eturn.eturn.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
-@RequestMapping("user")
+@RequestMapping("/user")
 public class UserController {
 
-    @GetMapping
-    public List<User> getUserList(){return null;}
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    @GetMapping("/{id}")
+    public User getUser(@PathVariable long id){return userService.getUser(id);}
+
+//    @GetMapping("/{id}")
+//    public User getUser(@PathVariable("id") User user){return user;}
 
     @PostMapping
     public User create(@RequestBody User user){
-        return null;
+        return userService.createUser(user);
     }
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public void delete(@PathVariable("id") User user){
 
     }

@@ -3,16 +3,21 @@ package com.eturn.eturn.service.impl;
 import com.eturn.eturn.entity.Position;
 import com.eturn.eturn.entity.User;
 import com.eturn.eturn.repository.PositionRepository;
-import com.eturn.eturn.repository.UserRepository;
 import com.eturn.eturn.service.PositionService;
 import com.eturn.eturn.service.UserService;
-import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-
+@Service
 public class PositionServiceImpl implements PositionService {
-    PositionRepository positionRepository;
-    UserService userService;
+    private final PositionRepository positionRepository;
+    private final UserService userService;
+
+    public PositionServiceImpl(PositionRepository positionRepository, UserService userService) {
+        this.positionRepository = positionRepository;
+        this.userService = userService;
+    }
+
     @Override
     public Position getPositionById(Long id) {
         return positionRepository.getReferenceById(id);
@@ -23,7 +28,7 @@ public class PositionServiceImpl implements PositionService {
     public Optional<Position> getLastPosition(Long idUser, Long idTurn) {
         // TODO positionRepository.findAllByUser(new User(), Pageable.ofSize(pageSize).withPage(pageNumber));
         User user = userService.getUser(idUser);
-        return positionRepository.findFirstByUserByOrderByCreatedAtDesc(user);
+        return positionRepository.findFirstByUserOrderByNumberDesc(user);
     }
 
     @Override

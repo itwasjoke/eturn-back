@@ -1,13 +1,13 @@
 package com.eturn.eturn.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
+
+import java.util.Set;
 
 @Getter
+@Setter
 @Entity
 @Table(name = "department")
 public class Department {
@@ -17,11 +17,7 @@ public class Department {
 
     private String name;
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    @ManyToMany(mappedBy = "allowedDepartments")
+    private Set<Turn> turns;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
 }

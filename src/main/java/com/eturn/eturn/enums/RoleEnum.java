@@ -5,7 +5,8 @@ public enum RoleEnum {
     STUDENT,
     HEADMAN,
     PROFESSOR,
-    ADMIN;
+    ADMIN,
+    NO_UNIVERSITY;
 
     RoleEnum() {
     }

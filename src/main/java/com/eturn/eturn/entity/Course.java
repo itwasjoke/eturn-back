@@ -1,16 +1,14 @@
 package com.eturn.eturn.entity;
 
 import com.eturn.eturn.enums.EduEnum;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
+
+import java.util.Set;
 
 @Getter
+@Setter
 @Entity
 @Table(name = "course")
 public class Course {
@@ -24,16 +22,7 @@ public class Course {
 
     private Integer number;
 
-    public void setEduEnum(EduEnum eduEnum) {
-        this.eduEnum = eduEnum;
-    }
-
-    public void setNumber(int number) {
-        this.number = number;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
+    @ManyToMany(mappedBy = "allowedCourses")
+    private Set<Turn> turns;
 
 }

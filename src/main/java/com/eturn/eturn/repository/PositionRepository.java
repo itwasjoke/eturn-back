@@ -12,7 +12,7 @@ import java.util.Optional;
 @Repository
 public interface PositionRepository extends JpaRepository<Position, Long> {
 
-    Optional<Position> findFirstByUserByOrderByCreatedAtDesc(User user);
+    Optional<Position> findFirstByUserOrderByNumberDesc(User user);
 
     // TODO Page<Position> findAllByUser(User user, Pageable pageable);
 }

@@ -1,15 +1,15 @@
 package com.eturn.eturn.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
+
+import java.util.Set;
 
 @Getter
+@Setter
 @Entity
-@Table(name = "group")
+@Table(name = "groups")
 public class Group {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,11 +17,6 @@ public class Group {
 
     private String number;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setNumber(String number) {
-        this.number = number;
-    }
+    @ManyToMany(mappedBy = "allowedGroups")
+    private Set<Turn> turns;
 }

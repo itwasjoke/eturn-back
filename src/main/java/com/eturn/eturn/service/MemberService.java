@@ -1,15 +1,14 @@
 package com.eturn.eturn.service;
 
 import com.eturn.eturn.entity.Member;
-import com.eturn.eturn.enums.AccessEnum;
-import org.springframework.stereotype.Service;
+import com.eturn.eturn.enums.AccessMemberEnum;
 
-@Service
+
 public interface MemberService {
 
-    void createMember(Long idUser, Long idTurn, AccessEnum access);
+    void createMember(Long idUser, Long idTurn, AccessMemberEnum access);
     Member getMember(Long idUser, Long idTurn);
 
-    AccessEnum getAccess(Long idUser, Long idTurn);
+    AccessMemberEnum getAccess(Long idUser, Long idTurn);
     void deleteTurnMembers(Long idTurn);
 }

@@ -1,12 +1,12 @@
 package com.eturn.eturn.entity;
 
-import com.eturn.eturn.enums.AccessEnum;
+import com.eturn.eturn.enums.AccessMemberEnum;
 import jakarta.persistence.*;
 import lombok.Getter;
-
-import java.util.UUID;
+import lombok.Setter;
 
 @Getter
+@Setter
 @Entity
 @Table(name = "member")
 public class Member {
@@ -20,21 +20,5 @@ public class Member {
     private Long idTurn;
 
     @Enumerated(EnumType.STRING)
-    private AccessEnum accessEnum;
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setIdUser(Long idUser) {
-        this.idUser = idUser;
-    }
-
-    public void setIdTurn(Long idTurn) {
-        this.idTurn = idTurn;
-    }
-
-    public void setAccessEnum(AccessEnum accessEnum) {
-        this.accessEnum = accessEnum;
-    }
+    private AccessMemberEnum accessMemberEnum;
 }

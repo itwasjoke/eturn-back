@@ -1,5 +1,6 @@
 package com.eturn.eturn.controller;
 
+import com.eturn.eturn.dto.TurnDTO;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.service.TurnService;
 import org.springframework.http.HttpStatus;
@@ -22,25 +23,28 @@ import java.util.Map;
 @RequestMapping("/turn")
 public class TurnController {
 
-    TurnService turnService;
+    private final TurnService turnService;
+
+    public TurnController(TurnService turnService) {
+        this.turnService = turnService;
+    }
 
     @GetMapping("{idTurn}")
-    public Turn getTurn(@PathVariable Long idTurn) {
+    public TurnDTO getTurn(@PathVariable long idTurn) {
         return turnService.getTurn(idTurn);
     }
 
     @GetMapping
-    @ResponseStatus(HttpStatus.OK)
-    public List<Turn> getUserTurns( // TODO вынести в DTO ответы для frontend
-        @RequestParam Long idUser,
+    public List<TurnDTO> getUserTurns(
+        @RequestParam long userId,
         @RequestParam String type,
         @RequestParam String access,
         @RequestParam(required = false) String numberGroup,
         @RequestParam(required = false) String courseId,
         @RequestParam(required = false) String facultyId
     ) {
-        Map<String, String> params = new HashMap<>(); // TODO Эту часть можно удалить и передавать переменные
-        params.put("Type", type); // TODO аргументы маленькими буквами
+        Map<String, String> params = new HashMap<>();
+        params.put("Type", type);
         params.put("Access", access);
 
         if (numberGroup != null) {
@@ -52,45 +56,28 @@ public class TurnController {
         if (facultyId != null) {
             params.put("Faculty", facultyId);
         }
-        return turnService.getUserTurns(idUser, params);
+        return turnService.getUserTurns(userId, params);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Turn create(@RequestBody Turn turn) { // TODO для RequestBody создаем Dto и лучше сделать void/Long возвращать id очереди
+    public Long create(@RequestBody TurnDTO turn) {
         return turnService.createTurn(turn);
     }
 
-    @PutMapping("{turnBd}") // TODO лучше здесь начинать с /{turnId}
-    public Turn update(
-        @PathVariable Turn turnBd,
-        @RequestBody Turn turnNew,
-        @RequestParam Long idUser // TODO либо param либо path variable
+    @PutMapping()
+    public void update(
+        @RequestBody Turn turn,
+        @RequestParam long idUser
     ) {
-        return turnService.updateTurn(idUser, turnBd, turnNew);
+        turnService.updateTurn(idUser, turn);
     }
 
-    @PutMapping("{turn}/position") // TODO аналогично
-    public void addPosition(
-        @PathVariable Turn turn,
-        @RequestParam Long idUser
+    @DeleteMapping()
+    public void delete(
+        @RequestParam long idUser,
+        @RequestParam long idTurn
     ) {
-        turnService.addPositionToTurn(idUser, turn);
+        turnService.deleteTurn(idUser,idTurn);
     }
-
-    @DeleteMapping("{turn}") // TODO /turns/{turnId} уточнить во мн или в ед числе
-    public void delete( // TODO deleteTurnWithPosition
-        @PathVariable Turn turn,
-        @RequestParam Long idUser,
-        @RequestParam(required = false) Long idPosition
-    ) {
-        if (idPosition == null) {
-            turnService.deleteTurn(idUser, turn);
-        } else {
-            turnService.deletePosition(idPosition, idUser, turn);
-        }
-    }
-
-    // TODO deletePosition
-    // TODO /turns/{turnId}/positions/{positionId} @DeleteMapping
 }

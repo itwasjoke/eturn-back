@@ -1,204 +1,209 @@
 package com.eturn.eturn.service.impl;
 
+import com.eturn.eturn.dto.TurnDTO;
+import com.eturn.eturn.dto.TurnListMapper;
+import com.eturn.eturn.dto.TurnMapper;
 import com.eturn.eturn.entity.Course;
 import com.eturn.eturn.entity.Faculty;
 import com.eturn.eturn.entity.Group;
-import com.eturn.eturn.entity.Position;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
-import com.eturn.eturn.enums.AccessEnum;
+import com.eturn.eturn.enums.AccessMemberEnum;
+import com.eturn.eturn.enums.AccessTurnEnum;
+import com.eturn.eturn.enums.RoleEnum;
 import com.eturn.eturn.enums.TurnEnum;
-import com.eturn.eturn.exception.BusinessException;
+import com.eturn.eturn.exception.AccessException;
+import com.eturn.eturn.exception.InvalidDataException;
+import com.eturn.eturn.exception.NotFoundException;
 import com.eturn.eturn.repository.TurnRepository;
 import com.eturn.eturn.service.CourseService;
 import com.eturn.eturn.service.FacultyService;
 import com.eturn.eturn.service.GroupService;
 import com.eturn.eturn.service.MemberService;
-import com.eturn.eturn.service.PositionService;
 import com.eturn.eturn.service.TurnService;
 import com.eturn.eturn.service.UserService;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
-import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 
-// TODO здесь аннотация @Service
+@Service
 public class TurnServiceImpl implements TurnService {
-    // TODO все переменные private final
     private final TurnRepository turnRepository;
     private final UserService userService;
-    GroupService groupService;
-    FacultyService facultyService;
-    CourseService courseService;
-    MemberService memberService;
-    PositionService positionService;
+    private final GroupService groupService;
+    private final FacultyService facultyService;
+    private final CourseService courseService;
+    private final MemberService memberService;
+    final private  TurnMapper turnMapper;
+    final private  TurnListMapper turnListMapper;
 
-    public TurnServiceImpl(TurnRepository turnRepository, UserService userService) {
+
+    public TurnServiceImpl(
+            TurnRepository turnRepository,
+            UserService userService,
+            GroupService groupService,
+            FacultyService facultyService,
+            CourseService courseService,
+            MemberService memberService,
+            TurnMapper turnMapper,
+            TurnListMapper turnListMapper
+    ) {
         this.turnRepository = turnRepository;
         this.userService = userService;
+        this.groupService = groupService;
+        this.facultyService = facultyService;
+        this.courseService = courseService;
+        this.memberService = memberService;
+        this.turnMapper = turnMapper;
+        this.turnListMapper = turnListMapper;
     }
+
 
     @Override
     public List<Turn> getAllTurns() {
-        return turnRepository.findAll();
+        List<Turn> turns = turnRepository.findAll();
+//        return turnListMapper.map(turns);
+        return turns;
     }
 
     @Override
-    public Turn getTurn(Long id) {
-        return turnRepository.getReferenceById(id);
-    }
-
-    @Override
-    public List<Turn> getUserTurns(Long idUser, Map<String, String> params) {
-        List<Turn> allTurns = turnRepository.findAll();
-        List<Turn> userTurns = userService.getUserTurns(idUser);
-        Stream<Turn> streamTurns = allTurns.stream();
-
-        try {
-
-        } catch (Exception e) {
-            throw new BusinessException("Something error occurred while get user turns");
+    public TurnDTO getTurn(Long id) {
+        Optional<Turn> turn = turnRepository.findById(id);
+        if (turn.isPresent()){
+            return turnMapper.turnToTurnDTO(turn.get());
         }
+        else{
+            throw new NotFoundException("Очередь не найдена");
+        }
+    }
 
-        // TODO обернуть все в Try/catch и делай rethrow exception'a
-        for (Map.Entry<String, String> entry : params.entrySet()) {
-            String value = entry.getValue();
-            switch (entry.getKey()) {
-                case "Access" -> {
-                    // TODO Objects.equaal используем только в lambda expression
-                    // TODO value.equals("participates")
-                    if (Objects.equals(value, "participates")) {
-                        streamTurns = streamTurns.filter(userTurns::contains);
-                    } else if (Objects.equals(value, "available")) {
-                        streamTurns = streamTurns.filter(c -> !userTurns.contains(c));
-                    }
-                }
-                case "Type" -> {
-                    TurnEnum type;
-                    if (Objects.equals(value, "org")) {
-                        type = TurnEnum.ORG;
-                    } else if (Objects.equals(value, "edu")) {
-                        type = TurnEnum.EDU;
-                    } else {
-                        type = TurnEnum.EDU;
-                    }
-
-                    streamTurns = streamTurns.filter(c -> c.getTurnEnum() == type);
-                }
-                case "Group" -> {
-                    Group group = groupService.getOneGroup(value);
-                    // TODO обязательно выбрасывай exception, если не нашел - желательно кастомный
-                    // TODO почитай про GlobalExceptionHandler
-                    // нужно проработать исключения
-                    streamTurns = streamTurns.filter(c -> c.getAllowedGroups().contains(group));
-                }
-                case "Faculty" -> {
-                    Faculty faculty = facultyService.getOneFaculty(Long.parseLong(value));
-                    streamTurns = streamTurns.filter(c -> c.getAllowedFaculties().contains(faculty));
-                }
-                case "Course" -> {
-                    Course course = courseService.getOneCourse(Long.parseLong(value));
-                    streamTurns = streamTurns.filter(c -> c.getAllowedCourses().contains(course));
-                }
+    @Override
+    public List<TurnDTO> getUserTurns(Long idUser, Map<String, String> params) {
+        try {
+            List<Turn> allTurns = turnRepository.findAll();
+            if (allTurns.isEmpty()){
+                throw new NotFoundException("Очередей нет");
+            }
+            Stream<Turn> streamTurns = allTurns.stream();
+            User user = userService.getUser(idUser);
+            if (user.getRoleEnum() == RoleEnum.STUDENT) {
+                streamTurns = streamTurns.filter(
+                        c -> c.getAccessTurnType() == AccessTurnEnum.FOR_STUDENT ||
+                                c.getAccessTurnType() == AccessTurnEnum.FOR_ALLOWED_GROUPS
+                );
+            }
+            if (user.getRoleEnum() == RoleEnum.NO_UNIVERSITY) {
+                streamTurns = streamTurns.filter(c -> c.getAccessTurnType() == AccessTurnEnum.FOR_NO_UNIVERSITY);
             }
 
+            for (Map.Entry<String, String> entry : params.entrySet()) {
+                String value = entry.getValue();
+                switch (entry.getKey()) {
+                    case "Access" -> {
+                        Set<Turn> userTurns = userService.getUserTurns(idUser);
+                        if (value.equals("participates")) {
+                            streamTurns = streamTurns.filter(userTurns::contains);
+                        } else if (value.equals("available")) {
+                            streamTurns = streamTurns.filter(c -> !userTurns.contains(c) && c.getAccessTurnType() != AccessTurnEnum.FOR_LINK);
+                        } else {
+                            throw new InvalidDataException("Указан неправильный тип очереди");
+                        }
+                    }
+                    case "Type" -> {
+                        TurnEnum type;
+                        if (Objects.equals(value, "org")) {
+                            type = TurnEnum.ORG;
+                        } else if (Objects.equals(value, "edu")) {
+                            type = TurnEnum.EDU;
+                        } else {
+                            throw new InvalidDataException("Указан неправильный тип очереди");
+                        }
+                        streamTurns = streamTurns.filter(c -> c.getTurnType() == type);
+                    }
+                    case "Group" -> {
+                        try {
+                            Group group = groupService.getOneGroup(value);
+                            streamTurns = streamTurns.filter(c -> c.getAllowedGroups().contains(group));
+                        } catch (NotFoundException e) {
+                            throw new InvalidDataException("Группа с таким номером не найдена");
+                        }
+                    }
+                    case "Faculty" -> {
+                        try {
+                            Faculty faculty = facultyService.getOneFaculty(Long.parseLong(value));
+                            streamTurns = streamTurns.filter(c -> c.getAllowedFaculties().contains(faculty));
+                        } catch (NotFoundException e) {
+                            throw new InvalidDataException("Факультет не найден");
+                        }
+
+                    }
+                    case "Course" -> {
+                        try {
+                            Course course = courseService.getOneCourse(Long.parseLong(value));
+                            streamTurns = streamTurns.filter(c -> c.getAllowedCourses().contains(course));
+                        } catch (NotFoundException e) {
+                            throw new InvalidDataException("Курс не найден");
+                        }
+                    }
+                }
+
+            }
+            List<Turn> endTurns = streamTurns.toList();
+            return turnListMapper.map(endTurns);
         }
-        return streamTurns.toList();
+        catch (NotFoundException e){
+            throw new InvalidDataException(e.getMessage());
+        }
     }
 
-    // TODO как только вынесешь в DTO, то появится возможность делать такие валидации аннотациями
-    class TurnDto {
-        @Size(min = 1, max = 255)
-        private final String name;
-
-        public TurnDto(String name) {
-            this.name = name;
-        }
-    }
-
+    @Transactional
     @Override
-    public Turn createTurn(Turn turn) {
-        if (turn.getDescription().length() <= 255 && turn.getName().length() <= 50) {
-            Turn newTurn = turnRepository.save(turn);
-            memberService.createMember(newTurn.getCreator().getId(), newTurn.getId(), AccessEnum.CREATOR);
-            return newTurn;
-        } else {
-            throw new BusinessException("");
-        }
+    public Long createTurn(TurnDTO turn) {
+//        var v = validator.validate(turn, TurnDTO.class);
+//        if (!v.isEmpty()){
+//            throw new InvalidDataException("");
+//        }
+        User userCreator = userService.getUserFrom(turn.userId());
+        Turn turnNew = turnRepository.save(turnMapper.turnDTOToTurn(turn, userCreator));
+        memberService.createMember(turnNew.getCreator().getId(), turnNew.getId(), AccessMemberEnum.CREATOR);
+        return turnNew.getId();
     }
-
+    @Transactional
     @Override
-    public Turn updateTurn(Long idUser, Turn turnOld, Turn turnNew) {
-        AccessEnum accessEnum = memberService.getAccess(idUser, turnOld.getId());
-        if (accessEnum == AccessEnum.CREATOR) {
-            // TODO подумать как это можно сделать без BeanUtils
-            BeanUtils.copyProperties(
-                turnNew,
-                turnOld,
-                "id",
-                "creator",
-                "positions",
-                "positionsCount",
-                "allTime",
-                "averageTime",
-                "elapsedTime",
-                "positionsLeft"
-            );
-            return turnRepository.save(turnNew);
+    public void updateTurn(Long idUser, Turn turn) {
+//        Turn turnUpdated = turnMapper.turnDTOToTurn(turn);
+        AccessMemberEnum accessMemberEnum = memberService.getAccess(idUser, turn.getId());
+        if (accessMemberEnum == AccessMemberEnum.CREATOR) {
+            if (turnRepository.existsTurnById(turn.getId())){
+                Turn turnFromDb = turnRepository.getReferenceById(turn.getId());
+                turnFromDb.setName(turn.getName());
+                turnRepository.save(turnFromDb);
+            }
+            else{
+                throw new InvalidDataException("Очередь не найдена");
+            }
         }
-        return null; // TODO null ??
-    }
-
-    @Override // TODO над методами в которых есть  несколько мутирующих операция с базой данных - необходимо вешать аннотацию @Transactional
-    public void deleteTurn(Long idUser, Turn turn) {
-        AccessEnum access = memberService.getAccess(idUser, turn.getId());
-        if (access == AccessEnum.CREATOR && turnRepository.existsTurnById(turn.getId())) {
-            memberService.deleteTurnMembers(turn.getId());
-            turnRepository.deleteTurnById(turn.getId()); // TODO попробовать вот так
-            // если бы delete метод возвращал boolean, то мы смогли бы понять удалил он или нет
-        } else {
-            // TODO thr exc
-            // TODO analog action
+        else{
+            throw new AccessException("Доступ имеет только создатель");
         }
     }
-
+    @Transactional
     @Override
-    public void deletePosition(Long idPosition, Long idUser, Turn turn) {
-        Position position = positionService.getPositionById(idPosition);
-        if (Objects.equals(position.getUser().getId(), idUser)) { // TODO analog
-            turn.getPositions().removeIf(c -> Objects.equals(c.getId(), idPosition));
-            turnRepository.save(turn);
-        } else {
-            // TODO thr exc
-            // TODO analog action
+    public void deleteTurn(Long idUser, Long idTurn) {
+        AccessMemberEnum access = memberService.getAccess(idUser, idTurn);
+        if (access == AccessMemberEnum.CREATOR && turnRepository.existsTurnById(idTurn)) {
+            memberService.deleteTurnMembers(idTurn);
+            turnRepository.deleteTurnById(idTurn);
+        } else if (access != AccessMemberEnum.CREATOR){
+            throw new AccessException("Удалить очередь может только создатель");
+        }
+        else{
+            throw new InvalidDataException("Очередь не найдена");
         }
     }
 
-    // TODO фиксим ошибки текущие
-    // TODO созвониться и задеплоить
-    // TODO добиваем мелкие комменты
-    // TODO снова смотрим
-
-    @Override // TODO @Transactional
-    public void addPositionToTurn(Long idUser, Turn turn) {
-        positionService.getLastPosition(idUser, turn.getId()).ifPresent(position -> {
-            int number = position.getNumber() + 1;
-
-            // TODO MapStruct toPositionEntity
-            Position newPosition = new Position();
-            User user = userService.getUser(idUser);
-            // TODO Position pos = toPositionEntity(user, number);
-            newPosition.setUser(user);
-            newPosition.setNumber(number);
-            turn.getPositions().add(positionService.createPosition(newPosition));
-            turnRepository.save(turn);
-        });
-    }
 }

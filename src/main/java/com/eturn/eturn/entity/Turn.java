@@ -1,24 +1,16 @@
 package com.eturn.eturn.entity;
 
+import com.eturn.eturn.enums.AccessTurnEnum;
 import com.eturn.eturn.enums.TurnEnum;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Date;
-import java.util.List;
+import java.util.Set;
 
 @Getter
-// TODO @Setter
+@Setter
 @Entity
 @Table(name = "turn")
 public class Turn {
@@ -30,98 +22,60 @@ public class Turn {
 
     private String description;
 
-    @OneToMany(targetEntity = Position.class, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Position> positions;
+    @OneToMany(mappedBy = "turn", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Position> positions;
 
-    @OneToOne(targetEntity = User.class, cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id")
     private User creator;
 
     @Enumerated(EnumType.STRING)
-    private TurnEnum turnEnum;
+    private TurnEnum turnType;
 
-    @OneToMany(targetEntity = Group.class, cascade = CascadeType.ALL)
-    private List<Group> allowedGroups;
+    @Enumerated(EnumType.STRING)
+    private AccessTurnEnum accessTurnType;
 
-    @OneToMany(targetEntity = Course.class, cascade = CascadeType.ALL)
-    private List<Course> allowedCourses;
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "turn_group",
+            joinColumns = @JoinColumn(name="turn_id"),
+            inverseJoinColumns = @JoinColumn(name="group_id")
+    )
+    private Set<Group> allowedGroups;
 
-    @OneToMany(targetEntity = Faculty.class, cascade = CascadeType.ALL)
-    private List<Faculty> allowedFaculties;
 
-    @OneToMany(targetEntity = Department.class, cascade = CascadeType.ALL)
-    private List<Department> allowedDepartments;
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "turn_course",
+            joinColumns = @JoinColumn(name="turn_id"),
+            inverseJoinColumns = @JoinColumn(name="course_id")
+    )
+    private Set<Course> allowedCourses;
 
-    //  @ManyToOne
-    // private List<User> users;
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "turn_faculty",
+            joinColumns = @JoinColumn(name="turn_id"),
+            inverseJoinColumns = @JoinColumn(name="faculty_id")
+    )
+    private Set<Faculty> allowedFaculties;
 
-    private Integer positionsCount;
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "turn_department",
+            joinColumns = @JoinColumn(name="turn_id"),
+            inverseJoinColumns = @JoinColumn(name="department_id")
+    )
+    private Set<Department> allowedDepartments;
+
+    @ManyToMany(mappedBy = "turns")
+    private Set<User> users;
+
+    private Integer countPositions;
     private Integer allTime;
     private Integer averageTime;
     private Integer elapsedTime;
     private Integer positionsLeft;
     private Date turnLiveTime;
 
-    public void setTurnLiveTime(Date turnLiveTime) {
-        this.turnLiveTime = turnLiveTime;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public void setPositions(List<Position> positions) {
-        this.positions = positions;
-    }
-
-    public void setCreator(User creator) {
-        this.creator = creator;
-    }
-
-    public void setTurnEnum(TurnEnum turnEnum) {
-        this.turnEnum = turnEnum;
-    }
-
-    public void setAllowedGroups(List<Group> allowedGroups) {
-        this.allowedGroups = allowedGroups;
-    }
-
-    public void setAllowedCourses(List<Course> allowedCourses) {
-        this.allowedCourses = allowedCourses;
-    }
-
-    public void setAllowedFaculties(List<Faculty> allowedFaculties) {
-        this.allowedFaculties = allowedFaculties;
-    }
-
-    public void setAllowedDepartments(List<Department> allowedDepartments) {
-        this.allowedDepartments = allowedDepartments;
-    }
-
-    public void setPositionsCount(Integer positionsCount) {
-        this.positionsCount = positionsCount;
-    }
-
-    public void setAllTime(Integer allTime) {
-        this.allTime = allTime;
-    }
-
-    public void setAverageTime(Integer averageTime) {
-        this.averageTime = averageTime;
-    }
-
-    public void setElapsedTime(Integer elapsedTime) {
-        this.elapsedTime = elapsedTime;
-    }
-
-    public void setPositionsLeft(Integer positionsLeft) {
-        this.positionsLeft = positionsLeft;
-    }
 }

@@ -1,19 +1,26 @@
 package com.eturn.eturn.service.impl;
 
 import com.eturn.eturn.entity.Member;
-import com.eturn.eturn.enums.AccessEnum;
+import com.eturn.eturn.enums.AccessMemberEnum;
 import com.eturn.eturn.repository.MemberRepository;
 import com.eturn.eturn.service.MemberService;
+import org.springframework.stereotype.Service;
 
+@Service
 public class MemberServiceImpl implements MemberService {
-    MemberRepository memberRepository;
+    private final MemberRepository memberRepository;
+
+    public MemberServiceImpl(MemberRepository memberRepository) {
+        this.memberRepository = memberRepository;
+    }
+
     @Override
-    public void createMember(Long idUser, Long idTurn, AccessEnum access) {
+    public void createMember(Long idUser, Long idTurn, AccessMemberEnum access) {
         if (idUser==0 || idTurn==0){
             return;
         }
         Member member = new Member();
-        member.setAccessEnum(access);
+        member.setAccessMemberEnum(access);
         member.setIdTurn(idTurn);
         member.setIdUser(idUser);
         memberRepository.save(member);
@@ -25,9 +32,9 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public AccessEnum getAccess(Long idUser, Long idTurn) {
+    public AccessMemberEnum getAccess(Long idUser, Long idTurn) {
         Member member = getMember(idUser, idTurn);
-        return member.getAccessEnum();
+        return member.getAccessMemberEnum();
     }
 
     @Override
