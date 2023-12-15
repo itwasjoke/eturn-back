@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://127.0.0.1:5432/eturn
+    url: jdbc:postgresql://127.0.0.1:5432/postgres
     username: ${POSTGRES_USERNAME:postgresql}
     password: ${POSTGRES_PASSWORD:12345678}
   jpa:
