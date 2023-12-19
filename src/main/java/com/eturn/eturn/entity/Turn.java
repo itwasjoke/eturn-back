@@ -71,11 +71,11 @@ public class Turn {
     @ManyToMany(mappedBy = "turns")
     private Set<User> users;
 
-    private Integer countPositions;
-    private Integer allTime;
-    private Integer averageTime;
-    private Integer elapsedTime;
-    private Integer positionsLeft;
-    private Date turnLiveTime;
+//    private Integer countPositions;
+//    private Integer allTime;
+//    private Integer averageTime;
+//    private Integer elapsedTime;
+//    private Integer positionsLeft;
+//    private Date turnLiveTime;
 
 }

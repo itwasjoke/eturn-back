@@ -1,8 +1,10 @@
 package com.eturn.eturn.service.impl;
 
 import com.eturn.eturn.dto.TurnDTO;
-import com.eturn.eturn.dto.TurnListMapper;
-import com.eturn.eturn.dto.TurnMapper;
+import com.eturn.eturn.dto.TurnMoreInfoDTO;
+import com.eturn.eturn.dto.mapper.TurnListMapper;
+import com.eturn.eturn.dto.mapper.TurnMapper;
+import com.eturn.eturn.dto.mapper.TurnMoreInfoMapper;
 import com.eturn.eturn.entity.Course;
 import com.eturn.eturn.entity.Faculty;
 import com.eturn.eturn.entity.Group;
@@ -22,8 +24,6 @@ import com.eturn.eturn.service.GroupService;
 import com.eturn.eturn.service.MemberService;
 import com.eturn.eturn.service.TurnService;
 import com.eturn.eturn.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +41,8 @@ public class TurnServiceImpl implements TurnService {
     final private  TurnMapper turnMapper;
     final private  TurnListMapper turnListMapper;
 
+    final private TurnMoreInfoMapper turnMoreInfoMapper;
+
 
     public TurnServiceImpl(
             TurnRepository turnRepository,
@@ -50,8 +52,8 @@ public class TurnServiceImpl implements TurnService {
             CourseService courseService,
             MemberService memberService,
             TurnMapper turnMapper,
-            TurnListMapper turnListMapper
-    ) {
+            TurnListMapper turnListMapper,
+            TurnMoreInfoMapper turnMoreInfoMapper) {
         this.turnRepository = turnRepository;
         this.userService = userService;
         this.groupService = groupService;
@@ -60,6 +62,7 @@ public class TurnServiceImpl implements TurnService {
         this.memberService = memberService;
         this.turnMapper = turnMapper;
         this.turnListMapper = turnListMapper;
+        this.turnMoreInfoMapper = turnMoreInfoMapper;
     }
 
 
@@ -129,7 +132,7 @@ public class TurnServiceImpl implements TurnService {
                             Group group = groupService.getOneGroup(value);
                             streamTurns = streamTurns.filter(c -> c.getAllowedGroups().contains(group));
                         } catch (NotFoundException e) {
-                            throw new InvalidDataException("Группа с таким номером не найдена");
+                            throw new InvalidDataException(e.getMessage());
                         }
                     }
                     case "Faculty" -> {
@@ -162,13 +165,13 @@ public class TurnServiceImpl implements TurnService {
 
     @Transactional
     @Override
-    public Long createTurn(TurnDTO turn) {
+    public Long createTurn(TurnMoreInfoDTO turn) {
 //        var v = validator.validate(turn, TurnDTO.class);
 //        if (!v.isEmpty()){
 //            throw new InvalidDataException("");
 //        }
-        User userCreator = userService.getUserFrom(turn.userId());
-        Turn turnNew = turnRepository.save(turnMapper.turnDTOToTurn(turn, userCreator));
+        User userCreator = userService.getUserFrom(turn.creator());
+        Turn turnNew = turnRepository.save(turnMoreInfoMapper.turnMoreDTOToTurn(turn,userCreator));
         memberService.createMember(turnNew.getCreator().getId(), turnNew.getId(), AccessMemberEnum.CREATOR);
         return turnNew.getId();
     }

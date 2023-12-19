@@ -1,6 +1,7 @@
 package com.eturn.eturn.controller;
 
 import com.eturn.eturn.dto.TurnDTO;
+import com.eturn.eturn.dto.TurnMoreInfoDTO;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.service.TurnService;
 import org.springframework.http.HttpStatus;
@@ -61,7 +62,7 @@ public class TurnController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Long create(@RequestBody TurnDTO turn) {
+    public Long create(@RequestBody TurnMoreInfoDTO turn) {
         return turnService.createTurn(turn);
     }
 
