@@ -1,7 +1,7 @@
 package com.eturn.eturn.dto.mapper;
 
-import com.eturn.eturn.dto.GroupDTO;
-import com.eturn.eturn.entity.Group;
+import com.eturn.eturn.dto.CourseDTO;
+import com.eturn.eturn.entity.Course;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -12,10 +12,10 @@ import org.mapstruct.ReportingPolicy;
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
         injectionStrategy = InjectionStrategy.CONSTRUCTOR
 )
-public interface GroupMapper {
+public interface CourseMapper {
+
     @Mapping(target = "turns", ignore = true)
-    @Mapping(target = "number", source = "dto.name")
-    Group DTOtoGroup(GroupDTO dto);
-    @Mapping(target = "name", source = "group.number")
-    GroupDTO groupToDTO(Group group);
+    Course DTOtoCourse(CourseDTO dto);
+
+    CourseDTO courseToDTO(Course course);
 }

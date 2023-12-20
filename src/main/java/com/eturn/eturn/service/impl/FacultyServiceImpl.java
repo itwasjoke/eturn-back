@@ -36,7 +36,7 @@ public class FacultyServiceImpl implements FacultyService {
 
     @Override
     public Long createFaculty(FacultyDTO dto) {
-       if (facultyRepository.existsByName(dto.name())){
+       if (!facultyRepository.existsByName(dto.name())){
            Faculty f = facultyRepository.save(facultyMapper.DTOtoFaculty(dto));
            return f.getId();
        }
