@@ -1,10 +1,7 @@
 package com.eturn.eturn.controller;
 
+import com.eturn.eturn.dto.GroupDTO;
 import com.eturn.eturn.entity.Group;
-import com.eturn.eturn.entity.Member;
-import com.eturn.eturn.entity.Turn;
-import com.eturn.eturn.entity.User;
-import com.eturn.eturn.repository.*;
 import com.eturn.eturn.service.GroupService;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,13 +11,21 @@ import java.util.List;
 @RequestMapping("/group")
 public class GroupController {
 
-    GroupService groupService;
+    private final GroupService groupService;
+
+    public GroupController(GroupService groupService) {
+        this.groupService = groupService;
+    }
 
     @GetMapping
     public List<Group> getGroupList(){
         return groupService.getAllGroups();
     }
 
+    @PostMapping
+    public Long createGroup(GroupDTO groupDTO){
+        return groupService.createGroup(groupDTO);
+    }
 
 
 //    @DeleteMapping("/{number}")

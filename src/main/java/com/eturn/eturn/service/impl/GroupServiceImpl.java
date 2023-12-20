@@ -1,5 +1,7 @@
 package com.eturn.eturn.service.impl;
 
+import com.eturn.eturn.dto.GroupDTO;
+import com.eturn.eturn.dto.mapper.GroupMapper;
 import com.eturn.eturn.entity.Group;
 import com.eturn.eturn.exception.NotFoundException;
 import com.eturn.eturn.repository.GroupRepository;
@@ -12,24 +14,23 @@ import java.util.Optional;
 @Service
 public class GroupServiceImpl implements GroupService {
     private final GroupRepository groupRepository;
+    private final GroupMapper groupMapper;
 
-    public GroupServiceImpl(GroupRepository groupRepository) {
+    public GroupServiceImpl(GroupRepository groupRepository, GroupMapper groupMapper) {
         this.groupRepository = groupRepository;
+        this.groupMapper = groupMapper;
     }
 
-    @Override
-    public void deleteGroup(int number) {
-
-    }
     @Override
     public List<Group> getAllGroups() {
         return groupRepository.findAll();
     }
 
     @Override
-    public Group createGroup(Group group) {
-        if (!groupRepository.existsByNumber(group.getNumber())){
-            return groupRepository.save(group);
+    public Long createGroup(GroupDTO group) {
+        if (!groupRepository.existsByNumber(group.name())){
+            Group groupDb = groupMapper.DTOtoGroup(group);
+            return groupRepository.save(groupDb).getId();
         }
         else{
             return null;
