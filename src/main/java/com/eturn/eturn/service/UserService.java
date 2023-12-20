@@ -1,5 +1,6 @@
 package com.eturn.eturn.service;
 
+import com.eturn.eturn.dto.UserCreateDTO;
 import com.eturn.eturn.dto.UserDTO;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
@@ -13,7 +14,7 @@ public interface UserService {
     RoleEnum checkRoot(Long id);
     UserDTO getUser(Long id);
     User getUserFrom(Long id);
-    Long createUser(User user);
+    Long createUser(UserCreateDTO user);
 
     Set<Turn> getUserTurns(Long id);
 }

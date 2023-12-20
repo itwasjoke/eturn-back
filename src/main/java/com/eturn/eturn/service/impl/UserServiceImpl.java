@@ -1,5 +1,6 @@
 package com.eturn.eturn.service.impl;
 
+import com.eturn.eturn.dto.UserCreateDTO;
 import com.eturn.eturn.dto.UserDTO;
 import com.eturn.eturn.dto.mapper.UserMapper;
 import com.eturn.eturn.entity.Turn;
@@ -9,6 +10,7 @@ import com.eturn.eturn.exception.NotFoundException;
 import com.eturn.eturn.repository.UserRepository;
 import com.eturn.eturn.service.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Optional;
 import java.util.Set;
@@ -59,12 +61,12 @@ public class UserServiceImpl implements UserService {
                 }
             }
             else if (user.getRoleEnum()==RoleEnum.EMPLOYEE || user.getRoleEnum() == RoleEnum.PROFESSOR){
-                if (user.getIdDepartment()!=0){
+                if (user.getIdDepartment()!=null){
                     department = departmentService.getById(user.getIdDepartment()).getName();
                 }
 
             }
-            return userMapper.userToUserDTO(user, faculty, course, department, group);
+            return userMapper.userToUserDTO(user, faculty, course, department, group, user.getRoleEnum().toString());
         }
         else{
             throw new NotFoundException("Пользователя не существует");
@@ -89,8 +91,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Long createUser(User user) {
-        User userCreated = userRepository.save(user);
+    public Long createUser(UserCreateDTO user) {
+        RoleEnum r = RoleEnum.valueOf(user.role());
+        User userCreated = userRepository.save(userMapper.userCreateDTOtoUser(user, r));
         return userCreated.getId();
     }
 

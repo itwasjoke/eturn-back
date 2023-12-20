@@ -1,8 +1,10 @@
 package com.eturn.eturn.controller;
 
 
+import com.eturn.eturn.dto.UserCreateDTO;
 import com.eturn.eturn.dto.UserDTO;
 import com.eturn.eturn.entity.User;
+import com.eturn.eturn.enums.RoleEnum;
 import com.eturn.eturn.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,7 +27,7 @@ public class UserController {
 //    public User getUser(@PathVariable("id") User user){return user;}
 
     @PostMapping
-    public Long create(@RequestBody User user){
+    public Long create(@RequestBody UserCreateDTO user){
         return userService.createUser(user);
     }
 
