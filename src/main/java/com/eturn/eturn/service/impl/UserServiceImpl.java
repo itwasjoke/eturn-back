@@ -66,7 +66,15 @@ public class UserServiceImpl implements UserService {
                 }
 
             }
-            return userMapper.userToUserDTO(user, faculty, course, department, group, user.getRoleEnum().toString());
+            String role = null;
+            RoleEnum R = user.getRoleEnum();
+            switch (R){
+                case STUDENT -> role = "Студент";
+                case EMPLOYEE -> role = "Сотрудник";
+                case PROFESSOR -> role = "Преподаватель";
+                case NO_UNIVERSITY -> role = "Посетитель";
+            }
+            return userMapper.userToUserDTO(user, faculty, course, department, group, role);
         }
         else{
             throw new NotFoundException("Пользователя не существует");
