@@ -7,6 +7,7 @@ import com.eturn.eturn.service.GroupService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class GroupServiceImpl implements GroupService {
@@ -43,5 +44,16 @@ public class GroupServiceImpl implements GroupService {
         else{
             throw new NotFoundException("Группа не найдена");
         }
+    }
+
+    @Override
+    public Group getGroup(Long id) {
+            Optional<Group> group = groupRepository.findById(id);
+            if (group.isPresent()){
+                return group.get();
+            }
+            else{
+                throw new NotFoundException("Группа не найдена");
+            }
     }
 }

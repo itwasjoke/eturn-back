@@ -27,7 +27,7 @@ public class PositionServiceImpl implements PositionService {
     // TODO int pageSize, int pageNumber
     public Optional<Position> getLastPosition(Long idUser, Long idTurn) {
         // TODO positionRepository.findAllByUser(new User(), Pageable.ofSize(pageSize).withPage(pageNumber));
-        User user = userService.getUser(idUser);
+        User user = userService.getUserFrom(idUser);
         return positionRepository.findFirstByUserOrderByNumberDesc(user);
     }
 

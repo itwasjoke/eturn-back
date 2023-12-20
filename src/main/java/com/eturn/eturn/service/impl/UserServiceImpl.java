@@ -1,14 +1,15 @@
 package com.eturn.eturn.service.impl;
 
+import com.eturn.eturn.dto.UserDTO;
+import com.eturn.eturn.dto.mapper.UserMapper;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
 import com.eturn.eturn.enums.RoleEnum;
 import com.eturn.eturn.exception.NotFoundException;
 import com.eturn.eturn.repository.UserRepository;
-import com.eturn.eturn.service.UserService;
+import com.eturn.eturn.service.*;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -16,9 +17,19 @@ import java.util.Set;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final FacultyService facultyService;
+    private final CourseService courseService;
+    private final GroupService groupService;
+    private final UserMapper userMapper;
+    private final DepartmentService departmentService;
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, FacultyService facultyService, CourseService courseService, GroupService groupService, UserMapper userMapper, DepartmentService departmentService) {
         this.userRepository = userRepository;
+        this.facultyService = facultyService;
+        this.courseService = courseService;
+        this.groupService = groupService;
+        this.userMapper = userMapper;
+        this.departmentService = departmentService;
     }
 
     @Override
@@ -28,10 +39,32 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getUser(Long id) {
+    public UserDTO getUser(Long id) {
         Optional<User> u = userRepository.findById(id);
         if (u.isPresent()){
-            return u.get();
+            User user = u.get();
+            String group = null;
+            String course = null;
+            String department = null;
+            String faculty = null;
+            if (user.getRoleEnum()==RoleEnum.STUDENT){
+                if (user.getIdGroup()!=null){
+                    group = groupService.getGroup(user.getIdGroup()).getNumber();
+                }
+                if (user.getIdCourse()!=null){
+                    course = courseService.getOneCourse(user.getIdCourse()).getNumber().toString();
+                }
+                if (user.getIdFaculty()!=null){
+                    faculty = facultyService.getOneFaculty(user.getIdFaculty()).getName();
+                }
+            }
+            else if (user.getRoleEnum()==RoleEnum.EMPLOYEE || user.getRoleEnum() == RoleEnum.PROFESSOR){
+                if (user.getIdDepartment()!=0){
+                    department = departmentService.getById(user.getIdDepartment()).getName();
+                }
+
+            }
+            return userMapper.userToUserDTO(user, faculty, course, department, group);
         }
         else{
             throw new NotFoundException("Пользователя не существует");
@@ -56,13 +89,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User createUser(User user) {
-        return userRepository.save(user);
+    public Long createUser(User user) {
+        User userCreated = userRepository.save(user);
+        return userCreated.getId();
     }
 
     @Override
     public Set<Turn> getUserTurns(Long id) {
-        User user = userRepository.getReferenceById(id);
-        return user.getTurns();
+        Optional<User> user = userRepository.findById(id);
+        if (user.isPresent()){
+            return user.get().getTurns();
+        }
+        else{
+            throw new NotFoundException("User not found");
+        }
     }
 }

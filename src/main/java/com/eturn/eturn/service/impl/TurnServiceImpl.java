@@ -92,7 +92,7 @@ public class TurnServiceImpl implements TurnService {
                 throw new NotFoundException("Очередей нет");
             }
             Stream<Turn> streamTurns = allTurns.stream();
-            User user = userService.getUser(idUser);
+            User user = userService.getUserFrom(idUser);
             if (user.getRoleEnum() == RoleEnum.STUDENT) {
                 streamTurns = streamTurns.filter(
                         c -> c.getAccessTurnType() == AccessTurnEnum.FOR_STUDENT ||

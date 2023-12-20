@@ -1,5 +1,6 @@
 package com.eturn.eturn.service;
 
+import com.eturn.eturn.dto.UserDTO;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
 import com.eturn.eturn.enums.RoleEnum;
@@ -10,9 +11,9 @@ import java.util.Set;
 
 public interface UserService {
     RoleEnum checkRoot(Long id);
-    User getUser(Long id);
+    UserDTO getUser(Long id);
     User getUserFrom(Long id);
-    User createUser(User user);
+    Long createUser(User user);
 
     Set<Turn> getUserTurns(Long id);
 }

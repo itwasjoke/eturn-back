@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface GroupRepository extends JpaRepository<Group,Long> {
     boolean existsByNumber(String numGroup);
+    boolean existsById(Long idGroup);
     //boolean existsById(int id_group);
     Group getByNumber(String numGroup);
 

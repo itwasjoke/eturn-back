@@ -9,4 +9,6 @@ public interface FacultyService {
 
     Faculty getOneFaculty(Long id);
 
+    Long createFaculty(Faculty faculty);
+
 }

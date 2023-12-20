@@ -10,4 +10,6 @@ public interface GroupService {
     List<Group> getAllGroups();
     Group createGroup(Group group);
     Group getOneGroup(String number);
+    Group getGroup(Long id);
+
 }
