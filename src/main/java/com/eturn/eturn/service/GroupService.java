@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface GroupService {
 
-    List<Group> getAllGroups();
+    List<GroupDTO> getAllGroups();
     Long createGroup(GroupDTO group);
     Group getOneGroup(String number);
     Group getGroup(Long id);
