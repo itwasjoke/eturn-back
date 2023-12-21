@@ -9,7 +9,7 @@ import com.eturn.eturn.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping(value = "/user", produces = "application/json; charset=utf-8")
 public class UserController {
 
     private final UserService userService;

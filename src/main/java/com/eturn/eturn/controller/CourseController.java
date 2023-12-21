@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/course")
+@RequestMapping(value = "/course", produces = "application/json; charset=utf-8")
 public class CourseController {
 
     private final CourseService courseService;

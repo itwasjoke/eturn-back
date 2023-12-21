@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/turn")
+@RequestMapping(value ="/turn", produces = "application/json; charset=utf-8")
 public class TurnController {
 
     private final TurnService turnService;
