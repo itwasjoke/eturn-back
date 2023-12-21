@@ -18,7 +18,7 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/{id}")
+    @GetMapping(value = "/{id}", produces = "application/json; charset=utf-8")
     public UserDTO getUser(@PathVariable long id){
         return userService.getUser(id);
     }
