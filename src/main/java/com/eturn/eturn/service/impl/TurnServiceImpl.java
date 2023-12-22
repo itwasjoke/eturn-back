@@ -235,9 +235,14 @@ public class TurnServiceImpl implements TurnService {
         turnRepository.save(turn);
     }
 
+    @Transactional
     @Override
-    public void addTurnToUser(Long turnId, Long idUser) {
-
+    public void addTurnToUser(Long turnId, Long userId) {
+        User user = userService.getUserFrom(userId);
+        Turn turn = getTurnFrom(turnId);
+        Set<Turn> turns = user.getTurns();
+        turns.add(turn);
+        userService.updateUser(user);
     }
 
 }

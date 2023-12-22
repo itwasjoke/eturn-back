@@ -17,7 +17,8 @@ public class MemberController {
     }
 
     @PostMapping
-    public void create(@RequestParam Long userId, @RequestParam Long turnId, @RequestParam AccessMemberEnum accessMemberEnum){
-        memberService.createMember(userId, turnId, accessMemberEnum);
+    public void create(@RequestParam Long userId, @RequestParam Long turnId, @RequestParam String accessMemberEnum){
+        AccessMemberEnum access = AccessMemberEnum.valueOf(accessMemberEnum);
+        memberService.createMember(userId, turnId, access);
     }
 }

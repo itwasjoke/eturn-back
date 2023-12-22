@@ -4,6 +4,7 @@ import com.eturn.eturn.dto.TurnDTO;
 import com.eturn.eturn.dto.TurnMoreInfoDTO;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.service.TurnService;
+import lombok.extern.java.Log;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -64,6 +65,11 @@ public class TurnController {
     @ResponseStatus(HttpStatus.CREATED)
     public Long create(@RequestBody TurnMoreInfoDTO turn) {
         return turnService.createTurn(turn);
+    }
+
+    @PutMapping(value = "/new_member")
+    public void updateMember(@RequestParam Long userId, @RequestParam Long turnId){
+        turnService.addTurnToUser(turnId, userId);
     }
 
     @PutMapping()

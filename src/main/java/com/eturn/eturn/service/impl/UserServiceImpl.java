@@ -21,16 +21,18 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final FacultyService facultyService;
 
-    private final TurnService turnService;
+//    private final TurnService turnService;
     private final CourseService courseService;
     private final GroupService groupService;
     private final UserMapper userMapper;
     private final DepartmentService departmentService;
 
-    public UserServiceImpl(UserRepository userRepository, FacultyService facultyService, TurnService turnService, CourseService courseService, GroupService groupService, UserMapper userMapper, DepartmentService departmentService) {
+    public UserServiceImpl(UserRepository userRepository, FacultyService facultyService,
+//                           TurnService turnService,
+                           CourseService courseService, GroupService groupService, UserMapper userMapper, DepartmentService departmentService) {
         this.userRepository = userRepository;
         this.facultyService = facultyService;
-        this.turnService = turnService;
+//        this.turnService = turnService;
         this.courseService = courseService;
         this.groupService = groupService;
         this.userMapper = userMapper;
@@ -118,22 +120,27 @@ public class UserServiceImpl implements UserService {
             throw new NotFoundException("User not found");
         }
     }
-    @Transactional
-    @Override
-    public void addTurn(Long userId, Long turnId) {
-        Turn t = turnService.getTurnFrom(turnId);
-        turnService.countUser(t);
-        Optional<User> user = userRepository.findById(userId);
-        if (user.isPresent()){
-            User u = user.get();
-            Set<Turn> turns = u.getTurns();
-            turns.add(t);
-            u.setTurns(turns);
-            userRepository.save(u);
-        }
-        else{
-            throw new NotFoundException("User not found");
-        }
 
+    @Override
+    public void updateUser(User user) {
+        userRepository.save(user);
     }
+//    @Transactional
+//    @Override
+//    public void addTurn(Long userId, Long turnId) {
+//        Turn t = turnService.getTurnFrom(turnId);
+//        turnService.countUser(t);
+//        Optional<User> user = userRepository.findById(userId);
+//        if (user.isPresent()){
+//            User u = user.get();
+//            Set<Turn> turns = u.getTurns();
+//            turns.add(t);
+//            u.setTurns(turns);
+//            userRepository.save(u);
+//        }
+//        else{
+//            throw new NotFoundException("User not found");
+//        }
+//
+//    }
 }

@@ -18,5 +18,6 @@ public interface UserService {
 
     Set<Turn> getUserTurns(Long id);
 
-    void addTurn(Long userId, Long turnId);
+    void updateUser(User user);
+//    void addTurn(Long userId, Long turnId);
 }
