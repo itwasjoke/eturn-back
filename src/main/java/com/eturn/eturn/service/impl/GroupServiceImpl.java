@@ -9,8 +9,10 @@ import com.eturn.eturn.repository.GroupRepository;
 import com.eturn.eturn.service.GroupService;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class GroupServiceImpl implements GroupService {
@@ -25,8 +27,8 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public List<GroupDTO> getAllGroups() {
-        return groupListMapper.map(groupRepository.findAll());
+    public Set<GroupDTO> getAllGroups() {
+        return groupListMapper.map(new HashSet<>(groupRepository.findAll()));
     }
 
     @Override
@@ -59,5 +61,20 @@ public class GroupServiceImpl implements GroupService {
             else{
                 throw new NotFoundException("Группа не найдена");
             }
+    }
+
+    @Override
+    public Set<Group> getSetGroups(Set<GroupDTO> groups) {
+        HashSet<Group> groupSet = new HashSet<Group>();
+        for (GroupDTO g : groups){
+            Optional<Group> groupDb = groupRepository.findById(g.id());
+            if (groupDb.isPresent()){
+                groupSet.add(groupDb.get());
+            }
+            else{
+                throw new NotFoundException("Группа не найдена");
+            }
+        }
+        return groupSet;
     }
 }

@@ -1,5 +1,6 @@
 package com.eturn.eturn.service.impl;
 
+import com.eturn.eturn.dto.GroupDTO;
 import com.eturn.eturn.dto.TurnDTO;
 import com.eturn.eturn.dto.TurnMoreInfoDTO;
 import com.eturn.eturn.dto.mapper.TurnListMapper;
@@ -171,10 +172,28 @@ public class TurnServiceImpl implements TurnService {
 //            throw new InvalidDataException("");
 //        }
         User userCreator = userService.getUserFrom(turn.creator());
-        Turn turnNew = turnRepository.save(turnMoreInfoMapper.turnMoreDTOToTurn(turn,userCreator));
+        Set<Group> groups = groupService.getSetGroups(turn.allowedGroups());
+        Turn turnDto = turnMoreInfoMapper.turnMoreDTOToTurn(turn,userCreator, groups);
+//        HashSet<User> users = new HashSet<User>();
+//        users.add(userCreator);
+//        turnDto.setUsers(users);
+        turnDto.setCountUsers(1);
+        Turn turnNew = turnRepository.save(turnDto);
         memberService.createMember(turnNew.getCreator().getId(), turnNew.getId(), AccessMemberEnum.CREATOR);
         return turnNew.getId();
     }
+
+    @Override
+    public Turn getTurnFrom(Long id) {
+        Optional<Turn> turn = turnRepository.findById(id);
+        if (turn.isPresent()){
+            return turn.get();
+        }
+        else{
+            throw new NotFoundException("Очередь не найдена");
+        }
+    }
+
     @Transactional
     @Override
     public void updateTurn(Long idUser, Turn turn) {
@@ -207,6 +226,18 @@ public class TurnServiceImpl implements TurnService {
         else{
             throw new InvalidDataException("Очередь не найдена");
         }
+    }
+
+    @Override
+    public void countUser(Turn turn) {
+        int users = turn.getCountUsers() + 1;
+        turn.setCountUsers(users);
+        turnRepository.save(turn);
+    }
+
+    @Override
+    public void addTurnToUser(Long turnId, Long idUser) {
+
     }
 
 }

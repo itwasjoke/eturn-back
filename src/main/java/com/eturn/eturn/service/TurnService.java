@@ -3,6 +3,7 @@ package com.eturn.eturn.service;
 import com.eturn.eturn.dto.TurnDTO;
 import com.eturn.eturn.dto.TurnMoreInfoDTO;
 import com.eturn.eturn.entity.Turn;
+import com.eturn.eturn.entity.User;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,8 +16,14 @@ public interface TurnService {
 
     Long createTurn(TurnMoreInfoDTO turn);
 
+    Turn getTurnFrom(Long id);
+
     void updateTurn(Long idUser, Turn turn);
 
     void deleteTurn(Long idUser, Long idTurn);
+
+    void countUser(Turn turn);
+
+    void addTurnToUser(Long turnId, Long userId);
 
 }

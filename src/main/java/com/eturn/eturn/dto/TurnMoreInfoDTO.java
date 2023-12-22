@@ -13,12 +13,12 @@ public record TurnMoreInfoDTO(
         Long creator,
         TurnEnum turnType,
         AccessTurnEnum turnAccess,
-        Set<Group> allowedGroups,
+        Set<GroupDTO> allowedGroups,
         Set<Faculty> allowedFaculties,
         Set<Department> allowedDepartments,
         Set<Course> allowedCourses
 ) {
-    public TurnMoreInfoDTO(Long id, String name, String description, Long creator, TurnEnum turnType, AccessTurnEnum turnAccess, Set<Group> allowedGroups, Set<Faculty> allowedFaculties, Set<Department> allowedDepartments, Set<Course> allowedCourses) {
+    public TurnMoreInfoDTO(Long id, String name, String description, Long creator, TurnEnum turnType, AccessTurnEnum turnAccess, Set<GroupDTO> allowedGroups, Set<Faculty> allowedFaculties, Set<Department> allowedDepartments, Set<Course> allowedCourses) {
         this.id = id;
         this.name = name;
         this.description = description;

@@ -71,6 +71,8 @@ public class Turn {
     @ManyToMany(mappedBy = "turns")
     private Set<User> users;
 
+    private int countUsers;
+
 //    private Integer countPositions;
 //    private Integer allTime;
 //    private Integer averageTime;

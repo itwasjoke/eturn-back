@@ -6,6 +6,7 @@ import com.eturn.eturn.service.GroupService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping(value = "/group", produces = "application/json; charset=utf-8")
@@ -18,7 +19,7 @@ public class GroupController {
     }
 
     @GetMapping
-    public List<GroupDTO> getGroupList(){
+    public Set<GroupDTO> getGroupList(){
         return groupService.getAllGroups();
     }
 

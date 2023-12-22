@@ -17,4 +17,6 @@ public interface UserService {
     Long createUser(UserCreateDTO user);
 
     Set<Turn> getUserTurns(Long id);
+
+    void addTurn(Long userId, Long turnId);
 }

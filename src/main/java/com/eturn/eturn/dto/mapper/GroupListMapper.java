@@ -7,6 +7,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
+import java.util.Set;
 
 @Mapper(
         componentModel = "spring",
@@ -15,5 +16,5 @@ import java.util.List;
         injectionStrategy = InjectionStrategy.CONSTRUCTOR
 )
 public interface GroupListMapper {
-    List<GroupDTO> map(List<Group> groups);
+    Set<GroupDTO> map(Set<Group> groups);
 }
