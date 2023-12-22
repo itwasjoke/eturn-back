@@ -23,7 +23,7 @@ public class GroupController {
         return groupService.getAllGroups();
     }
 
-    @GetMapping("{number}")
+    @GetMapping(value = "/{number}")
     public GroupDTO getGroup(@PathVariable String number){
         return groupService.getOneGroupDTO(number);
     }
