@@ -13,6 +13,7 @@ public interface GroupService {
     Long createGroup(GroupDTO group);
     Group getOneGroup(String number);
     Group getGroup(Long id);
+    GroupDTO getOneGroupDTO(String number);
 
     Set<Group> getSetGroups(Set<GroupDTO> groups);
 }

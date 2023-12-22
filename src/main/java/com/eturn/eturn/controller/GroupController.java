@@ -23,6 +23,11 @@ public class GroupController {
         return groupService.getAllGroups();
     }
 
+    @GetMapping("{number}")
+    public GroupDTO getGroup(@PathVariable String number){
+        return groupService.getOneGroupDTO(number);
+    }
+
     @PostMapping
     public Long createGroup(@RequestBody GroupDTO groupDTO){
         return groupService.createGroup(groupDTO);

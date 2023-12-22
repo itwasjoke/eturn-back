@@ -64,6 +64,16 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    public GroupDTO getOneGroupDTO(String number) {
+        if (groupRepository.existsByNumber(number)){
+            return groupMapper.groupToDTO(groupRepository.getByNumber(number));
+        }
+        else{
+            throw new NotFoundException("Группа не найдена");
+        }
+    }
+
+    @Override
     public Set<Group> getSetGroups(Set<GroupDTO> groups) {
         HashSet<Group> groupSet = new HashSet<Group>();
         for (GroupDTO g : groups){
