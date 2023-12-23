@@ -2,7 +2,9 @@ package com.eturn.eturn.controller;
 
 import com.eturn.eturn.dto.TurnDTO;
 import com.eturn.eturn.dto.TurnMoreInfoDTO;
+import com.eturn.eturn.dto.PositionsDTO;
 import com.eturn.eturn.entity.Turn;
+import com.eturn.eturn.service.PositionService;
 import com.eturn.eturn.service.TurnService;
 import lombok.extern.java.Log;
 import org.springframework.http.HttpStatus;
@@ -26,9 +28,11 @@ import java.util.Map;
 public class TurnController {
 
     private final TurnService turnService;
+    private final PositionService positionService;
 
-    public TurnController(TurnService turnService) {
+    public TurnController(TurnService turnService, PositionService positionService) {
         this.turnService = turnService;
+        this.positionService=positionService;
     }
 
     @GetMapping("{idTurn}")
@@ -86,5 +90,10 @@ public class TurnController {
         @RequestParam long idTurn
     ) {
         turnService.deleteTurn(idUser,idTurn);
+    }
+
+    @GetMapping ("positions/{idTurn}")
+    public List<PositionsDTO> getTurnPositions(@PathVariable Long idTurn){
+        return positionService.getPositonList(idTurn);
     }
 }

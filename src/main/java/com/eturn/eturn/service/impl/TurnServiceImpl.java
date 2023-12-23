@@ -84,7 +84,16 @@ public class TurnServiceImpl implements TurnService {
             throw new NotFoundException("Очередь не найдена");
         }
     }
-
+    @Override
+    public Turn getTurnFrom(Long id) {
+        Optional<Turn> turn = turnRepository.findById(id);
+        if(turn.isPresent()){
+            return turn.get();
+        }
+        else{
+            throw new NotFoundException("Очередь не найдена");
+        }
+    }
     @Override
     public List<TurnDTO> getUserTurns(Long idUser, Map<String, String> params) {
         try {
@@ -181,17 +190,6 @@ public class TurnServiceImpl implements TurnService {
         Turn turnNew = turnRepository.save(turnDto);
         memberService.createMember(turnNew.getCreator().getId(), turnNew.getId(), AccessMemberEnum.CREATOR);
         return turnNew.getId();
-    }
-
-    @Override
-    public Turn getTurnFrom(Long id) {
-        Optional<Turn> turn = turnRepository.findById(id);
-        if (turn.isPresent()){
-            return turn.get();
-        }
-        else{
-            throw new NotFoundException("Очередь не найдена");
-        }
     }
 
     @Transactional
