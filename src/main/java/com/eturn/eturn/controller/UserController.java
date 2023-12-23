@@ -1,12 +1,17 @@
 package com.eturn.eturn.controller;
 
 
+import com.eturn.eturn.dto.TurnDTO;
 import com.eturn.eturn.dto.UserCreateDTO;
 import com.eturn.eturn.dto.UserDTO;
+import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
 import com.eturn.eturn.enums.RoleEnum;
 import com.eturn.eturn.service.UserService;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping(value = "/user", produces = "application/json; charset=utf-8")
@@ -34,6 +39,11 @@ public class UserController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable("id") User user){
 
+    }
+
+    @GetMapping(value = "/turns/{id}")
+    public List<TurnDTO> getUsersTurns(@PathVariable long id){
+        return userService.getUserTurnsDTO(id);
     }
 
 

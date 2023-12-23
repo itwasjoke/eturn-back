@@ -1,5 +1,6 @@
 package com.eturn.eturn.service;
 
+import com.eturn.eturn.dto.TurnDTO;
 import com.eturn.eturn.dto.UserCreateDTO;
 import com.eturn.eturn.dto.UserDTO;
 import com.eturn.eturn.entity.Turn;
@@ -17,6 +18,8 @@ public interface UserService {
     Long createUser(UserCreateDTO user);
 
     Set<Turn> getUserTurns(Long id);
+
+    List<TurnDTO> getUserTurnsDTO(Long id);
 
     void updateUser(User user);
 //    void addTurn(Long userId, Long turnId);

@@ -5,6 +5,8 @@ import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
 import com.eturn.eturn.enums.AccessMemberEnum;
 
+import java.util.List;
+
 
 public interface MemberService {
 
@@ -13,5 +15,7 @@ public interface MemberService {
 
     AccessMemberEnum getAccess(Long idUser, Long idTurn);
     void deleteTurnMembers(Long idTurn);
+
+    List<Member> getMembers();
 
 }

@@ -12,6 +12,8 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 public class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository;
@@ -45,5 +47,10 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void deleteTurnMembers(Long idTurn) {
         memberRepository.deleteByIdTurn(idTurn);
+    }
+
+    @Override
+    public List<Member> getMembers() {
+        return memberRepository.findAll();
     }
 }

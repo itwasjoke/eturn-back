@@ -1,7 +1,9 @@
 package com.eturn.eturn.service.impl;
 
+import com.eturn.eturn.dto.TurnDTO;
 import com.eturn.eturn.dto.UserCreateDTO;
 import com.eturn.eturn.dto.UserDTO;
+import com.eturn.eturn.dto.mapper.TurnListMapper;
 import com.eturn.eturn.dto.mapper.UserMapper;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
@@ -10,8 +12,8 @@ import com.eturn.eturn.exception.NotFoundException;
 import com.eturn.eturn.repository.UserRepository;
 import com.eturn.eturn.service.*;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -25,17 +27,19 @@ public class UserServiceImpl implements UserService {
     private final CourseService courseService;
     private final GroupService groupService;
     private final UserMapper userMapper;
+    private final TurnListMapper turnListMapper;
     private final DepartmentService departmentService;
 
     public UserServiceImpl(UserRepository userRepository, FacultyService facultyService,
 //                           TurnService turnService,
-                           CourseService courseService, GroupService groupService, UserMapper userMapper, DepartmentService departmentService) {
+                           CourseService courseService, GroupService groupService, UserMapper userMapper, TurnListMapper turnListMapper, DepartmentService departmentService) {
         this.userRepository = userRepository;
         this.facultyService = facultyService;
 //        this.turnService = turnService;
         this.courseService = courseService;
         this.groupService = groupService;
         this.userMapper = userMapper;
+        this.turnListMapper = turnListMapper;
         this.departmentService = departmentService;
     }
 
@@ -115,6 +119,17 @@ public class UserServiceImpl implements UserService {
         Optional<User> user = userRepository.findById(id);
         if (user.isPresent()){
             return user.get().getTurns();
+        }
+        else{
+            throw new NotFoundException("User not found");
+        }
+    }
+
+    @Override
+    public List<TurnDTO> getUserTurnsDTO(Long id) {
+        Optional<User> user = userRepository.findById(id);
+        if (user.isPresent()){
+            return turnListMapper.map(user.get().getTurns().stream().toList());
         }
         else{
             throw new NotFoundException("User not found");
