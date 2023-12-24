@@ -1,4 +1,6 @@
 spring:
+  main:
+    allow-circular-references: true
   datasource:
     url: jdbc:postgresql://localhost:5432/eturn
     username: postgres

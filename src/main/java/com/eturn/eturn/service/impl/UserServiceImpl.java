@@ -24,30 +24,25 @@ import java.util.Set;
 @Service
 public class UserServiceImpl implements UserService {
 
-//
-    @Autowired
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
-    private final UserRepository userRepository;
-    private final FacultyService facultyService;
 
-//    private final TurnService turnService;
-    private final CourseService courseService;
-    private final GroupService groupService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    @Autowired
+    private FacultyService facultyService;
+    @Autowired
+    private CourseService courseService;
+    @Autowired
+    private GroupService groupService;
     private final UserMapper userMapper;
     private final TurnListMapper turnListMapper;
-    private final DepartmentService departmentService;
+    @Autowired
+    private DepartmentService departmentService;
 
-    public UserServiceImpl(UserRepository userRepository, FacultyService facultyService,
-//                           TurnService turnService,
-                           CourseService courseService, GroupService groupService, UserMapper userMapper, TurnListMapper turnListMapper, DepartmentService departmentService) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, TurnListMapper turnListMapper) {
         this.userRepository = userRepository;
-        this.facultyService = facultyService;
-//        this.turnService = turnService;
-        this.courseService = courseService;
-        this.groupService = groupService;
         this.userMapper = userMapper;
         this.turnListMapper = turnListMapper;
-        this.departmentService = departmentService;
     }
 
     @Override
@@ -119,7 +114,7 @@ public class UserServiceImpl implements UserService {
 //        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         RoleEnum r = RoleEnum.valueOf(user.role());
         User u = userMapper.userCreateDTOtoUser(user, r);
-        String password = bCryptPasswordEncoder.encode(u.getPassword());
+        String password = passwordEncoder.encode(u.getPassword());
         u.setPassword(password);
         User userCreated = userRepository.save(u);
         return userCreated.getId();

@@ -5,17 +5,18 @@ import com.eturn.eturn.entity.User;
 import com.eturn.eturn.repository.PositionRepository;
 import com.eturn.eturn.service.PositionService;
 import com.eturn.eturn.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 @Service
 public class PositionServiceImpl implements PositionService {
     private final PositionRepository positionRepository;
-    private final UserService userService;
+    @Autowired
+    private UserService userService;
 
-    public PositionServiceImpl(PositionRepository positionRepository, UserService userService) {
+    public PositionServiceImpl(PositionRepository positionRepository) {
         this.positionRepository = positionRepository;
-        this.userService = userService;
     }
 
     @Override

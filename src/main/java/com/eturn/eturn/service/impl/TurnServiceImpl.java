@@ -37,37 +37,26 @@ public class TurnServiceImpl implements TurnService {
     private final TurnRepository turnRepository;
     @Autowired
     private UserService userService;
-    private final GroupService groupService;
-    private final FacultyService facultyService;
-    private final CourseService courseService;
-    private final MemberService memberService;
+    @Autowired
+    private GroupService groupService;
+    @Autowired
+    private FacultyService facultyService;
+    @Autowired
+    private CourseService courseService;
+    @Autowired
+    private MemberService memberService;
     final private  TurnMapper turnMapper;
     final private  TurnListMapper turnListMapper;
 
     final private TurnMoreInfoMapper turnMoreInfoMapper;
 
 
-    public TurnServiceImpl(
-            TurnRepository turnRepository,
-//            UserService userService,
-            GroupService groupService,
-            FacultyService facultyService,
-            CourseService courseService,
-            MemberService memberService,
-            TurnMapper turnMapper,
-            TurnListMapper turnListMapper,
-            TurnMoreInfoMapper turnMoreInfoMapper) {
+    public TurnServiceImpl(TurnRepository turnRepository, TurnMapper turnMapper, TurnListMapper turnListMapper, TurnMoreInfoMapper turnMoreInfoMapper) {
         this.turnRepository = turnRepository;
-//        this.userService = userService;
-        this.groupService = groupService;
-        this.facultyService = facultyService;
-        this.courseService = courseService;
-        this.memberService = memberService;
         this.turnMapper = turnMapper;
         this.turnListMapper = turnListMapper;
         this.turnMoreInfoMapper = turnMoreInfoMapper;
     }
-
 
     @Override
     public List<Turn> getAllTurns() {
