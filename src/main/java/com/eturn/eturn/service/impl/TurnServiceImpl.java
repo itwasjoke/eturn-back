@@ -25,6 +25,7 @@ import com.eturn.eturn.service.GroupService;
 import com.eturn.eturn.service.MemberService;
 import com.eturn.eturn.service.TurnService;
 import com.eturn.eturn.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,7 +35,8 @@ import java.util.stream.Stream;
 @Service
 public class TurnServiceImpl implements TurnService {
     private final TurnRepository turnRepository;
-    private final UserService userService;
+    @Autowired
+    private UserService userService;
     private final GroupService groupService;
     private final FacultyService facultyService;
     private final CourseService courseService;
@@ -47,7 +49,7 @@ public class TurnServiceImpl implements TurnService {
 
     public TurnServiceImpl(
             TurnRepository turnRepository,
-            UserService userService,
+//            UserService userService,
             GroupService groupService,
             FacultyService facultyService,
             CourseService courseService,
@@ -56,7 +58,7 @@ public class TurnServiceImpl implements TurnService {
             TurnListMapper turnListMapper,
             TurnMoreInfoMapper turnMoreInfoMapper) {
         this.turnRepository = turnRepository;
-        this.userService = userService;
+//        this.userService = userService;
         this.groupService = groupService;
         this.facultyService = facultyService;
         this.courseService = courseService;

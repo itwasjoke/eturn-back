@@ -1,0 +1,35 @@
+package com.eturn.eturn.security;
+
+import com.eturn.eturn.entity.User;
+import com.eturn.eturn.service.UserService;
+import org.hibernate.sql.ast.tree.expression.Collation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+import java.util.Arrays;
+import java.util.Collection;
+
+@Service
+public class CustomUserDetailsService implements UserDetailsService {
+
+    @Autowired
+    private UserService userService;
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userService.findByLogin(username);
+        if (user == null){
+            throw new UsernameNotFoundException("Username or password not found");
+        }
+        return new CustomUserDetails(user.getLogin(),user.getPassword(), authorities(), user.getName());
+    }
+
+    public Collection<? extends GrantedAuthority> authorities(){
+        return Arrays.asList(new SimpleGrantedAuthority("USER"));
+    }
+}

@@ -13,6 +13,6 @@ import java.util.Optional;
 public interface PositionRepository extends JpaRepository<Position, Long> {
 
     Optional<Position> findFirstByUserOrderByNumberDesc(User user);
-
+    Optional<Position> findTopByOrderByIdDesc();
     // TODO Page<Position> findAllByUser(User user, Pageable pageable);
 }

@@ -11,6 +11,10 @@ import com.eturn.eturn.enums.RoleEnum;
 import com.eturn.eturn.exception.NotFoundException;
 import com.eturn.eturn.repository.UserRepository;
 import com.eturn.eturn.service.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,6 +24,9 @@ import java.util.Set;
 @Service
 public class UserServiceImpl implements UserService {
 
+//
+    @Autowired
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
     private final UserRepository userRepository;
     private final FacultyService facultyService;
 
@@ -109,8 +116,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Long createUser(UserCreateDTO user) {
+//        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         RoleEnum r = RoleEnum.valueOf(user.role());
-        User userCreated = userRepository.save(userMapper.userCreateDTOtoUser(user, r));
+        User u = userMapper.userCreateDTOtoUser(user, r);
+        String password = bCryptPasswordEncoder.encode(u.getPassword());
+        u.setPassword(password);
+        User userCreated = userRepository.save(u);
         return userCreated.getId();
     }
 
@@ -139,6 +150,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateUser(User user) {
         userRepository.save(user);
+    }
+
+    @Override
+    public User findByLogin(String login) {
+        return userRepository.findUserByLogin(login);
     }
 //    @Transactional
 //    @Override

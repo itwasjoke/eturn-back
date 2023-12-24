@@ -7,7 +7,12 @@ import com.eturn.eturn.dto.UserDTO;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
 import com.eturn.eturn.enums.RoleEnum;
+import com.eturn.eturn.security.CustomUserDetailsService;
 import com.eturn.eturn.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,6 +23,9 @@ import java.util.Set;
 public class UserController {
 
     private final UserService userService;
+    @Autowired
+    private UserDetailsService userDetailsService;
+
 
     public UserController(UserService userService) {
         this.userService = userService;
@@ -46,6 +54,9 @@ public class UserController {
         return userService.getUserTurnsDTO(id);
     }
 
-
+    @GetMapping("/login")
+    public Long login(Model model, UserCreateDTO user){
+        return null;
+    }
 
 }
