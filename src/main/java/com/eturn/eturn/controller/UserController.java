@@ -59,4 +59,8 @@ public class UserController {
         return null;
     }
 
+    @PostMapping("/register")
+    public Long register(@RequestBody UserCreateDTO user){
+        return userService.createUser(user);
+    }
 }
