@@ -11,9 +11,6 @@ import com.eturn.eturn.enums.RoleEnum;
 import com.eturn.eturn.exception.NotFoundException;
 import com.eturn.eturn.repository.UserRepository;
 import com.eturn.eturn.service.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,24 +22,24 @@ import java.util.Set;
 public class UserServiceImpl implements UserService {
 
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
-    @Autowired
-    private FacultyService facultyService;
-    @Autowired
-    private CourseService courseService;
-    @Autowired
-    private GroupService groupService;
+    private final FacultyService facultyService;
+    private final CourseService courseService;
+    private final GroupService groupService;
     private final UserMapper userMapper;
     private final TurnListMapper turnListMapper;
-    @Autowired
-    private DepartmentService departmentService;
+    private final DepartmentService departmentService;
 
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, TurnListMapper turnListMapper) {
+    public UserServiceImpl(PasswordEncoder passwordEncoder, UserRepository userRepository, FacultyService facultyService, CourseService courseService, GroupService groupService, UserMapper userMapper, TurnListMapper turnListMapper, DepartmentService departmentService) {
+        this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
+        this.facultyService = facultyService;
+        this.courseService = courseService;
+        this.groupService = groupService;
         this.userMapper = userMapper;
         this.turnListMapper = turnListMapper;
+        this.departmentService = departmentService;
     }
 
     @Override
