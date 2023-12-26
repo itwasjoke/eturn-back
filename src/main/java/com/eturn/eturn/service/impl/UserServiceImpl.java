@@ -15,9 +15,9 @@ import com.eturn.eturn.service.DepartmentService;
 import com.eturn.eturn.service.FacultyService;
 import com.eturn.eturn.service.GroupService;
 import com.eturn.eturn.service.UserService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
-import org.springframework.security.crypto.password.PasswordEncoder;
+//import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+//import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+//import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,7 +27,7 @@ import java.util.Set;
 @Service
 public class UserServiceImpl implements UserService {
 
-    private final PasswordEncoder passwordEncoder;
+//    private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final FacultyService facultyService;
     private final CourseService courseService;
@@ -39,7 +39,7 @@ public class UserServiceImpl implements UserService {
     public UserServiceImpl(UserRepository userRepository, FacultyService facultyService, CourseService courseService,
                            GroupService groupService, UserMapper userMapper, TurnListMapper turnListMapper,
                            DepartmentService departmentService) {
-        this.passwordEncoder = new BCryptPasswordEncoder();
+//        this.passwordEncoder = new BCryptPasswordEncoder();
 //        this.passwordEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
         this.userRepository = userRepository;
         this.facultyService = facultyService;
@@ -115,8 +115,6 @@ public class UserServiceImpl implements UserService {
     public Long createUser(UserCreateDTO user) {
         RoleEnum r = RoleEnum.valueOf(user.role());
         User u = userMapper.userCreateDTOtoUser(user, r);
-//        String password = "{bcrypt}"+passwordEncoder.encode(u.getPassword());
-//        u.setPassword(password);
         User userCreated = userRepository.save(u);
         return userCreated.getId();
     }
@@ -148,7 +146,23 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findByLogin(String login) {
-        return userRepository.findUserByLogin(login);
+        Optional<User> u = userRepository.findUserByLogin(login);
+        if (u.isPresent()){
+            return u.get();
+        }
+        else throw new NotFoundException("User not found");
+    }
+
+    @Override
+    public Long loginUser(String username, String password) {
+        Optional<User> u = userRepository.findUserByLogin(username);
+        if (u.isPresent()){
+            if (u.get().getPassword().equals(password)){
+               return u.get().getId();
+            }
+            else return -1L;
+        }
+        else return 0L;
     }
 //    @Transactional
 //    @Override

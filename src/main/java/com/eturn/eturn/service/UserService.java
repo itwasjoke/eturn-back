@@ -24,5 +24,7 @@ public interface UserService {
     void updateUser(User user);
 
     User findByLogin(String login);
+
+    Long loginUser(String username, String password);
 //    void addTurn(Long userId, Long turnId);
 }

@@ -5,14 +5,7 @@ import com.eturn.eturn.dto.TurnDTO;
 import com.eturn.eturn.dto.UserCreateDTO;
 import com.eturn.eturn.dto.UserDTO;
 import com.eturn.eturn.entity.User;
-import com.eturn.eturn.exception.InvalidDataException;
-import com.eturn.eturn.security.CustomUserDetails;
-import com.eturn.eturn.security.JwtTokenRepository;
 import com.eturn.eturn.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,12 +16,10 @@ public class UserController {
 
     private final UserService userService;
 
-    private final JwtTokenRepository jwtTokenRepository;
 
 
-    public UserController(UserService userService, JwtTokenRepository jwtTokenRepository) {
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.jwtTokenRepository = jwtTokenRepository;
     }
 
     @GetMapping(value = "/{id}", produces = "application/json; charset=utf-8")
@@ -54,25 +45,19 @@ public class UserController {
         return userService.getUserTurnsDTO(id);
     }
 //CsrfToken
-    @PostMapping("/login")
-    public Long login(){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null) {
-            return null;
-        }
-        Object principal = auth.getPrincipal();
-        CustomUserDetails user = (principal instanceof CustomUserDetails) ? (CustomUserDetails) principal : null;
-        if (user!=null){
-            return user.getUserId();
-        }
-        else{
-            throw new InvalidDataException("No auth");
-        }
 
+    @GetMapping(value = "/login")
+    public Long login(@RequestParam String login, @RequestParam String password){
+        return userService.loginUser(login,password);
     }
-
-    @PostMapping("/register")
-    public Long register(@RequestBody UserCreateDTO user){
-        return userService.createUser(user);
-    }
+//    @PostMapping("/login")
+//    public Long login(){
+//        return null;
+//
+//    }
+//
+//    @PostMapping("/register")
+//    public Long register(@RequestBody UserCreateDTO user){
+//        return userService.createUser(user);
+//    }
 }
