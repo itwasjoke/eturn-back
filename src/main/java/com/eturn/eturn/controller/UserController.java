@@ -6,6 +6,7 @@ import com.eturn.eturn.dto.UserCreateDTO;
 import com.eturn.eturn.dto.UserDTO;
 import com.eturn.eturn.entity.User;
 import com.eturn.eturn.exception.InvalidDataException;
+import com.eturn.eturn.security.CustomUserDetails;
 import com.eturn.eturn.security.JwtTokenRepository;
 import com.eturn.eturn.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -52,17 +53,17 @@ public class UserController {
     public List<TurnDTO> getUsersTurns(@PathVariable long id){
         return userService.getUserTurnsDTO(id);
     }
-
+//CsrfToken
     @PostMapping("/login")
-    public CsrfToken login(HttpServletRequest httpServletRequest){
+    public Long login(){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null) {
             return null;
         }
         Object principal = auth.getPrincipal();
-        org.springframework.security.core.userdetails.User user = (principal instanceof org.springframework.security.core.userdetails.User) ? (org.springframework.security.core.userdetails.User) principal : null;
+        CustomUserDetails user = (principal instanceof CustomUserDetails) ? (CustomUserDetails) principal : null;
         if (user!=null){
-            return jwtTokenRepository.loadToken(httpServletRequest);
+            return user.getUserId();
         }
         else{
             throw new InvalidDataException("No auth");

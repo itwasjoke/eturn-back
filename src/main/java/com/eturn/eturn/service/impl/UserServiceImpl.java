@@ -115,8 +115,8 @@ public class UserServiceImpl implements UserService {
     public Long createUser(UserCreateDTO user) {
         RoleEnum r = RoleEnum.valueOf(user.role());
         User u = userMapper.userCreateDTOtoUser(user, r);
-        String password = "{bcrypt}"+passwordEncoder.encode(u.getPassword());
-        u.setPassword(password);
+//        String password = "{bcrypt}"+passwordEncoder.encode(u.getPassword());
+//        u.setPassword(password);
         User userCreated = userRepository.save(u);
         return userCreated.getId();
     }

@@ -1,5 +1,6 @@
 package com.eturn.eturn.security;
 
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -9,6 +10,7 @@ public class CustomUserDetails implements UserDetails {
 
     private final String username;
     private final String password;
+    @Getter
     private final Long userId;
     private final Collection<? extends GrantedAuthority> authorities;
 

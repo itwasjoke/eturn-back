@@ -34,7 +34,7 @@ public class JwtCsrfFilter extends OncePerRequestFilter {
 
         request.setAttribute(CsrfToken.class.getName(), csrfToken);
         request.setAttribute(csrfToken.getParameterName(), csrfToken);
-        if (request.getServletPath().equals("/user/login")) {
+        if (request.getServletPath().equals("/user/login")||request.getServletPath().equals("/user/register")) {
             try {
                 filterChain.doFilter(request, response);
             } catch (Exception e) {
@@ -53,7 +53,7 @@ public class JwtCsrfFilter extends OncePerRequestFilter {
 
                     filterChain.doFilter(request, response);
                 } else
-                    throw new InvalidDataException("Auth error");
+                    throw new InvalidDataException("Auth error!");
             } catch (JwtException e) {
                 if (this.logger.isDebugEnabled()) {
                     throw new InvalidDataException("Auth error");
