@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 @Service
@@ -27,7 +28,9 @@ public class CustomUserDetailsService implements UserDetailsService {
         if (user == null){
             throw new UsernameNotFoundException("Username or password not found");
         }
-        return new CustomUserDetails(user.getLogin(),user.getPassword(), authorities(), user.getName());
+        return org.springframework.security.core.userdetails.User.builder().username(user.getLogin()).password(user.getPassword()).authorities(authorities()).accountExpired(true).accountLocked(true).credentialsExpired(true).build();
+//        return org.springframework.security.core.userdetails.User(user.getLogin(),user.getPassword(), true, true, true, new HashSet<>());
+//        return new CustomUserDetails(user.getLogin(),user.getPassword(), user.getId(), authorities());
     }
 
     public Collection<? extends GrantedAuthority> authorities(){

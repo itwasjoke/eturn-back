@@ -4,31 +4,30 @@ package com.eturn.eturn.controller;
 import com.eturn.eturn.dto.TurnDTO;
 import com.eturn.eturn.dto.UserCreateDTO;
 import com.eturn.eturn.dto.UserDTO;
-import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
-import com.eturn.eturn.enums.RoleEnum;
-import com.eturn.eturn.security.CustomUserDetailsService;
+import com.eturn.eturn.exception.InvalidDataException;
+import com.eturn.eturn.security.JwtTokenRepository;
 import com.eturn.eturn.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.ui.Model;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping(value = "/user", produces = "application/json; charset=utf-8")
 public class UserController {
 
     private final UserService userService;
-    @Autowired
-    private UserDetailsService userDetailsService;
+
+    private final JwtTokenRepository jwtTokenRepository;
 
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, JwtTokenRepository jwtTokenRepository) {
         this.userService = userService;
+        this.jwtTokenRepository = jwtTokenRepository;
     }
 
     @GetMapping(value = "/{id}", produces = "application/json; charset=utf-8")
@@ -54,9 +53,21 @@ public class UserController {
         return userService.getUserTurnsDTO(id);
     }
 
-    @GetMapping("/login")
-    public Long login(Model model, UserCreateDTO user){
-        return null;
+    @PostMapping("/login")
+    public CsrfToken login(HttpServletRequest httpServletRequest){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) {
+            return null;
+        }
+        Object principal = auth.getPrincipal();
+        org.springframework.security.core.userdetails.User user = (principal instanceof org.springframework.security.core.userdetails.User) ? (org.springframework.security.core.userdetails.User) principal : null;
+        if (user!=null){
+            return jwtTokenRepository.loadToken(httpServletRequest);
+        }
+        else{
+            throw new InvalidDataException("No auth");
+        }
+
     }
 
     @PostMapping("/register")

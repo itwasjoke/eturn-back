@@ -16,6 +16,7 @@ import com.eturn.eturn.service.FacultyService;
 import com.eturn.eturn.service.GroupService;
 import com.eturn.eturn.service.UserService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +40,7 @@ public class UserServiceImpl implements UserService {
                            GroupService groupService, UserMapper userMapper, TurnListMapper turnListMapper,
                            DepartmentService departmentService) {
         this.passwordEncoder = new BCryptPasswordEncoder();
+//        this.passwordEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
         this.userRepository = userRepository;
         this.facultyService = facultyService;
         this.courseService = courseService;
@@ -113,7 +115,7 @@ public class UserServiceImpl implements UserService {
     public Long createUser(UserCreateDTO user) {
         RoleEnum r = RoleEnum.valueOf(user.role());
         User u = userMapper.userCreateDTOtoUser(user, r);
-        String password = passwordEncoder.encode(u.getPassword());
+        String password = "{bcrypt}"+passwordEncoder.encode(u.getPassword());
         u.setPassword(password);
         User userCreated = userRepository.save(u);
         return userCreated.getId();
