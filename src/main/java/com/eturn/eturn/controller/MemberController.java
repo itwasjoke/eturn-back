@@ -16,10 +16,7 @@ public class MemberController {
         this.memberService = memberService;
     }
 
-    @GetMapping
-    public List<Member> getMembers(){
-        return memberService.getMembers();
-    }
+
 
     @PostMapping
     public void create(@RequestParam Long userId, @RequestParam Long turnId, @RequestParam String accessMemberEnum){
