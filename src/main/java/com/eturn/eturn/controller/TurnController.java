@@ -49,6 +49,7 @@ public class TurnController {
         @RequestParam(required = false) String courseId,
         @RequestParam(required = false) String facultyId
     ) {
+
         Map<String, String> params = new HashMap<>();
         params.put("Type", type);
         params.put("Access", access);
@@ -92,8 +93,5 @@ public class TurnController {
         turnService.deleteTurn(idUser,idTurn);
     }
 
-    @GetMapping ("positions/{idTurn}")
-    public List<PositionsDTO> getTurnPositions(@PathVariable Long idTurn){
-        return positionService.getPositonList(idTurn);
-    }
+
 }
