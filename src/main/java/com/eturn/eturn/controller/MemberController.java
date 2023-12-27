@@ -1,12 +1,12 @@
 package com.eturn.eturn.controller;
 
+import com.eturn.eturn.entity.Member;
 import com.eturn.eturn.enums.AccessMemberEnum;
 import com.eturn.eturn.service.MemberService;
 import com.eturn.eturn.service.TurnService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "/member")
@@ -14,6 +14,11 @@ public class MemberController {
     private final MemberService memberService;
     public MemberController(MemberService memberService) {
         this.memberService = memberService;
+    }
+
+    @GetMapping
+    public List<Member> getMembers(){
+        return memberService.getMembers();
     }
 
     @PostMapping

@@ -1,5 +1,6 @@
 package com.eturn.eturn.service;
 
+import com.eturn.eturn.dto.TurnDTO;
 import com.eturn.eturn.dto.UserCreateDTO;
 import com.eturn.eturn.dto.UserDTO;
 import com.eturn.eturn.entity.Turn;
@@ -18,6 +19,12 @@ public interface UserService {
 
     Set<Turn> getUserTurns(Long id);
 
+    List<TurnDTO> getUserTurnsDTO(Long id);
+
     void updateUser(User user);
+
+    User findByLogin(String login);
+
+    Long loginUser(String username, String password);
 //    void addTurn(Long userId, Long turnId);
 }
