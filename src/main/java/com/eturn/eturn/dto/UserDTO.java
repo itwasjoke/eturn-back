@@ -20,4 +20,5 @@ public record UserDTO(
         this.course = course;
         this.department = department;
     }
+
 }
