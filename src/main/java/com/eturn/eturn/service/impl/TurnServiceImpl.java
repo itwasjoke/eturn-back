@@ -189,6 +189,7 @@ public class TurnServiceImpl implements TurnService {
         turnDto.setCountUsers(0);
         Turn turnNew = turnRepository.save(turnDto);
         memberService.createMember(turnNew.getCreator().getId(), turnNew.getId(), AccessMemberEnum.CREATOR);
+        addTurnToUser(turnNew.getId(), userCreator.getId());
         return turnNew.getId();
     }
 
@@ -243,6 +244,7 @@ public class TurnServiceImpl implements TurnService {
         turnRepository.save(turn);
         Set<Turn> turns = user.getTurns();
         turns.add(turn);
+        user.setTurns(turns);
         userService.updateUser(user);
     }
 
