@@ -238,6 +238,9 @@ public class TurnServiceImpl implements TurnService {
     public void addTurnToUser(Long turnId, Long userId) {
         User user = userService.getUserFrom(userId);
         Turn turn = getTurnFrom(turnId);
+        int users = turn.getCountUsers()+1;
+        turn.setCountUsers(users);
+        turnRepository.save(turn);
         Set<Turn> turns = user.getTurns();
         turns.add(turn);
         userService.updateUser(user);
