@@ -17,4 +17,6 @@ public interface MemberService {
     void deleteTurnMembers(Long idTurn);
 
     List<Member> getListMemeberTurn(Long idTurn);
+
+    long getConutByTurn(Long turnId);
 }

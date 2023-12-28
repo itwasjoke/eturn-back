@@ -48,4 +48,9 @@ public class MemberServiceImpl implements MemberService {
     public List<Member> getListMemeberTurn(Long idTurn){
         return memberRepository.getMemberByIdTurn(idTurn);
     }
+
+    @Override
+    public long getConutByTurn(Long turnId) {
+        return memberRepository.countByIdTurn(turnId);
+    }
 }

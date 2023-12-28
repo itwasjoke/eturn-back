@@ -1,6 +1,6 @@
 package com.eturn.eturn.dto.mapper;
 
-import com.eturn.eturn.dto.PositionsDTO;
+import com.eturn.eturn.dto.PositionDTO;
 import com.eturn.eturn.entity.Position;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
@@ -14,17 +14,17 @@ import org.mapstruct.ReportingPolicy;
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
         injectionStrategy = InjectionStrategy.CONSTRUCTOR
 )
-public interface PositionsMapper {
+public interface PositionMapper {
     @Mapping(target="id", source="position.id")
     @Mapping(target="name", source="position.user.name")
-    @Mapping(target="group", source="position.user.idGroup")
-    PositionsDTO positionToPositionDTO(Position position);
+    @Mapping(target="group", source="position.groupName")
+    PositionDTO positionToPositionDTO(Position position);
 
     @Mapping(target="id", source="position.id")
     @Mapping(target="user", source="userTemp")
     @Mapping(target="turn", source="turnTemp")
     @Mapping(target="started", source="startedTmp")
     @Mapping(target="number", source="numberTmp")
-    Position positionDTOToPosition(PositionsDTO position, Turn turnTemp, User userTemp,
-                                   boolean startedTmp,int numberTmp);
+    Position positionDTOToPosition(PositionDTO position, Turn turnTemp, User userTemp,
+                                   boolean startedTmp, int numberTmp);
 }

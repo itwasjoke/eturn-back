@@ -22,6 +22,7 @@ public interface TurnMoreInfoMapper {
     @Mapping(target = "allowedGroups", source = "groups")
     @Mapping(target = "accessTurnType", source = "dto.turnAccess")
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "positions", ignore = true)
     Turn turnMoreDTOToTurn(TurnMoreInfoDTO dto, User user, Set<Group> groups);
     @Mapping(target = "creator", source = "turn.creator.id")
     @Mapping(target = "turnAccess", source = "turn.accessTurnType")

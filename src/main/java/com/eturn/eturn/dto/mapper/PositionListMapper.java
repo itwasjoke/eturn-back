@@ -1,6 +1,6 @@
 package com.eturn.eturn.dto.mapper;
 
-import com.eturn.eturn.dto.PositionsDTO;
+import com.eturn.eturn.dto.PositionDTO;
 import com.eturn.eturn.entity.Position;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
@@ -12,10 +12,10 @@ import java.util.List;
 @Mapper(
         componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
-        uses = PositionsMapper.class,
+        uses = PositionMapper.class,
         injectionStrategy = InjectionStrategy.CONSTRUCTOR
 )
-public interface PositionsListMapper {
-    List<PositionsDTO> map(List<Position> position);
-    List<PositionsDTO> map(Page<Position> position);
+public interface PositionListMapper {
+    List<PositionDTO> map(List<Position> position);
+    List<PositionDTO> map(Page<Position> position);
 }

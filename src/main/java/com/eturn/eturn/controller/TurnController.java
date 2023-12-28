@@ -2,7 +2,6 @@ package com.eturn.eturn.controller;
 
 import com.eturn.eturn.dto.TurnDTO;
 import com.eturn.eturn.dto.TurnMoreInfoDTO;
-import com.eturn.eturn.dto.PositionsDTO;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.service.PositionService;
 import com.eturn.eturn.service.TurnService;

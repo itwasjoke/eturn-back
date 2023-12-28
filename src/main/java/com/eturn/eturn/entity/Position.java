@@ -22,6 +22,8 @@ public class Position {
     @JoinColumn(name="turn_id", nullable = false)
     private Turn turn;
 
+    private String groupName;
+
     private boolean isStarted;
 
     private int number;

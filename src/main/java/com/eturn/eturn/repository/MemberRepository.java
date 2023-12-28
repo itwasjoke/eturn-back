@@ -12,4 +12,5 @@ public interface MemberRepository extends JpaRepository<Member,Long> {
 
     Member getByIdUserAndIdTurn(Long id_user, Long id_turn);
     List<Member> getMemberByIdTurn(Long idTurn);
+    long countByIdTurn(Long idTurn);
 }
