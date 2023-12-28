@@ -186,10 +186,9 @@ public class TurnServiceImpl implements TurnService {
 //        HashSet<User> users = new HashSet<User>();
 //        users.add(userCreator);
 //        turnDto.setUsers(users);
-        turnDto.setCountUsers(1);
+        turnDto.setCountUsers(0);
         Turn turnNew = turnRepository.save(turnDto);
         memberService.createMember(turnNew.getCreator().getId(), turnNew.getId(), AccessMemberEnum.CREATOR);
-        addTurnToUser(turnNew.getId(), userCreator.getId());
         return turnNew.getId();
     }
 
