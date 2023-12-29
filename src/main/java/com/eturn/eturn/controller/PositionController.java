@@ -1,6 +1,7 @@
 package com.eturn.eturn.controller;
 
 import com.eturn.eturn.dto.PositionDTO;
+import com.eturn.eturn.dto.PositionMoreInfoDTO;
 import com.eturn.eturn.service.PositionService;
 import org.springframework.web.bind.annotation.*;
 
@@ -9,7 +10,7 @@ import java.util.List;
 @RestController
 @RequestMapping(value ="/position", produces = "application/json; charset=utf-8")
 public class PositionController {
-     private final PositionService positionService;
+    private final PositionService positionService;
 
     public PositionController(PositionService positionService) {
         this.positionService = positionService;
@@ -19,10 +20,8 @@ public class PositionController {
         return positionService.getPositionById(id);
     }
 
-
-
     @GetMapping(value = "/first")
-    public PositionDTO getUserFirstPosition(@RequestParam Long turnId, @RequestParam Long userId){
+    public PositionMoreInfoDTO getUserFirstPosition(@RequestParam Long turnId, @RequestParam Long userId){
         return positionService.getFirstUserPosition(turnId, userId);
     }
 

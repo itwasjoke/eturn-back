@@ -24,7 +24,7 @@ public class Position {
 
     private String groupName;
 
-    private boolean isStarted;
+    private boolean start;
 
     private int number;
 

@@ -39,8 +39,6 @@ public class UserServiceImpl implements UserService {
     public UserServiceImpl(UserRepository userRepository, FacultyService facultyService, CourseService courseService,
                            GroupService groupService, UserMapper userMapper, TurnListMapper turnListMapper,
                            DepartmentService departmentService) {
-//        this.passwordEncoder = new BCryptPasswordEncoder();
-//        this.passwordEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
         this.userRepository = userRepository;
         this.facultyService = facultyService;
         this.courseService = courseService;
@@ -93,12 +91,6 @@ public class UserServiceImpl implements UserService {
         } else {
             throw new NotFoundException("Пользователя не существует");
         }
-//        if (userRepository.existsById(id)){
-//            return userRepository.getReferenceById(id);
-//        }
-//        else{
-//            throw new NotFoundException("Пользователя не существует");
-//        }
     }
 
     @Override

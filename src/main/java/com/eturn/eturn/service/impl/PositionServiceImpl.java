@@ -1,9 +1,11 @@
 package com.eturn.eturn.service.impl;
 
 import com.eturn.eturn.dto.PositionDTO;
+import com.eturn.eturn.dto.PositionMoreInfoDTO;
 import com.eturn.eturn.dto.UserDTO;
 import com.eturn.eturn.dto.mapper.PositionListMapper;
 import com.eturn.eturn.dto.mapper.PositionMapper;
+import com.eturn.eturn.dto.mapper.PositionMoreInfoMapper;
 import com.eturn.eturn.dto.mapper.TurnMapper;
 import com.eturn.eturn.entity.*;
 import com.eturn.eturn.exception.InvalidDataException;
@@ -24,22 +26,20 @@ public class PositionServiceImpl implements PositionService {
     private final UserService userService;
     private final PositionListMapper positionListMapper;
     private final TurnService turnService;
-    private final TurnMapper turnMapper;
+    private final PositionMoreInfoMapper positionMoreInfoMapper;
     private final PositionMapper positionMapper;
     private final MemberService memberService;
 
 
     public PositionServiceImpl(PositionRepository positionRepository, UserService userService,
-                               PositionListMapper positionListMapper, TurnService turnService,
-                               TurnMapper turnMapper, PositionMapper positionMapper, MemberService memberService) {
+                               PositionListMapper positionListMapper, TurnService turnService, PositionMoreInfoMapper positionMoreInfoMapper, PositionMapper positionMapper, MemberService memberService) {
         this.positionRepository = positionRepository;
         this.userService = userService;
         this.positionListMapper = positionListMapper;
         this.turnService = turnService;
-        this.turnMapper = turnMapper;
+        this.positionMoreInfoMapper = positionMoreInfoMapper;
         this.positionMapper = positionMapper;
         this.memberService = memberService;
-
     }
 
     @Override
@@ -92,7 +92,7 @@ public class PositionServiceImpl implements PositionService {
 
     private long createPosition(Turn turn, User user, UserDTO userDTO, int lastNumber){
         Position newPosition = new Position();
-        newPosition.setStarted(false);
+        newPosition.setStart(false);
         newPosition.setUser(user);
         newPosition.setTurn(turn);
         newPosition.setGroupName(userDTO.group());
@@ -113,8 +113,10 @@ public class PositionServiceImpl implements PositionService {
         }
         Pageable paging = PageRequest.of(page, size);
         Page<Position> positions = positionRepository.findAllByTurn(turn, paging);
-        return positionListMapper.map(positions);
-        //тут ошибку можно бросить
+        if (positions.isEmpty()){
+            throw new NotFoundException("No positions");
+        }
+        else return positionListMapper.map(positions);
     }
 
     @Override
@@ -122,12 +124,13 @@ public class PositionServiceImpl implements PositionService {
         Optional<Position> position = positionRepository.findById(id);
         if (position.isPresent()){
             Position pos = position.get();
-            if (pos.isStarted()){
+            if (pos.isStart()){
                 delete(id);
             }
             else{
-                pos.setStarted(true);
-                positionRepository.save(pos);
+                pos.setStart(true);
+                Position posCreated = positionRepository.save(pos);
+                int n = 0;
             }
 
         }
@@ -147,11 +150,24 @@ public class PositionServiceImpl implements PositionService {
     }
 
     @Override
-    public PositionDTO getFirstUserPosition(Long turnId, Long userId) {
+    public PositionMoreInfoDTO getFirstUserPosition(Long turnId, Long userId) {
         User user = userService.getUserFrom(userId);
         Turn turn = turnService.getTurnFrom(turnId);
         Optional<Position> p = positionRepository.findTopByTurnAndUser(turn, user);
-        return p.map(positionMapper::positionToPositionDTO).orElse(null);
+        Optional<Position> pInTurn = positionRepository.findFirstByTurn(turn);
+        if (p.isPresent() && pInTurn.isPresent()){
+            if (pInTurn.get()==p.get()){
+                int difference = 0;
+                return positionMoreInfoMapper.positionMoreInfoToPositionDTO(p.get(), difference);
+            }
+            else{
+                int difference = p.get().getNumber() - pInTurn.get().getNumber();
+                return positionMoreInfoMapper.positionMoreInfoToPositionDTO(p.get(), difference);
+            }
+        }
+        else{
+            return null;
+        }
     }
 
 }

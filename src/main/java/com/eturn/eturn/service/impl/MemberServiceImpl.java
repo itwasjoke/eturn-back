@@ -7,6 +7,7 @@ import com.eturn.eturn.service.MemberService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,7 +25,6 @@ public class MemberServiceImpl implements MemberService {
         member.setAccessMemberEnum(access);
         member.setIdTurn(turnId);
         member.setIdUser(userId);
-//        turnService.addTurnToUser(turnId, userId);
         memberRepository.save(member);
     }
 

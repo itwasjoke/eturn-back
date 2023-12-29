@@ -176,16 +176,9 @@ public class TurnServiceImpl implements TurnService {
     @Transactional
     @Override
     public Long createTurn(TurnMoreInfoDTO turn) {
-//        var v = validator.validate(turn, TurnDTO.class);
-//        if (!v.isEmpty()){
-//            throw new InvalidDataException("");
-//        }
         User userCreator = userService.getUserFrom(turn.creator());
         Set<Group> groups = groupService.getSetGroups(turn.allowedGroups());
         Turn turnDto = turnMoreInfoMapper.turnMoreDTOToTurn(turn,userCreator, groups);
-//        HashSet<User> users = new HashSet<User>();
-//        users.add(userCreator);
-//        turnDto.setUsers(users);
         turnDto.setCountUsers(0);
         Turn turnNew = turnRepository.save(turnDto);
         memberService.createMember(turnNew.getCreator().getId(), turnNew.getId(), AccessMemberEnum.CREATOR);

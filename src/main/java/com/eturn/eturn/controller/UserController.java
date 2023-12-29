@@ -26,10 +26,6 @@ public class UserController {
     public UserDTO getUser(@PathVariable long id){
         return userService.getUser(id);
     }
-
-//    @GetMapping("/{id}")
-//    public User getUser(@PathVariable("id") User user){return user;}
-
     @PostMapping
     public Long create(@RequestBody UserCreateDTO user){
         return userService.createUser(user);
@@ -44,7 +40,6 @@ public class UserController {
     public List<TurnDTO> getUsersTurns(@PathVariable long id){
         return userService.getUserTurnsDTO(id);
     }
-//CsrfToken
 
     @GetMapping(value = "/login")
     public Long login(@RequestParam String login, @RequestParam String password){
