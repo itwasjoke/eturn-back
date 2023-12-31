@@ -7,6 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -27,5 +29,10 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
     Optional<Position> findTopByTurnAndUser(Turn turn, User user);
 
     long countByTurn(Turn turn);
+
+    @Query(value = "select count(*) from Position p where p.turn = :t and p.number > :num")
+    long countNumbers(@Param("num") int num, @Param("t") Turn t);
+    @Query(value = "select count(*) from Position p where p.turn = :t and p.number < :num")
+    long countNumbersLeft(@Param("num") int num, @Param("t") Turn t);
 
 }

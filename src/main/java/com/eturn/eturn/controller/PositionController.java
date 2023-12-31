@@ -31,7 +31,7 @@ public class PositionController {
         return positionService.getPositonList(idTurn,page);
     }
     @PostMapping
-    public long createPosition(
+    public PositionMoreInfoDTO createPosition(
                              @RequestParam Long idUser,
                              @RequestParam Long idTurn){
         return positionService.createPositionAndSave(idUser,idTurn);
