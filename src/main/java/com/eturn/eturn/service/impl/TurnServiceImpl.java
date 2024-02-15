@@ -15,9 +15,7 @@ import com.eturn.eturn.enums.AccessMemberEnum;
 import com.eturn.eturn.enums.AccessTurnEnum;
 import com.eturn.eturn.enums.RoleEnum;
 import com.eturn.eturn.enums.TurnEnum;
-import com.eturn.eturn.exception.AccessException;
-import com.eturn.eturn.exception.InvalidDataException;
-import com.eturn.eturn.exception.NotFoundException;
+import com.eturn.eturn.exception.*;
 import com.eturn.eturn.repository.TurnRepository;
 import com.eturn.eturn.service.CourseService;
 import com.eturn.eturn.service.FacultyService;
@@ -70,7 +68,6 @@ public class TurnServiceImpl implements TurnService {
     @Override
     public List<Turn> getAllTurns() {
         List<Turn> turns = turnRepository.findAll();
-//        return turnListMapper.map(turns);
         return turns;
     }
 
@@ -81,7 +78,7 @@ public class TurnServiceImpl implements TurnService {
             return turnMapper.turnToTurnDTO(turn.get());
         }
         else{
-            throw new NotFoundException("Очередь не найдена");
+            throw new TurnNotFoundException("No turn in database on getTurn method (TurnServiceImpl.java)");
         }
     }
     @Override
@@ -91,87 +88,83 @@ public class TurnServiceImpl implements TurnService {
             return turn.get();
         }
         else{
-            throw new NotFoundException("Очередь не найдена");
+            throw new UnknownException("No turn in database on getTurnFrom method (TurnServiceImpl.java)");
         }
     }
     @Override
     public List<TurnDTO> getUserTurns(Long idUser, Map<String, String> params) {
-        try {
-            List<Turn> allTurns = turnRepository.findAll();
-            if (allTurns.isEmpty()){
-                throw new NotFoundException("Очередей нет");
-            }
-            Stream<Turn> streamTurns = allTurns.stream();
-            User user = userService.getUserFrom(idUser);
-            if (user.getRoleEnum() == RoleEnum.STUDENT) {
-                streamTurns = streamTurns.filter(
-                        c -> c.getAccessTurnType() == AccessTurnEnum.FOR_STUDENT ||
-                                c.getAccessTurnType() == AccessTurnEnum.FOR_ALLOWED_GROUPS
-                );
-            }
-            if (user.getRoleEnum() == RoleEnum.NO_UNIVERSITY) {
-                streamTurns = streamTurns.filter(c -> c.getAccessTurnType() == AccessTurnEnum.FOR_NO_UNIVERSITY);
-            }
 
-            for (Map.Entry<String, String> entry : params.entrySet()) {
-                String value = entry.getValue();
-                // TODO more exceptions
-                switch (entry.getKey()) {
-                    case "Access" -> {
-                        Set<Turn> userTurns = userService.getUserTurns(idUser);
-                        if (value.equals("participates")) {
-                            streamTurns = streamTurns.filter(userTurns::contains);
-                        } else if (value.equals("available")) {
-                            streamTurns = streamTurns.filter(c -> !userTurns.contains(c) && c.getAccessTurnType() != AccessTurnEnum.FOR_LINK);
-                        } else {
-                            throw new InvalidDataException("Указан неправильный тип очереди");
-                        }
-                    }
-                    case "Type" -> {
-                        TurnEnum type;
-                        if (Objects.equals(value, "org")) {
-                            type = TurnEnum.ORG;
-                        } else if (Objects.equals(value, "edu")) {
-                            type = TurnEnum.EDU;
-                        } else {
-                            throw new InvalidDataException("Указан неправильный тип очереди");
-                        }
-                        streamTurns = streamTurns.filter(c -> c.getTurnType() == type);
-                    }
-                    case "Group" -> {
-                        try {
-                            Group group = groupService.getOneGroup(value);
-                            streamTurns = streamTurns.filter(c -> c.getAllowedGroups().contains(group));
-                        } catch (NotFoundException e) {
-                            throw new InvalidDataException(e.getMessage());
-                        }
-                    }
-                    case "Faculty" -> {
-                        try {
-                            Faculty faculty = facultyService.getOneFaculty(Long.parseLong(value));
-                            streamTurns = streamTurns.filter(c -> c.getAllowedFaculties().contains(faculty));
-                        } catch (NotFoundException e) {
-                            throw new InvalidDataException("Факультет не найден");
-                        }
+        List<Turn> allTurns = turnRepository.findAll();
+        if (allTurns.isEmpty()){
+            throw new TurnNotFoundException("No turn in database on getUserTurns method (TurnServiceImpl.java)");
+        }
+        Stream<Turn> streamTurns = allTurns.stream();
+        User user = userService.getUserFrom(idUser);
+        if (user.getRoleEnum() == RoleEnum.STUDENT) {
+            streamTurns = streamTurns.filter(
+                    c -> c.getAccessTurnType() == AccessTurnEnum.FOR_STUDENT ||
+                            c.getAccessTurnType() == AccessTurnEnum.FOR_ALLOWED_GROUPS
+            );
+        }
+        if (user.getRoleEnum() == RoleEnum.NO_UNIVERSITY) {
+            streamTurns = streamTurns.filter(c -> c.getAccessTurnType() == AccessTurnEnum.FOR_NO_UNIVERSITY);
+        }
 
-                    }
-                    case "Course" -> {
-                        try {
-                            Course course = courseService.getOneCourse(Long.parseLong(value));
-                            streamTurns = streamTurns.filter(c -> c.getAllowedCourses().contains(course));
-                        } catch (NotFoundException e) {
-                            throw new InvalidDataException("Курс не найден");
-                        }
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            String value = entry.getValue();
+            switch (entry.getKey()) {
+                case "Access" -> {
+                    Set<Turn> userTurns = userService.getUserTurns(idUser);
+                    if (value.equals("member_true")) {
+                        streamTurns = streamTurns.filter(userTurns::contains);
+                    } else if (value.equals("member_false")) {
+                        streamTurns = streamTurns.filter(c -> !userTurns.contains(c) && c.getAccessTurnType() != AccessTurnEnum.FOR_LINK);
+                    } else {
+                        throw new InvalidTypeTurnException("In function GetUserTurns (TurnServiceImpl.java) error: Turn type is " + value + ". Value can be: 'member_true' or 'member_false'.");
                     }
                 }
+                case "Type" -> {
+                    TurnEnum type;
+                    if (Objects.equals(value, "org")) {
+                        type = TurnEnum.ORG;
+                    } else if (Objects.equals(value, "edu")) {
+                        type = TurnEnum.EDU;
+                    } else {
+                        throw new InvalidTypeTurnException("In function GetUserTurns (TurnServiceImpl.java) error: Turn type is " + value + ". Value can be: 'org' or 'edu'.");
+                    }
+                    streamTurns = streamTurns.filter(c -> c.getTurnType() == type);
+                }
+                case "Group" -> {
+                    try {
+                        Group group = groupService.getOneGroup(value);
+                        streamTurns = streamTurns.filter(c -> c.getAllowedGroups().contains(group));
+                    } catch (NotFoundException e) {
+                        throw new InvalidDataException(e.getMessage());
+                    }
+                }
+                case "Faculty" -> {
+                    try {
+                        Faculty faculty = facultyService.getOneFaculty(Long.parseLong(value));
+                        streamTurns = streamTurns.filter(c -> c.getAllowedFaculties().contains(faculty));
+                    } catch (NotFoundException e) {
+                        throw new InvalidDataException("Факультет не найден");
+                    }
 
+                }
+                case "Course" -> {
+                    try {
+                        Course course = courseService.getOneCourse(Long.parseLong(value));
+                        streamTurns = streamTurns.filter(c -> c.getAllowedCourses().contains(course));
+                    } catch (NotFoundException e) {
+                        throw new InvalidDataException("Курс не найден");
+                    }
+                }
             }
-            List<Turn> endTurns = streamTurns.toList();
-            return turnListMapper.map(endTurns);
+
         }
-        catch (NotFoundException e){
-            throw new InvalidDataException(e.getMessage());
-        }
+        List<Turn> endTurns = streamTurns.toList();
+        return turnListMapper.map(endTurns);
+
     }
 
     @Override

@@ -2,7 +2,7 @@ package com.eturn.eturn.controller;
 
 import com.eturn.eturn.dto.CourseDTO;
 import com.eturn.eturn.service.CourseService;
-import org.springframework.security.access.prepost.PreAuthorize;
+//import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,13 +18,13 @@ public class CourseController {
     }
 
     @GetMapping
-    @PreAuthorize("GRANT(MEMBER)")
+//    @PreAuthorize("GRANT(MEMBER)")
     public List<CourseDTO> getAllList(){
         return courseService.getAllList();
     }
 
     @PostMapping
-    @PreAuthorize("GRANT(ADMIN)")
+//    @PreAuthorize("GRANT(ADMIN)")
     public Long create(@RequestBody CourseDTO dto){
         return courseService.createCourse(dto);
     }
