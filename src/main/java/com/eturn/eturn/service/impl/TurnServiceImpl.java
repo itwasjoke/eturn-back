@@ -115,6 +115,7 @@ public class TurnServiceImpl implements TurnService {
 
             for (Map.Entry<String, String> entry : params.entrySet()) {
                 String value = entry.getValue();
+                // TODO more exceptions
                 switch (entry.getKey()) {
                     case "Access" -> {
                         Set<Turn> userTurns = userService.getUserTurns(idUser);
@@ -173,8 +174,8 @@ public class TurnServiceImpl implements TurnService {
         }
     }
 
-    @Transactional
     @Override
+    @Transactional
     public Long createTurn(TurnMoreInfoDTO turn) {
         User userCreator = userService.getUserFrom(turn.creator());
         Set<Group> groups = groupService.getSetGroups(turn.allowedGroups());
@@ -186,8 +187,8 @@ public class TurnServiceImpl implements TurnService {
         return turnNew.getId();
     }
 
-    @Transactional
     @Override
+    @Transactional
     public void updateTurn(Long idUser, Turn turn) {
 //        Turn turnUpdated = turnMapper.turnDTOToTurn(turn);
         AccessMemberEnum accessMemberEnum = memberService.getAccess(idUser, turn.getId());
@@ -205,8 +206,8 @@ public class TurnServiceImpl implements TurnService {
             throw new AccessException("Доступ имеет только создатель");
         }
     }
-    @Transactional
     @Override
+    @Transactional
     public void deleteTurn(Long idUser, Long idTurn) {
         AccessMemberEnum access = memberService.getAccess(idUser, idTurn);
         if (access == AccessMemberEnum.CREATOR && turnRepository.existsTurnById(idTurn)) {
@@ -227,8 +228,8 @@ public class TurnServiceImpl implements TurnService {
         turnRepository.save(turn);
     }
 
-    @Transactional
     @Override
+    @Transactional
     public void addTurnToUser(Long turnId, Long userId) {
         User user = userService.getUserFrom(userId);
         Turn turn = getTurnFrom(turnId);
