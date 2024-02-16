@@ -8,8 +8,7 @@ import com.eturn.eturn.dto.mapper.PositionMapper;
 import com.eturn.eturn.dto.mapper.PositionMoreInfoMapper;
 import com.eturn.eturn.dto.mapper.TurnMapper;
 import com.eturn.eturn.entity.*;
-import com.eturn.eturn.exception.InvalidDataException;
-import com.eturn.eturn.exception.NotFoundException;
+import com.eturn.eturn.exception.position.NoCreatePosException;
 import com.eturn.eturn.repository.PositionRepository;
 import com.eturn.eturn.service.*;
 import org.springframework.data.domain.Page;
@@ -17,8 +16,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 public class PositionServiceImpl implements PositionService {
@@ -42,72 +43,140 @@ public class PositionServiceImpl implements PositionService {
         this.memberService = memberService;
     }
 
-    @Override
-    public PositionDTO getPositionById(Long id) {
-        return positionMapper.positionToPositionDTO(positionRepository.getReferenceById(id));
-    }
+    //TODO Надо ли сохранять?
+//    @Override
+//    public PositionDTO getPositionById(Long id) {
+//        Optional<Position> position = positionRepository.findById(id);
+//        if (position.isPresent()){
+//            return positionMapper.positionToPositionDTO(position.get());
+//        }
+//        else throw new
+//    }
 
-    @Override
-    public Optional<Position> getLastPosition(Long idUser, Long idTurn) {
-        User user = userService.getUserFrom(idUser);
-        Turn turn = turnService.getTurnFrom(idTurn);
-        return positionRepository.findFirstByUserAndTurnOrderByNumberDesc(user, turn);
-    }
+//    @Override
+//    public Optional<Position> getLastPosition(Long idUser, Long idTurn) {
+//        User user = userService.getUserFrom(idUser);
+//        Turn turn = turnService.getTurnFrom(idTurn);
+//        return positionRepository.findFirstByUserAndTurnOrderByNumberDesc(user, turn);
+//    }
 
     @Override
     public PositionMoreInfoDTO createPositionAndSave(Long idUser, Long idTurn) {
+
+        // получение основной информации
         Turn turn = turnService.getTurnFrom(idTurn);
         User user = userService.getUserFrom(idUser);
         UserDTO userDTO = userService.getUser(idUser);
 
+        // рассчет участников
         long members = memberService.getConutByTurn(idTurn);
-
-        int permittedCountPeople = 2;
-
-        Optional<Position> ourPosition = positionRepository.findFirstByUserAndTurnOrderByNumberDesc(user, turn);
-        Optional<Position> lastPositionInTurn = positionRepository.findTopByTurnOrderByNumberDesc(turn);
-
-        int lastNumber = lastPositionInTurn.map(Position::getNumber).orElse(0);
-
-        if (members < permittedCountPeople) {
-            if (ourPosition.isPresent()) {
-                return new PositionMoreInfoDTO(null, null, null, false, 0, null, 0);
-            } else {
-                return createPosition(turn, user, userDTO, lastNumber, true);
-            }
-        } else {
-            if (ourPosition.isPresent()) {
-                long countBetween = positionRepository.countNumbers(ourPosition.get().getNumber(), turn);
-                if (countBetween >= permittedCountPeople) {
-                    return createPosition(turn, user, userDTO, lastNumber, false);
-                }
-                else{
-                    int dif = (int) (permittedCountPeople - countBetween);
-                    return new PositionMoreInfoDTO(null, null, null, false, 0, null, dif);
-                }
-            } else {
-                return createPosition(turn, user, userDTO, lastNumber, true);
-            }
+        // если человек меньше, чем разрешенное число,
+        // то за него берется количество участников
+        int PERMITTED_COUNT_PEOPLE_SYSTEM = 2;
+        int PERMITTED_COUNT_PEOPLE = PERMITTED_COUNT_PEOPLE_SYSTEM;
+        if (members < PERMITTED_COUNT_PEOPLE_SYSTEM){
+            PERMITTED_COUNT_PEOPLE = (int) members;
         }
-    }
+        // получение своей первой позиции
+        Optional<Position> ourPosition = positionRepository.findFirstByUserAndTurn(user, turn);
+        // Optional<Position> lastPositionInTurn = positionRepository.findTopByTurnOrderByNumberDesc(turn);
 
-    private PositionMoreInfoDTO createPosition(Turn turn, User user, UserDTO userDTO, int lastNumber, boolean need){
-        Position newPosition = new Position();
-        newPosition.setStart(false);
-        newPosition.setUser(user);
-        newPosition.setTurn(turn);
-        newPosition.setGroupName(userDTO.group());
-        newPosition.setNumber(lastNumber + 1);
-        Position p = positionRepository.save(newPosition);
-        int difference;
-        if (need){
-            difference = (int) positionRepository.countNumbersLeft(p.getNumber(), turn);
+        // получение списка из PERMITTED_COUNT_PEOPLE позиций для поиска нашей позиции
+        Pageable paging = PageRequest.of(0, PERMITTED_COUNT_PEOPLE);
+        Page<Position> positions = positionRepository.findByTurnOrderByIdDesc(turn, paging);
+        Stream<Position> allPositionsForEndStream = positions.get();
+        List<Position> allPositionsForEnd = allPositionsForEndStream.toList();
+//        long countAllPosForEnd = allPositionsForEnd.count();
+
+        // перебор списка
+        final int[] countBeforeUserPosFound = {0}; // количество позиций до появления позиции пользователя
+        final int[] userPosFound = {0}; // появление позиции пользователя
+
+        if (!allPositionsForEnd.isEmpty()) {
+            allPositionsForEnd.forEach((element) -> {
+                if (element.getUser() == user && userPosFound[0] == 0) {
+                    userPosFound[0] = 1;
+                } else if (userPosFound[0] == 0) {
+                    countBeforeUserPosFound[0]++;
+                }
+            });
+        }
+        // проверка на то, что имеется позиция
+        boolean isUserPosExist = userPosFound[0]==1;
+
+        // разница для исключения
+        int differenceForException = PERMITTED_COUNT_PEOPLE - countBeforeUserPosFound[0];
+
+        if (isUserPosExist){
+            // если позиция существует, то делаем исключение
+            throw new NoCreatePosException(String.valueOf(differenceForException));
         }
         else{
-            difference = -1;
+            // вычисляем номер позиции
+            int lastNumberPosition = 1;
+            if (!allPositionsForEnd.isEmpty()){
+                Position lastPosition = allPositionsForEnd.get(0);
+                lastNumberPosition = lastPosition.getNumber()+1;
+            }
+
+            // создаем новую позицию
+            Position newPosition = new Position();
+            newPosition.setStart(false);
+            newPosition.setUser(user);
+            newPosition.setTurn(turn);
+            newPosition.setGroupName(userDTO.group());
+            newPosition.setNumber(lastNumberPosition);
+            Position p = positionRepository.save(newPosition);
+
+            // вычисляем разницу для позиции
+            int differenceForUser = -1;
+            if (ourPosition.isEmpty()){
+                differenceForUser = (int) positionRepository.countNumbersLeft(p.getNumber(), turn);
+            }
+            return positionMoreInfoMapper.positionMoreInfoToPositionDTO(p, differenceForUser);
         }
-        return positionMoreInfoMapper.positionMoreInfoToPositionDTO(p, difference);
+
+
+
+//        if (members < PERMITTED_COUNT_PEOPLE) {
+//            if (ourPosition.isPresent()) {
+//                return new PositionMoreInfoDTO(null, null, null, false, 0, null, 0);
+//            } else {
+//                return createPosition(turn, user, userDTO, lastNumber, true);
+//            }
+//        } else {
+//            if (ourPosition.isPresent()) {
+//                long countBetween = positionRepository.countNumbers(ourPosition.get().getNumber(), turn);
+//                if (countBetween >= PERMITTED_COUNT_PEOPLE) {
+//                    return createPosition(turn, user, userDTO, lastNumber, false);
+//                }
+//                else{
+//                    int dif = (int) (PERMITTED_COUNT_PEOPLE - countBetween);
+//                    return new PositionMoreInfoDTO(null, null, null, false, 0, null, dif);
+//                }
+//            } else {
+//                return createPosition(turn, user, userDTO, lastNumber, true);
+//            }
+//        }
     }
+
+//    private PositionMoreInfoDTO createPosition(Turn turn, User user, UserDTO userDTO, int lastNumber, boolean need){
+//        Position newPosition = new Position();
+//        newPosition.setStart(false);
+//        newPosition.setUser(user);
+//        newPosition.setTurn(turn);
+//        newPosition.setGroupName(userDTO.group());
+//        newPosition.setNumber(lastNumber + 1);
+//        Position p = positionRepository.save(newPosition);
+//        int difference;
+//        if (need){
+//            difference = (int) positionRepository.countNumbersLeft(p.getNumber(), turn);
+//        }
+//        else{
+//            difference = -1;
+//        }
+//        return positionMoreInfoMapper.positionMoreInfoToPositionDTO(p, difference);
+//    }
     @Override
     public List<PositionDTO> getPositonList(Long idTurn, int page) {
         Turn turn = turnService.getTurnFrom(idTurn);

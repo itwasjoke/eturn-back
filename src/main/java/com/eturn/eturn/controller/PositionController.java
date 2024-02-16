@@ -15,10 +15,12 @@ public class PositionController {
     public PositionController(PositionService positionService) {
         this.positionService = positionService;
     }
-    @GetMapping("{id}")
-    public PositionDTO getPosition(@PathVariable Long id){
-        return positionService.getPositionById(id);
-    }
+    // TODO Надо ли сохранять?
+
+    //    @GetMapping("{id}")
+    //    public PositionDTO getPosition(@PathVariable Long id){
+    //        return positionService.getPositionById(id);
+    //    }
 
     @GetMapping(value = "/first")
     public PositionMoreInfoDTO getUserFirstPosition(@RequestParam Long turnId, @RequestParam Long userId){

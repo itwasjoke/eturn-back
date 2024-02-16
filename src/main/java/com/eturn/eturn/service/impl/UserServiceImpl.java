@@ -8,7 +8,9 @@ import com.eturn.eturn.dto.mapper.UserMapper;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
 import com.eturn.eturn.enums.RoleEnum;
-import com.eturn.eturn.exception.NotFoundException;
+import com.eturn.eturn.exception.user.AuthPasswordException;
+import com.eturn.eturn.exception.user.LocalNotFoundUserException;
+import com.eturn.eturn.exception.user.NotFoundUserException;
 import com.eturn.eturn.repository.UserRepository;
 import com.eturn.eturn.service.CourseService;
 import com.eturn.eturn.service.DepartmentService;
@@ -89,7 +91,7 @@ public class UserServiceImpl implements UserService {
             }
             return userMapper.userToUserDTO(user, faculty, course, department, group, role);
         } else {
-            throw new NotFoundException("Пользователя не существует");
+            throw new NotFoundUserException("No user in database on getUser method (UserServiceImpl.java");
         }
     }
 
@@ -99,7 +101,7 @@ public class UserServiceImpl implements UserService {
         if (user.isPresent()) {
             return user.get();
         } else {
-            throw new NotFoundException("Пользователя не существует");
+            throw new LocalNotFoundUserException("No user in database on getUserMethod");
         }
     }
 
@@ -117,17 +119,7 @@ public class UserServiceImpl implements UserService {
         if (user.isPresent()) {
             return user.get().getTurns();
         } else {
-            throw new NotFoundException("User not found");
-        }
-    }
-
-    @Override
-    public List<TurnDTO> getUserTurnsDTO(Long id) {
-        Optional<User> user = userRepository.findById(id);
-        if (user.isPresent()) {
-            return turnListMapper.map(user.get().getTurns().stream().toList());
-        } else {
-            throw new NotFoundException("User not found");
+            throw new LocalNotFoundUserException("No user on getUserTurns method (UserServiceImpl.java");
         }
     }
 
@@ -142,7 +134,7 @@ public class UserServiceImpl implements UserService {
         if (u.isPresent()){
             return u.get();
         }
-        else throw new NotFoundException("User not found");
+        else throw new NotFoundUserException("Auth error on findByLogin method (UserServiceImpl.java");
     }
 
     @Override
@@ -152,9 +144,9 @@ public class UserServiceImpl implements UserService {
             if (u.get().getPassword().equals(password)){
                return u.get().getId();
             }
-            else return -1L;
+            else throw new AuthPasswordException("Auth error password");
         }
-        else return 0L;
+        else throw new NotFoundUserException("Auth error on loginUser method (UserServiceImpl.java");
     }
 //    @Transactional
 //    @Override

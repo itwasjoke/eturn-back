@@ -1,6 +1,5 @@
 package com.eturn.eturn.service.impl;
 
-import com.eturn.eturn.dto.GroupDTO;
 import com.eturn.eturn.dto.TurnDTO;
 import com.eturn.eturn.dto.TurnMoreInfoDTO;
 import com.eturn.eturn.dto.mapper.TurnListMapper;
@@ -15,7 +14,7 @@ import com.eturn.eturn.enums.AccessMemberEnum;
 import com.eturn.eturn.enums.AccessTurnEnum;
 import com.eturn.eturn.enums.RoleEnum;
 import com.eturn.eturn.enums.TurnEnum;
-import com.eturn.eturn.exception.*;
+import com.eturn.eturn.exception.turn.*;
 import com.eturn.eturn.repository.TurnRepository;
 import com.eturn.eturn.service.CourseService;
 import com.eturn.eturn.service.FacultyService;
@@ -68,6 +67,9 @@ public class TurnServiceImpl implements TurnService {
     @Override
     public List<Turn> getAllTurns() {
         List<Turn> turns = turnRepository.findAll();
+        if (turns.isEmpty()){
+            throw new LocalNotFoundTurnException("empty turnList on getAllTurns method (TurnServiceImpl.java");
+        }
         return turns;
     }
 
@@ -78,7 +80,7 @@ public class TurnServiceImpl implements TurnService {
             return turnMapper.turnToTurnDTO(turn.get());
         }
         else{
-            throw new TurnNotFoundException("No turn in database on getTurn method (TurnServiceImpl.java)");
+            throw new NotFoundTurnException("No turn in database on getTurn method (TurnServiceImpl.java)");
         }
     }
     @Override
@@ -88,7 +90,7 @@ public class TurnServiceImpl implements TurnService {
             return turn.get();
         }
         else{
-            throw new UnknownException("No turn in database on getTurnFrom method (TurnServiceImpl.java)");
+            throw new LocalNotFoundTurnException("No turn in database on getTurnFrom method (TurnServiceImpl.java)");
         }
     }
     @Override
@@ -96,7 +98,7 @@ public class TurnServiceImpl implements TurnService {
 
         List<Turn> allTurns = turnRepository.findAll();
         if (allTurns.isEmpty()){
-            throw new TurnNotFoundException("No turn in database on getUserTurns method (TurnServiceImpl.java)");
+            throw new NotFoundAllTurnsException("No turn in database on getUserTurns method (TurnServiceImpl.java)");
         }
         Stream<Turn> streamTurns = allTurns.stream();
         User user = userService.getUserFrom(idUser);
@@ -135,34 +137,24 @@ public class TurnServiceImpl implements TurnService {
                     streamTurns = streamTurns.filter(c -> c.getTurnType() == type);
                 }
                 case "Group" -> {
-                    try {
-                        Group group = groupService.getOneGroup(value);
-                        streamTurns = streamTurns.filter(c -> c.getAllowedGroups().contains(group));
-                    } catch (NotFoundException e) {
-                        throw new InvalidDataException(e.getMessage());
-                    }
+                    Group group = groupService.getOneGroup(value);
+                    streamTurns = streamTurns.filter(c -> c.getAllowedGroups().contains(group));
                 }
                 case "Faculty" -> {
-                    try {
-                        Faculty faculty = facultyService.getOneFaculty(Long.parseLong(value));
-                        streamTurns = streamTurns.filter(c -> c.getAllowedFaculties().contains(faculty));
-                    } catch (NotFoundException e) {
-                        throw new InvalidDataException("Факультет не найден");
-                    }
-
+                    Faculty faculty = facultyService.getOneFaculty(Long.parseLong(value));
+                    streamTurns = streamTurns.filter(c -> c.getAllowedFaculties().contains(faculty));
                 }
                 case "Course" -> {
-                    try {
-                        Course course = courseService.getOneCourse(Long.parseLong(value));
-                        streamTurns = streamTurns.filter(c -> c.getAllowedCourses().contains(course));
-                    } catch (NotFoundException e) {
-                        throw new InvalidDataException("Курс не найден");
-                    }
+                    Course course = courseService.getOneCourse(Long.parseLong(value));
+                    streamTurns = streamTurns.filter(c -> c.getAllowedCourses().contains(course));
                 }
             }
 
         }
         List<Turn> endTurns = streamTurns.toList();
+        if (endTurns.isEmpty()){
+            throw new NotFoundAllTurnsException("Search filters resulted in zero results.");
+        }
         return turnListMapper.map(endTurns);
 
     }
@@ -192,11 +184,11 @@ public class TurnServiceImpl implements TurnService {
                 turnRepository.save(turnFromDb);
             }
             else{
-                throw new InvalidDataException("Очередь не найдена");
+                throw new NotFoundTurnException("No turn in database on getTurn method (TurnServiceImpl.java)");
             }
         }
         else{
-            throw new AccessException("Доступ имеет только создатель");
+            throw new NoAccessUpdateTurnException("Only creator can update turn information on updateTurn method (TurnServiceImpl.java)");
         }
     }
     @Override
@@ -207,10 +199,10 @@ public class TurnServiceImpl implements TurnService {
             memberService.deleteTurnMembers(idTurn);
             turnRepository.deleteTurnById(idTurn);
         } else if (access != AccessMemberEnum.CREATOR){
-            throw new AccessException("Удалить очередь может только создатель");
+            throw new NoAccessDeleteTurnException("Only creator can delete turn information on deleteTurn method (TurnServiceImpl.java)");
         }
         else{
-            throw new InvalidDataException("Очередь не найдена");
+            throw new NotFoundTurnException("No turn in database on deleteTurn method (TurnServiceImpl.java)");
         }
     }
 

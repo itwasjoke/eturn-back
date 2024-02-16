@@ -19,8 +19,6 @@ public interface UserService {
 
     Set<Turn> getUserTurns(Long id);
 
-    List<TurnDTO> getUserTurnsDTO(Long id);
-
     void updateUser(User user);
 
     User findByLogin(String login);

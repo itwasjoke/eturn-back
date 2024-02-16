@@ -1,4 +1,4 @@
-package com.eturn.eturn.exception;
+package com.eturn.eturn.exception.turn;
 
 public class InvalidTypeTurnException extends RuntimeException{
     public InvalidTypeTurnException(String s){

@@ -9,10 +9,10 @@ import java.util.Optional;
 
 
 public interface PositionService {
-    PositionDTO getPositionById(Long id);
+//    PositionDTO getPositionById(Long id);
 
     // TODO int pageSize, int pageNumber
-    Optional<Position> getLastPosition(Long idUser, Long idTurn);
+//    Optional<Position> getLastPosition(Long idUser, Long idTurn);
 
     PositionMoreInfoDTO createPositionAndSave(Long idUser, Long idTurn);
 

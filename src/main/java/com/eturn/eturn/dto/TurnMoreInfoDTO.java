@@ -3,16 +3,17 @@ package com.eturn.eturn.dto;
 import com.eturn.eturn.entity.*;
 import com.eturn.eturn.enums.AccessTurnEnum;
 import com.eturn.eturn.enums.TurnEnum;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.Set;
 
 public record TurnMoreInfoDTO(
         Long id,
-        String name,
+        @NotNull String name,
         String description,
-        Long creator,
-        TurnEnum turnType,
-        AccessTurnEnum turnAccess,
+        @NotNull Long creator,
+        @NotNull TurnEnum turnType,
+        @NotNull AccessTurnEnum turnAccess,
         Set<GroupDTO> allowedGroups,
         Set<Faculty> allowedFaculties,
         Set<Department> allowedDepartments,

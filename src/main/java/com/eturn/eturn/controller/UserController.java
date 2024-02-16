@@ -36,11 +36,6 @@ public class UserController {
 
     }
 
-    @GetMapping(value = "/turns/{id}")
-    public List<TurnDTO> getUsersTurns(@PathVariable long id){
-        return userService.getUserTurnsDTO(id);
-    }
-
     @GetMapping(value = "/login")
     public Long login(@RequestParam String login, @RequestParam String password){
         return userService.loginUser(login,password);

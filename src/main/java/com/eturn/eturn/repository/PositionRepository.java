@@ -17,10 +17,11 @@ import java.util.Optional;
 @Repository
 public interface PositionRepository extends JpaRepository<Position, Long> {
 
-    Optional<Position> findFirstByUserAndTurnOrderByNumberDesc(User user,Turn turn);
+    Optional<Position> findFirstByUserAndTurn(User user,Turn turn);
     List<Position> getPositionByTurn(Turn turn);
     Page<Position> findAllByTurn(Turn turn,Pageable pageable);
 
+    Page<Position> findByTurnOrderByIdDesc(Turn turn, Pageable page);
     Optional<Position> findTopByTurnOrderByNumberDesc(Turn turn); //findLast
     Optional<Position> findFirstByTurnOrderByNumber(Turn turn); //findLast
 
