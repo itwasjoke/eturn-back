@@ -4,12 +4,14 @@ import com.eturn.eturn.dto.CourseDTO;
 import com.eturn.eturn.dto.mapper.CourseListMapper;
 import com.eturn.eturn.dto.mapper.CourseMapper;
 import com.eturn.eturn.entity.Course;
-import com.eturn.eturn.exception.InvalidDataException;
+import com.eturn.eturn.exception.course.AlreadyExistCourseException;
+import com.eturn.eturn.exception.course.NotFoundCourseException;
 import com.eturn.eturn.repository.CourseRepository;
 import com.eturn.eturn.service.CourseService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CourseServiceImpl implements CourseService {
@@ -26,7 +28,11 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public Course getOneCourse(Long id) {
-        return courseRepository.getReferenceById(id);
+        Optional<Course> course = courseRepository.findById(id);
+        if (course.isPresent()){
+            return course.get();
+        }
+        else throw new NotFoundCourseException("Cannot get course by ID.");
     }
 
     @Override
@@ -36,7 +42,7 @@ public class CourseServiceImpl implements CourseService {
             return c.getId();
         }
         else{
-            throw new InvalidDataException("Такой курс уже существует");
+            throw new AlreadyExistCourseException("Course is exist.");
         }
     }
 

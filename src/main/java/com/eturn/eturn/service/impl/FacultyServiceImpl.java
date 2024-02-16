@@ -4,8 +4,8 @@ import com.eturn.eturn.dto.FacultyDTO;
 import com.eturn.eturn.dto.mapper.FacultyListMapper;
 import com.eturn.eturn.dto.mapper.FacultyMapper;
 import com.eturn.eturn.entity.Faculty;
-import com.eturn.eturn.exception.InvalidDataException;
-import com.eturn.eturn.exception.NotFoundException;
+import com.eturn.eturn.exception.faculty.AlreadyExistFacultyException;
+import com.eturn.eturn.exception.faculty.NotFoundFacultyException;
 import com.eturn.eturn.repository.FacultyRepository;
 import com.eturn.eturn.service.FacultyService;
 import org.springframework.stereotype.Service;
@@ -30,7 +30,7 @@ public class FacultyServiceImpl implements FacultyService {
         if (facultyRepository.existsById(id)) {
             return facultyRepository.getReferenceById(id);
         } else {
-            throw new NotFoundException("Факультет не найден");
+            throw new NotFoundFacultyException("Cannot get faculty by ID.");
         }
     }
 
@@ -41,7 +41,7 @@ public class FacultyServiceImpl implements FacultyService {
            return f.getId();
        }
        else{
-           throw new InvalidDataException("Факультет уже существует");
+           throw new AlreadyExistFacultyException("Cannot create Faculty because it exists");
        }
     }
 

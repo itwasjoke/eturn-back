@@ -1,5 +1,15 @@
 package com.eturn.eturn.exception.handler;
 
+import com.eturn.eturn.exception.course.AlreadyExistCourseException;
+import com.eturn.eturn.exception.course.NotFoundCourseException;
+import com.eturn.eturn.exception.faculty.AlreadyExistFacultyException;
+import com.eturn.eturn.exception.faculty.NotFoundFacultyException;
+import com.eturn.eturn.exception.group.AlreadyExistGroupException;
+import com.eturn.eturn.exception.group.NotFoundGroupException;
+import com.eturn.eturn.exception.member.NotFoundMemberException;
+import com.eturn.eturn.exception.member.UnknownMemberException;
+import com.eturn.eturn.exception.position.NoCreatePosException;
+import com.eturn.eturn.exception.position.NotFoundPosException;
 import com.eturn.eturn.exception.turn.*;
 import com.eturn.eturn.exception.user.AuthPasswordException;
 import com.eturn.eturn.exception.user.LocalNotFoundUserException;
@@ -69,8 +79,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(LocalNotFoundUserException.class)
     public ResponseEntity<Object> handleLocalNotFoundUserException(LocalNotFoundUserException e, WebRequest request) {
         log.error("Error with this message: " + e.getMessage());
-        String body = "Ошибка 400. Не можем выполнить запрос, потому что Вы хотите использовать очередь, которая не существует. Обновите страницу или сообщите в техническую поддержку.";
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+        String body = "Ошибка 400. Не можем выполнить запрос, потому что Вы хотите использовать пользователя, которого не существует. Пройдите авторизацию заново.";
+        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
     @ExceptionHandler(AuthPasswordException.class)
@@ -84,6 +94,87 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     // POSITIONS
     //
 
+    @ExceptionHandler(NoCreatePosException.class)
+    public ResponseEntity<Object> handleNoCreatePosException(NoCreatePosException e, WebRequest request) {
+        String body = "Вы уже вставали в очередь недавно. Вы сможете занять место через " + e.getMessage() +" позиций.";
+        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
 
+    @ExceptionHandler(NotFoundPosException.class)
+    public ResponseEntity<Object> handleNotFoundPosException(NotFoundPosException e, WebRequest request) {
+        String body = "Позиции не найдены.";
+        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+    }
+
+    //
+    // MEMBER
+    //
+
+    @ExceptionHandler(NotFoundMemberException.class)
+    public ResponseEntity<Object> handleNotFoundMemberException(NotFoundMemberException e, WebRequest request) {
+        String body = "Участник очереди не найден.";
+        log.error("Error with this message: " + e.getMessage());
+        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+    }
+
+    @ExceptionHandler(UnknownMemberException.class)
+    public ResponseEntity<Object> handleUnknownMemberException(UnknownMemberException e, WebRequest request) {
+        String body = "Непредвиденная ошибка.";
+        log.error("Error with this message: " + e.getMessage());
+        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
+    }
+
+    //
+    // GROUP
+    //
+
+    @ExceptionHandler(NotFoundGroupException.class)
+    public ResponseEntity<Object> handleNotFoundGroupException(NotFoundGroupException e, WebRequest request) {
+        String body = "Группа не найдена.";
+        log.error("Error with this message: " + e.getMessage());
+        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+    }
+
+    @ExceptionHandler(AlreadyExistGroupException.class)
+    public ResponseEntity<Object> handleAlreadyExistGroupException(AlreadyExistGroupException e, WebRequest request) {
+        String body = "Такая группа уже существует.";
+        log.error("Error with this message: " + e.getMessage());
+        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    //
+    // FACULTY
+    //
+
+    @ExceptionHandler(NotFoundFacultyException.class)
+    public ResponseEntity<Object> handleNotFoundFacultyException(NotFoundFacultyException e, WebRequest request) {
+        String body = "Факультет не найден.";
+        log.error("Error with this message: " + e.getMessage());
+        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+    }
+
+    @ExceptionHandler(AlreadyExistFacultyException.class)
+    public ResponseEntity<Object> handleAlreadyExistFacultyException(AlreadyExistFacultyException e, WebRequest request) {
+        String body = "Такой факультет уже существует.";
+        log.error("Error with this message: " + e.getMessage());
+        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    //
+    // COURSE
+    //
+    @ExceptionHandler(NotFoundCourseException.class)
+    public ResponseEntity<Object> handleNotFoundCourseException(NotFoundCourseException e, WebRequest request) {
+        String body = "Курс не найден.";
+        log.error("Error with this message: " + e.getMessage());
+        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+    }
+
+    @ExceptionHandler(AlreadyExistCourseException.class)
+    public ResponseEntity<Object> handleAlreadyExistCourseException(AlreadyExistCourseException e, WebRequest request) {
+        String body = "Такой курс уже существует.";
+        log.error("Error with this message: " + e.getMessage());
+        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
 
 }

@@ -4,7 +4,8 @@ import com.eturn.eturn.dto.GroupDTO;
 import com.eturn.eturn.dto.mapper.GroupListMapper;
 import com.eturn.eturn.dto.mapper.GroupMapper;
 import com.eturn.eturn.entity.Group;
-import com.eturn.eturn.exception.NotFoundException;
+import com.eturn.eturn.exception.group.AlreadyExistGroupException;
+import com.eturn.eturn.exception.group.NotFoundGroupException;
 import com.eturn.eturn.repository.GroupRepository;
 import com.eturn.eturn.service.GroupService;
 import org.springframework.stereotype.Service;
@@ -38,7 +39,7 @@ public class GroupServiceImpl implements GroupService {
             return groupRepository.save(groupDb).getId();
         }
         else{
-            return null;
+            throw new AlreadyExistGroupException("group already exist");
         }
     }
 
@@ -48,7 +49,7 @@ public class GroupServiceImpl implements GroupService {
             return groupRepository.getByNumber(number);
         }
         else{
-            throw new NotFoundException("Группа не найдена");
+            throw new NotFoundGroupException("Cannot find group by NUMBER.");
         }
     }
 
@@ -59,7 +60,7 @@ public class GroupServiceImpl implements GroupService {
                 return group.get();
             }
             else{
-                throw new NotFoundException("Группа не найдена");
+                throw new NotFoundGroupException("Cannot find group by ID.");
             }
     }
 
@@ -69,7 +70,7 @@ public class GroupServiceImpl implements GroupService {
             return groupMapper.groupToDTO(groupRepository.getByNumber(number));
         }
         else{
-            throw new NotFoundException("Группа не найдена");
+            throw new NotFoundGroupException("Cannot find group by FROM DTO.");
         }
     }
 
@@ -82,7 +83,7 @@ public class GroupServiceImpl implements GroupService {
                 groupSet.add(groupDb.get());
             }
             else{
-                throw new NotFoundException("Группа не найдена");
+                throw new NotFoundGroupException("Cannot find set of groups by ID.");
             }
         }
         return groupSet;

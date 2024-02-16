@@ -1,7 +1,6 @@
 package com.eturn.eturn.service.impl;
 
 import com.eturn.eturn.entity.Department;
-import com.eturn.eturn.exception.NotFoundException;
 import com.eturn.eturn.repository.DepartmentRepository;
 import com.eturn.eturn.service.DepartmentService;
 import org.springframework.stereotype.Service;
@@ -19,11 +18,6 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     public Department getById(Long id) {
         Optional<Department> d = departmentRepository.findById(id);
-        if (d.isPresent()){
-            return d.get();
-        }
-        else{
-            throw new NotFoundException("Кафедра не найдена.");
-        }
+        return d.orElse(null);
     }
 }

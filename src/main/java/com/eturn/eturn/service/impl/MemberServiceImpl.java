@@ -2,6 +2,8 @@ package com.eturn.eturn.service.impl;
 
 import com.eturn.eturn.entity.Member;
 import com.eturn.eturn.enums.AccessMemberEnum;
+import com.eturn.eturn.exception.member.UnknownMemberException;
+import com.eturn.eturn.exception.user.NotFoundUserException;
 import com.eturn.eturn.repository.MemberRepository;
 import com.eturn.eturn.service.MemberService;
 import org.springframework.stereotype.Service;
@@ -21,16 +23,26 @@ public class MemberServiceImpl implements MemberService {
     @Transactional
     @Override
     public void createMember(Long userId, Long turnId, AccessMemberEnum access) {
-        Member member = new Member();
-        member.setAccessMemberEnum(access);
-        member.setIdTurn(turnId);
-        member.setIdUser(userId);
-        memberRepository.save(member);
+        try {
+            Member member = new Member();
+            member.setAccessMemberEnum(access);
+            member.setIdTurn(turnId);
+            member.setIdUser(userId);
+            memberRepository.save(member);
+        }
+        catch(Exception e){
+            throw new UnknownMemberException("Cannot create member on createMember method MemberServiceImpl.java");
+        }
     }
 
     @Override
     public Member getMember(Long idUser, Long idTurn) {
-        return memberRepository.getByIdUserAndIdTurn(idUser,idTurn);
+        try{
+            return memberRepository.getByIdUserAndIdTurn(idUser,idTurn);
+        } catch (RuntimeException e){
+            throw new NotFoundUserException("Member not found in getMember method (MemberServiceImpl.java)");
+        }
+
     }
 
     @Override
@@ -41,16 +53,29 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public void deleteTurnMembers(Long idTurn) {
-        memberRepository.deleteByIdTurn(idTurn);
+        try{
+            memberRepository.deleteByIdTurn(idTurn);
+        } catch(RuntimeException e){
+            throw new UnknownMemberException("Cannot delete member on createMember method MemberServiceImpl.java " + e.getMessage());
+        }
+
     }
 
     @Override
     public List<Member> getListMemeberTurn(Long idTurn){
-        return memberRepository.getMemberByIdTurn(idTurn);
+        try {
+            return memberRepository.getMemberByIdTurn(idTurn);
+        } catch(RuntimeException e){
+            throw new UnknownMemberException("Cannot get member on createMember method MemberServiceImpl.java " + e.getMessage());
+        }
     }
 
     @Override
     public long getConutByTurn(Long turnId) {
-        return memberRepository.countByIdTurn(turnId);
+        try {
+            return memberRepository.countByIdTurn(turnId);
+        } catch(RuntimeException e){
+            throw new UnknownMemberException("Cannot get count member on createMember method MemberServiceImpl.java " + e.getMessage());
+        }
     }
 }

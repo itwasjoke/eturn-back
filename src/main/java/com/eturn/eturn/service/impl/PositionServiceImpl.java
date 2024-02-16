@@ -9,6 +9,7 @@ import com.eturn.eturn.dto.mapper.PositionMoreInfoMapper;
 import com.eturn.eturn.dto.mapper.TurnMapper;
 import com.eturn.eturn.entity.*;
 import com.eturn.eturn.exception.position.NoCreatePosException;
+import com.eturn.eturn.exception.position.NotFoundPosException;
 import com.eturn.eturn.repository.PositionRepository;
 import com.eturn.eturn.service.*;
 import org.springframework.data.domain.Page;
@@ -191,7 +192,7 @@ public class PositionServiceImpl implements PositionService {
         Pageable paging = PageRequest.of(page, size);
         Page<Position> positions = positionRepository.findAllByTurn(turn, paging);
         if (positions.isEmpty()){
-            throw new NotFoundException("No positions");
+            throw new NotFoundPosException("No positions found");
         }
         else return positionListMapper.map(positions);
     }
@@ -209,7 +210,9 @@ public class PositionServiceImpl implements PositionService {
                 Position posCreated = positionRepository.save(pos);
                 int n = 0;
             }
-
+        }
+        else{
+            throw new NotFoundPosException("No positions found");
         }
 
     }
@@ -222,7 +225,7 @@ public class PositionServiceImpl implements PositionService {
             positionRepository.delete(pos);
         }
         else{
-            throw new NotFoundException("Позиция не найдена");
+            throw new NotFoundPosException("No positions found");
         }
     }
 
@@ -243,7 +246,7 @@ public class PositionServiceImpl implements PositionService {
             }
         }
         else{
-            return null;
+            throw new NotFoundPosException("No positions found");
         }
     }
 
