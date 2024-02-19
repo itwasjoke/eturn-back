@@ -6,6 +6,7 @@ import com.eturn.eturn.dto.UserDTO;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
 import com.eturn.eturn.enums.RoleEnum;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,4 +26,10 @@ public interface UserService {
 
     Long loginUser(String username, String password);
 //    void addTurn(Long userId, Long turnId);
+
+    UserDetailsService userDetailsService();
+
+    User getCurrentUser();
+
+
 }

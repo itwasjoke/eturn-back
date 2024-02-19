@@ -1,6 +1,5 @@
 package com.eturn.eturn.service.impl;
 
-import com.eturn.eturn.dto.TurnDTO;
 import com.eturn.eturn.dto.UserCreateDTO;
 import com.eturn.eturn.dto.UserDTO;
 import com.eturn.eturn.dto.mapper.TurnListMapper;
@@ -20,9 +19,10 @@ import com.eturn.eturn.service.UserService;
 //import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 //import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 //import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -107,6 +107,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Long createUser(UserCreateDTO user) {
+        if (userRepository.existsByLogin(user.login())){
+            // TODO do exception
+            throw new RuntimeException("fuck you");
+        }
         RoleEnum r = RoleEnum.valueOf(user.role());
         User u = userMapper.userCreateDTOtoUser(user, r);
         User userCreated = userRepository.save(u);
@@ -147,6 +151,19 @@ public class UserServiceImpl implements UserService {
             else throw new AuthPasswordException("Auth error password");
         }
         else throw new NotFoundUserException("Auth error on loginUser method (UserServiceImpl.java");
+    }
+
+
+    @Override
+    public UserDetailsService userDetailsService() {
+        return this::findByLogin;
+    }
+
+    @Override
+    public User getCurrentUser() {
+        // Получение имени пользователя из контекста Spring Security
+        var username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return findByLogin(username);
     }
 //    @Transactional
 //    @Override
