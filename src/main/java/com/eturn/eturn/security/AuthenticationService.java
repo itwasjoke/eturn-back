@@ -23,7 +23,6 @@ public class AuthenticationService {
     }
 
     public JwtAuthenticationResponse signUp(UserCreateDTO userCreateDTO) {
-
         var user = User.builder()
                 .username(userCreateDTO.login())
                 .password(passwordEncoder.encode(userCreateDTO.password()))
