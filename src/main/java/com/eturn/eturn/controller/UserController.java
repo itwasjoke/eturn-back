@@ -26,10 +26,10 @@ public class UserController {
     public UserDTO getUser(@PathVariable long id){
         return userService.getUser(id);
     }
-    @PostMapping
-    public Long create(@RequestBody UserCreateDTO user){
-        return userService.createUser(user);
-    }
+//    @PostMapping
+//    public Long create(@RequestBody UserCreateDTO user){
+//        return userService.createUser(user);
+//    }
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable("id") User user){

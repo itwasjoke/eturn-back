@@ -108,8 +108,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Long createUser(UserCreateDTO user) {
         if (userRepository.existsByLogin(user.login())){
-            // TODO do exception
-            throw new RuntimeException("fuck you");
+            throw new RuntimeException("This user already exists");
         }
         RoleEnum r = RoleEnum.valueOf(user.role());
         User u = userMapper.userCreateDTOtoUser(user, r);

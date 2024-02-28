@@ -1,10 +1,13 @@
 package com.eturn.eturn.security;
 
 import com.eturn.eturn.dto.UserCreateDTO;
+import com.eturn.eturn.dto.mapper.UserMapper;
+import com.eturn.eturn.entity.User;
+import com.eturn.eturn.enums.RoleEnum;
 import com.eturn.eturn.service.UserService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.User;
+//import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -23,15 +26,28 @@ public class AuthenticationService {
     }
 
     public JwtAuthenticationResponse signUp(UserCreateDTO userCreateDTO) {
-        var user = User.builder()
-                .username(userCreateDTO.login())
-                .password(passwordEncoder.encode(userCreateDTO.password()))
-                .roles(userCreateDTO.role())
-                .build();
 
-        userService.createUser(userCreateDTO);
+//        com.eturn.eturn.entity.User user = User.builder()
+//                .username(userCreateDTO.login())
+//                .password(passwordEncoder.encode(userCreateDTO.password()))
+//                .roles(userCreateDTO.role())
+//                .build();
+        RoleEnum r = RoleEnum.valueOf(userCreateDTO.role());
+        String password = passwordEncoder.encode(userCreateDTO.password());
+        UserCreateDTO newDtoUser = new UserCreateDTO(
+                userCreateDTO.name(),
+                userCreateDTO.role(),
+                userCreateDTO.facultyId(),
+                userCreateDTO.groupId(),
+                userCreateDTO.courseId(),
+                userCreateDTO.departmentId(),
+                userCreateDTO.login(),
+                password
+        );
+        long id = userService.createUser(newDtoUser);
+        User user = userService.getUserFrom(id);
 
-        var jwt = jwtService.generateToken(user);
+        var jwt = "Bearer "+jwtService.generateToken(user);
         return new JwtAuthenticationResponse(jwt);
     }
 
@@ -51,7 +67,7 @@ public class AuthenticationService {
                 .userDetailsService()
                 .loadUserByUsername(login);
 
-        var jwt = jwtService.generateToken(user);
+        var jwt = "Bearer "+jwtService.generateToken(user);
         return new JwtAuthenticationResponse(jwt);
     }
 }

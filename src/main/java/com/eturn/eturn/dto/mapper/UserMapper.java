@@ -27,5 +27,6 @@ public interface UserMapper {
     @Mapping(target = "idCourse", source = "dto.courseId")
     @Mapping(target = "idDepartment", source = "dto.departmentId")
     @Mapping(target = "idFaculty", source = "dto.facultyId")
+//    @Mapping(target = "password", source = "passwordEncode")
     User userCreateDTOtoUser(UserCreateDTO dto, RoleEnum role);
     }

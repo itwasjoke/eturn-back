@@ -2,6 +2,7 @@ package com.eturn.eturn.controller;
 
 import com.eturn.eturn.dto.FacultyDTO;
 import com.eturn.eturn.service.FacultyService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,10 +17,12 @@ public class FacultyController {
     }
 
     @GetMapping
+//    @PreAuthorize("hasRole('EMPLOYEE')")
     private List<FacultyDTO> getAll(){
         return facultyService.getAllList();
     }
     @PostMapping
+//    @PreAuthorize("hasRole('EMPLOYEE')")
     private Long create(@RequestBody FacultyDTO dto){
         return facultyService.createFaculty(dto);
     }
