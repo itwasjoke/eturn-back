@@ -62,12 +62,12 @@ public class PositionServiceImpl implements PositionService {
 //    }
 
     @Override
-    public PositionMoreInfoDTO createPositionAndSave(Long idUser, Long idTurn) {
+    public PositionMoreInfoDTO createPositionAndSave(String login, Long idTurn) {
 
         // получение основной информации
         Turn turn = turnService.getTurnFrom(idTurn);
-        User user = userService.getUserFrom(idUser);
-        UserDTO userDTO = userService.getUser(idUser);
+        UserDTO userDTO = userService.getUser(login);
+        User user = userService.getUserFrom(userDTO.id());
 
         // рассчет участников
         long members = memberService.getConutByTurn(idTurn);

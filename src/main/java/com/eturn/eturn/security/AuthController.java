@@ -1,11 +1,10 @@
 package com.eturn.eturn.security;
 
 import com.eturn.eturn.dto.UserCreateDTO;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -15,6 +14,16 @@ public class AuthController {
 
     public AuthController(AuthenticationService authenticationService) {
         this.authenticationService = authenticationService;
+    }
+
+    @GetMapping("/test")
+    String getGreetings(@RequestParam String text, HttpServletRequest request) {
+        // Получаем результат аутентификации
+        var authentication = (Authentication) request.getUserPrincipal();
+        // Получаем информацию о пользователе
+        var userDetails = (UserDetails) authentication.getPrincipal();
+        // Используем
+        return "Hello "+userDetails.getUsername()+" "+text;
     }
 
     @PostMapping("/sign-up")

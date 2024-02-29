@@ -14,7 +14,7 @@ import java.util.Set;
 
 public interface UserService {
     RoleEnum checkRoot(Long id);
-    UserDTO getUser(Long id);
+    UserDTO getUser(String login);
     User getUserFrom(Long id);
     Long createUser(UserCreateDTO user);
 

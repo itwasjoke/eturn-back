@@ -94,14 +94,14 @@ public class TurnServiceImpl implements TurnService {
         }
     }
     @Override
-    public List<TurnDTO> getUserTurns(Long idUser, Map<String, String> params) {
+    public List<TurnDTO> getUserTurns(String login, Map<String, String> params) {
 
         List<Turn> allTurns = turnRepository.findAll();
         if (allTurns.isEmpty()){
             throw new NotFoundAllTurnsException("No turn in database on getUserTurns method (TurnServiceImpl.java)");
         }
         Stream<Turn> streamTurns = allTurns.stream();
-        User user = userService.getUserFrom(idUser);
+        User user = userService.findByLogin(login);
         if (user.getRoleEnum() == RoleEnum.STUDENT) {
             streamTurns = streamTurns.filter(
                     c -> c.getAccessTurnType() == AccessTurnEnum.FOR_STUDENT ||
@@ -116,7 +116,7 @@ public class TurnServiceImpl implements TurnService {
             String value = entry.getValue();
             switch (entry.getKey()) {
                 case "Access" -> {
-                    Set<Turn> userTurns = userService.getUserTurns(idUser);
+                    Set<Turn> userTurns = userService.getUserTurns(user.getId());
                     if (value.equals("member_true")) {
                         streamTurns = streamTurns.filter(userTurns::contains);
                     } else if (value.equals("member_false")) {
@@ -168,7 +168,7 @@ public class TurnServiceImpl implements TurnService {
         turnDto.setCountUsers(0);
         Turn turnNew = turnRepository.save(turnDto);
         memberService.createMember(turnNew.getCreator().getId(), turnNew.getId(), AccessMemberEnum.CREATOR);
-        addTurnToUser(turnNew.getId(), userCreator.getId());
+        addTurnToUser(turnNew.getId(), userCreator.getLogin());
         return turnNew.getId();
     }
 
@@ -215,8 +215,8 @@ public class TurnServiceImpl implements TurnService {
 
     @Override
     @Transactional
-    public void addTurnToUser(Long turnId, Long userId) {
-        User user = userService.getUserFrom(userId);
+    public void addTurnToUser(Long turnId, String login) {
+        User user = userService.findByLogin(login);
         Turn turn = getTurnFrom(turnId);
         int users = turn.getCountUsers()+1;
         turn.setCountUsers(users);

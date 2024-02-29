@@ -57,8 +57,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO getUser(Long id) {
-        Optional<User> u = userRepository.findById(id);
+    public UserDTO getUser(String login) {
+        Optional<User> u = userRepository.findUserByLogin(login);
         if (u.isPresent()) {
             User user = u.get();
             String group = null;

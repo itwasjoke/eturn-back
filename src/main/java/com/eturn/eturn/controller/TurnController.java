@@ -5,7 +5,10 @@ import com.eturn.eturn.dto.TurnMoreInfoDTO;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.service.PositionService;
 import com.eturn.eturn.service.TurnService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,7 +43,7 @@ public class TurnController {
 
     @GetMapping
     public List<TurnDTO> getUserTurns(
-        @RequestParam long userId,
+        HttpServletRequest request,
         @RequestParam String type,
         @RequestParam String access,
         @RequestParam(required = false) String numberGroup,
@@ -48,6 +51,8 @@ public class TurnController {
         @RequestParam(required = false) String facultyId
     ) {
 
+        var authentication = (Authentication) request.getUserPrincipal();
+        var userDetails = (UserDetails) authentication.getPrincipal();
         Map<String, String> params = new HashMap<>();
         params.put("Type", type);
         params.put("Access", access);
@@ -61,7 +66,7 @@ public class TurnController {
         if (facultyId != null) {
             params.put("Faculty", facultyId);
         }
-        return turnService.getUserTurns(userId, params);
+        return turnService.getUserTurns(userDetails.getUsername(), params);
     }
 
     @PostMapping
@@ -71,8 +76,10 @@ public class TurnController {
     }
 
     @PutMapping(value = "/new_member")
-    public void updateMember(@RequestParam Long userId, @RequestParam Long turnId){
-        turnService.addTurnToUser(turnId, userId);
+    public void updateMember(HttpServletRequest request, @RequestParam Long turnId){
+        var authentication = (Authentication) request.getUserPrincipal();
+        var userDetails = (UserDetails) authentication.getPrincipal();
+        turnService.addTurnToUser(turnId, userDetails.getUsername());
     }
 
     @PutMapping()

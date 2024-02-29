@@ -3,6 +3,9 @@ package com.eturn.eturn.controller;
 import com.eturn.eturn.dto.PositionDTO;
 import com.eturn.eturn.dto.PositionMoreInfoDTO;
 import com.eturn.eturn.service.PositionService;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,9 +37,11 @@ public class PositionController {
     }
     @PostMapping
     public PositionMoreInfoDTO createPosition(
-                             @RequestParam Long idUser,
-                             @RequestParam Long idTurn){
-        return positionService.createPositionAndSave(idUser,idTurn);
+            HttpServletRequest request,
+            @RequestParam Long idTurn){
+        var authentication = (Authentication) request.getUserPrincipal();
+        var userDetails = (UserDetails) authentication.getPrincipal();
+        return positionService.createPositionAndSave(userDetails.getUsername(),idTurn);
     }
 
     @PutMapping("/rules")

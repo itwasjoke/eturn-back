@@ -14,7 +14,7 @@ public interface PositionService {
     // TODO int pageSize, int pageNumber
 //    Optional<Position> getLastPosition(Long idUser, Long idTurn);
 
-    PositionMoreInfoDTO createPositionAndSave(Long idUser, Long idTurn);
+    PositionMoreInfoDTO createPositionAndSave(String login, Long idTurn);
 
     List<PositionDTO> getPositonList(Long idTurn, int page);
 

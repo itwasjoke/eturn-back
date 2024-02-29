@@ -6,6 +6,9 @@ import com.eturn.eturn.dto.UserCreateDTO;
 import com.eturn.eturn.dto.UserDTO;
 import com.eturn.eturn.entity.User;
 import com.eturn.eturn.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,11 +25,14 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping(value = "/{id}", produces = "application/json; charset=utf-8")
-    public UserDTO getUser(@PathVariable long id){
-        return userService.getUser(id);
+    @GetMapping()
+    public UserDTO getUser(HttpServletRequest request){
+        var authentication = (Authentication) request.getUserPrincipal();
+        var userDetails = (UserDetails) authentication.getPrincipal();
+        return userService.getUser(userDetails.getUsername());
     }
-//    @PostMapping
+
+    //    @PostMapping
 //    public Long create(@RequestBody UserCreateDTO user){
 //        return userService.createUser(user);
 //    }
@@ -35,19 +41,4 @@ public class UserController {
     public void delete(@PathVariable("id") User user){
 
     }
-
-    @GetMapping(value = "/login")
-    public Long login(@RequestParam String login, @RequestParam String password){
-        return userService.loginUser(login,password);
-    }
-//    @PostMapping("/login")
-//    public Long login(){
-//        return null;
-//
-//    }
-//
-//    @PostMapping("/register")
-//    public Long register(@RequestBody UserCreateDTO user){
-//        return userService.createUser(user);
-//    }
 }
