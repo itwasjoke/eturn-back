@@ -1,10 +1,13 @@
 package com.eturn.eturn.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "Факультет")
 public record FacultyDTO(
-        Long id, String name
+        @Schema(description = "Идентификатор факультета", example="1")
+        Long id,
+        @Schema(description = "Название факультета", example="ФКТИ")
+        String name
 ) {
-    public FacultyDTO(Long id, String name) {
-        this.id = id;
-        this.name = name;
-    }
+
 }

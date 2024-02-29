@@ -6,6 +6,7 @@ import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.service.PositionService;
 import com.eturn.eturn.service.TurnService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -55,11 +56,11 @@ public class TurnController {
     )
     public List<TurnDTO> getUserTurns(
         HttpServletRequest request,
-        @RequestParam String type,
-        @RequestParam String access,
-        @RequestParam(required = false) String numberGroup,
-        @RequestParam(required = false) String courseId,
-        @RequestParam(required = false) String facultyId
+        @RequestParam @Parameter(description = "Тип очереди turn/edu") String type,
+        @RequestParam @Parameter(description = "Тип доступа memberIn/memberOut") String access,
+        @RequestParam(required = false) @Parameter(description = "Номер группы для фильтрации (необязательно)") String numberGroup,
+        @RequestParam(required = false) @Parameter(description = "Идентификатор курса для фильтрации (необязательно)") String courseId,
+        @RequestParam(required = false) @Parameter(description = "Идентификатор факультета для фильтрации (необязательно)") String facultyId
     ) {
 
         var authentication = (Authentication) request.getUserPrincipal();
@@ -95,7 +96,10 @@ public class TurnController {
             summary = "Добавление участника",
             description = "Добавляет пользователя к объекту очереди"
     )
-    public void updateMember(HttpServletRequest request, @RequestParam Long turnId){
+    public void updateMember(
+            HttpServletRequest request,
+            @RequestParam @Parameter(description = "Идентификатор очереди") Long turnId
+    ){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
         turnService.addTurnToUser(turnId, userDetails.getUsername(), "MEMBER");

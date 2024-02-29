@@ -198,7 +198,7 @@ public class PositionServiceImpl implements PositionService {
     }
 
     @Override
-    public void update(Long id, boolean started) {
+    public void update(Long id) {
         Optional<Position> position = positionRepository.findById(id);
         if (position.isPresent()){
             Position pos = position.get();
@@ -207,8 +207,7 @@ public class PositionServiceImpl implements PositionService {
             }
             else{
                 pos.setStart(true);
-                Position posCreated = positionRepository.save(pos);
-                int n = 0;
+                positionRepository.save(pos);
             }
         }
         else{

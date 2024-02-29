@@ -117,9 +117,9 @@ public class TurnServiceImpl implements TurnService {
             switch (entry.getKey()) {
                 case "Access" -> {
                     Set<Turn> userTurns = userService.getUserTurns(user.getId());
-                    if (value.equals("member_true")) {
+                    if (value.equals("memberIn")) {
                         streamTurns = streamTurns.filter(userTurns::contains);
-                    } else if (value.equals("member_false")) {
+                    } else if (value.equals("memberOut")) {
                         streamTurns = streamTurns.filter(c -> !userTurns.contains(c) && c.getAccessTurnType() != AccessTurnEnum.FOR_LINK);
                     } else {
                         throw new InvalidTypeTurnException("In function GetUserTurns (TurnServiceImpl.java) error: Turn type is " + value + ". Value can be: 'member_true' or 'member_false'.");

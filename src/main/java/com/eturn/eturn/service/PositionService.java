@@ -18,7 +18,7 @@ public interface PositionService {
 
     List<PositionDTO> getPositonList(Long idTurn, int page);
 
-    void update(Long id, boolean started);
+    void update(Long id);
 
     void delete(Long id);
 

@@ -3,32 +3,33 @@ package com.eturn.eturn.dto;
 import com.eturn.eturn.entity.*;
 import com.eturn.eturn.enums.AccessTurnEnum;
 import com.eturn.eturn.enums.TurnEnum;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.Set;
 
+@Schema(description = "Очередь с подробной информацией")
 public record TurnMoreInfoDTO(
+        @Schema(description = "Идентификатор очереди", example="1")
         Long id,
+        @Schema(description = "Имя очереди", example="Очередь за булочкой")
         @NotNull String name,
+        @Schema(description = "Описание очереди", example="Готовим банковские карты. Всем приятного аппетита!")
         String description,
+        @Schema(description = "Идентификатор создателя", example="1")
         @NotNull Long creator,
+        @Schema(description = "Тип очереди", example="EDU / ORG")
         @NotNull TurnEnum turnType,
+        @Schema(description = "Доступ к очереди", example="FOR_ALLOWED_GROUPS")
         @NotNull AccessTurnEnum turnAccess,
+        @Schema(description = "Допустимые группы")
         Set<GroupDTO> allowedGroups,
+        @Schema(description = "Допустимые факультеты")
         Set<Faculty> allowedFaculties,
+        @Schema(description = "Допустимые кафедры")
         Set<Department> allowedDepartments,
+        @Schema(description = "Допустимые курсы")
         Set<Course> allowedCourses
 ) {
-    public TurnMoreInfoDTO(Long id, String name, String description, Long creator, TurnEnum turnType, AccessTurnEnum turnAccess, Set<GroupDTO> allowedGroups, Set<Faculty> allowedFaculties, Set<Department> allowedDepartments, Set<Course> allowedCourses) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.creator = creator;
-        this.turnType = turnType;
-        this.turnAccess = turnAccess;
-        this.allowedGroups = allowedGroups;
-        this.allowedFaculties = allowedFaculties;
-        this.allowedDepartments = allowedDepartments;
-        this.allowedCourses = allowedCourses;
-    }
+
 }

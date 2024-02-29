@@ -4,6 +4,7 @@ import com.eturn.eturn.dto.PositionDTO;
 import com.eturn.eturn.dto.PositionMoreInfoDTO;
 import com.eturn.eturn.service.PositionService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;
@@ -28,12 +29,14 @@ public class PositionController {
     //        return positionService.getPositionById(id);
     //    }
 
+
+    // TODO Сделать через авторизацию
     @GetMapping(value = "/first")
     @Operation(
             summary = "Получение первой позиции",
             description = "Отправляет объект с сущностью первой позиции пользователя"
     )
-    public PositionMoreInfoDTO getUserFirstPosition(@RequestParam Long turnId, @RequestParam Long userId){
+    public PositionMoreInfoDTO getUserFirstPosition(@RequestParam @Parameter(description = "Идентификатор очереди") Long turnId, @RequestParam Long userId){
         return positionService.getFirstUserPosition(turnId, userId);
     }
 
@@ -42,8 +45,10 @@ public class PositionController {
             summary = "Получение позиций очереди",
             description = "Отправляет список позиций, которые принадлежат определенной очереди"
     )
-    public List<PositionDTO> getTurnPositions(@PathVariable Long idTurn,
-                                              @RequestParam(defaultValue = "0") int page){
+    public List<PositionDTO> getTurnPositions(
+            @PathVariable @Parameter(description = "Идентификатор очереди") Long idTurn,
+            @RequestParam(defaultValue = "0") @Parameter(description = "Страница позиций") int page
+    ){
         return positionService.getPositonList(idTurn,page);
     }
     @PostMapping
@@ -53,7 +58,8 @@ public class PositionController {
     )
     public PositionMoreInfoDTO createPosition(
             HttpServletRequest request,
-            @RequestParam Long idTurn){
+            @RequestParam @Parameter(description = "Идентификатор очереди") Long idTurn
+    ){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
         return positionService.createPositionAndSave(userDetails.getUsername(),idTurn);
@@ -64,16 +70,17 @@ public class PositionController {
             summary = "Изменение статуса позиции",
             description = "Находит позицию и изменяет ее статус из 'вход' на 'выход' и с 'выход' на удаление позиции"
     )
-    public void updateStatus(@RequestParam Long id,
-                             @RequestParam boolean isStarted){
-        positionService.update(id,isStarted);
+    public void updateStatus(
+            @RequestParam @Parameter(description = "Идентификатор позиции") Long id
+    ){
+        positionService.update(id);
     }
     @DeleteMapping("/{id}")
     @Operation(
             summary = "Удаление позиции",
             description = "Берет текущего авторизированного пользователя и создает позицию для него"
     )
-    public void deletePosition(@PathVariable Long id){
+    public void deletePosition(@PathVariable @Parameter(description = "Идентификатор позиции") Long id){
         positionService.delete(id);
     }
 }

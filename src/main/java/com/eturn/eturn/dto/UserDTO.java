@@ -1,24 +1,24 @@
 package com.eturn.eturn.dto;
 
 import com.eturn.eturn.enums.RoleEnum;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(description = "Сущность существущего пользователя")
 public record UserDTO(
+        @Schema(description = "Идентификатор пользователя")
         Long id,
+        @Schema(description = "Имя пользователя", example="Иванов Иван Иванович")
         String name,
+        @Schema(description = "Тип пользователя", example="Студент")
         String role,
+        @Schema(description = "Факультет", example="ФКТИ")
         String faculty,
+        @Schema(description = "Группа", example="2000")
         String group,
+        @Schema(description = "Курс", example="2")
         String course,
+        @Schema(description = "Кафедра", example="ТОЭ")
         String department
 ) {
-    public UserDTO(Long id, String name, String role, String faculty, String group, String course, String department) {
-        this.id = id;
-        this.name = name;
-        this.role = role;
-        this.faculty = faculty;
-        this.group = group;
-        this.course = course;
-        this.department = department;
-    }
 
 }

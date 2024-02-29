@@ -3,6 +3,7 @@ package com.eturn.eturn.controller;
 import com.eturn.eturn.dto.FacultyDTO;
 import com.eturn.eturn.service.FacultyService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;

@@ -1,6 +1,7 @@
 package com.eturn.eturn.entity;
 
 import com.eturn.eturn.enums.RoleEnum;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

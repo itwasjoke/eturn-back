@@ -2,6 +2,7 @@ package com.eturn.eturn.security;
 
 import com.eturn.eturn.dto.UserCreateDTO;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;
@@ -47,7 +48,10 @@ public class AuthController {
             summary = "Вход",
             description = "Отправка логина и пароля, получение токена авторизации"
     )
-    public JwtAuthenticationResponse signIn(@RequestParam String login, @RequestParam String password){
+    public JwtAuthenticationResponse signIn(
+            @RequestParam @Parameter(description = "Логин") String login,
+            @RequestParam @Parameter(description = "Пароль") String password
+    ){
         return authenticationService.signIn(login, password);
     }
 

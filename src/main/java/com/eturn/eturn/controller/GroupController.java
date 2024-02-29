@@ -4,6 +4,7 @@ import com.eturn.eturn.dto.GroupDTO;
 import com.eturn.eturn.entity.Group;
 import com.eturn.eturn.service.GroupService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -34,7 +35,7 @@ public class GroupController {
             summary = "Получение группы",
             description = "По номеру находит объект с группой"
     )
-    public GroupDTO getGroup(@PathVariable String number){
+    public GroupDTO getGroup(@PathVariable @Parameter(description = "Номер группы из 4 цифр") String number){
         return groupService.getOneGroupDTO(number);
     }
 
