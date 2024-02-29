@@ -5,6 +5,8 @@ import com.eturn.eturn.dto.TurnMoreInfoDTO;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.service.PositionService;
 import com.eturn.eturn.service.TurnService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -26,6 +28,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping(value ="/turn", produces = "application/json; charset=utf-8")
+@Tag(name = "Очереди", description = "Обработка информации об очередях")
 public class TurnController {
 
     private final TurnService turnService;
@@ -37,11 +40,19 @@ public class TurnController {
     }
 
     @GetMapping("{idTurn}")
+    @Operation(
+            summary = "Получение очереди",
+            description = "Основная информация об очереди без указания позиций"
+    )
     public TurnDTO getTurn(@PathVariable long idTurn) {
         return turnService.getTurn(idTurn);
     }
 
     @GetMapping
+    @Operation(
+            summary = "Получение списка очередей",
+            description = "На основе данных авторизации определяет текущего пользователя и параметров фильтрует список очередей под пользователя"
+    )
     public List<TurnDTO> getUserTurns(
         HttpServletRequest request,
         @RequestParam String type,
@@ -71,30 +82,38 @@ public class TurnController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @Operation(
+            summary = "Создание очереди",
+            description = "Получает объект и создает очередь"
+    )
     public Long create(@RequestBody TurnMoreInfoDTO turn) {
         return turnService.createTurn(turn);
     }
 
-    @PutMapping(value = "/new_member")
+    @PutMapping(value = "/member")
+    @Operation(
+            summary = "Добавление участника",
+            description = "Добавляет пользователя к объекту очереди"
+    )
     public void updateMember(HttpServletRequest request, @RequestParam Long turnId){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
-        turnService.addTurnToUser(turnId, userDetails.getUsername());
+        turnService.addTurnToUser(turnId, userDetails.getUsername(), "MEMBER");
     }
+//
+//    @PutMapping()
+//    public void update(
+//        @RequestBody Turn turn,
+//        @RequestParam long idUser
+//    ) {
+//        turnService.updateTurn(idUser, turn);
+//    }
 
-    @PutMapping()
-    public void update(
-        @RequestBody Turn turn,
-        @RequestParam long idUser
-    ) {
-        turnService.updateTurn(idUser, turn);
-    }
-
-    @DeleteMapping()
-    public void delete(
-        @RequestParam long idUser,
-        @RequestParam long idTurn
-    ) {
-        turnService.deleteTurn(idUser,idTurn);
-    }
+//    @DeleteMapping()
+//    public void delete(
+//        @RequestParam long idUser,
+//        @RequestParam long idTurn
+//    ) {
+//        turnService.deleteTurn(idUser,idTurn);
+//    }
 }

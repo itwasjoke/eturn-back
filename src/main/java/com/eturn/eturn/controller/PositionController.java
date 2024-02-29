@@ -3,6 +3,8 @@ package com.eturn.eturn.controller;
 import com.eturn.eturn.dto.PositionDTO;
 import com.eturn.eturn.dto.PositionMoreInfoDTO;
 import com.eturn.eturn.service.PositionService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,6 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping(value ="/position", produces = "application/json; charset=utf-8")
+@Tag(name = "Позиции", description = "Обработка позиций у конкретной очереди")
 public class PositionController {
     private final PositionService positionService;
 
@@ -26,16 +29,28 @@ public class PositionController {
     //    }
 
     @GetMapping(value = "/first")
+    @Operation(
+            summary = "Получение первой позиции",
+            description = "Отправляет объект с сущностью первой позиции пользователя"
+    )
     public PositionMoreInfoDTO getUserFirstPosition(@RequestParam Long turnId, @RequestParam Long userId){
         return positionService.getFirstUserPosition(turnId, userId);
     }
 
     @GetMapping ("/all/{idTurn}")
+    @Operation(
+            summary = "Получение позиций очереди",
+            description = "Отправляет список позиций, которые принадлежат определенной очереди"
+    )
     public List<PositionDTO> getTurnPositions(@PathVariable Long idTurn,
                                               @RequestParam(defaultValue = "0") int page){
         return positionService.getPositonList(idTurn,page);
     }
     @PostMapping
+    @Operation(
+            summary = "Создание позиции",
+            description = "Берет текущего авторизированного пользователя и создает позицию для него"
+    )
     public PositionMoreInfoDTO createPosition(
             HttpServletRequest request,
             @RequestParam Long idTurn){
@@ -44,12 +59,20 @@ public class PositionController {
         return positionService.createPositionAndSave(userDetails.getUsername(),idTurn);
     }
 
-    @PutMapping("/rules")
+    @PutMapping()
+    @Operation(
+            summary = "Изменение статуса позиции",
+            description = "Находит позицию и изменяет ее статус из 'вход' на 'выход' и с 'выход' на удаление позиции"
+    )
     public void updateStatus(@RequestParam Long id,
                              @RequestParam boolean isStarted){
         positionService.update(id,isStarted);
     }
     @DeleteMapping("/{id}")
+    @Operation(
+            summary = "Удаление позиции",
+            description = "Берет текущего авторизированного пользователя и создает позицию для него"
+    )
     public void deletePosition(@PathVariable Long id){
         positionService.delete(id);
     }

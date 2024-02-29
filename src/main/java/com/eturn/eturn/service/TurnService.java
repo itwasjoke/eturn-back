@@ -23,6 +23,6 @@ public interface TurnService {
 
     void countUser(Turn turn);
 
-    void addTurnToUser(Long turnId, String login);
+    void addTurnToUser(Long turnId, String login, String access);
 
 }

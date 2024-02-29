@@ -167,8 +167,7 @@ public class TurnServiceImpl implements TurnService {
         Turn turnDto = turnMoreInfoMapper.turnMoreDTOToTurn(turn,userCreator, groups);
         turnDto.setCountUsers(0);
         Turn turnNew = turnRepository.save(turnDto);
-        memberService.createMember(turnNew.getCreator().getId(), turnNew.getId(), AccessMemberEnum.CREATOR);
-        addTurnToUser(turnNew.getId(), userCreator.getLogin());
+        addTurnToUser(turnNew.getId(), userCreator.getLogin(), "CREATOR");
         return turnNew.getId();
     }
 
@@ -215,12 +214,15 @@ public class TurnServiceImpl implements TurnService {
 
     @Override
     @Transactional
-    public void addTurnToUser(Long turnId, String login) {
+    public void addTurnToUser(Long turnId, String login, String access) {
         User user = userService.findByLogin(login);
         Turn turn = getTurnFrom(turnId);
         int users = turn.getCountUsers()+1;
         turn.setCountUsers(users);
         turnRepository.save(turn);
+
+        memberService.createMember(user.getId(), turnId, access);
+
         Set<Turn> turns = user.getTurns();
         turns.add(turn);
         user.setTurns(turns);

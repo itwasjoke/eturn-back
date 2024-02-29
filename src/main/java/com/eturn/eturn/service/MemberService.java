@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface MemberService {
 
-    void createMember(Long userId, Long turnId, AccessMemberEnum access);
+    void createMember(Long userId, Long turnId, String access);
     Member getMember(Long idUser, Long idTurn);
 
     AccessMemberEnum getAccess(Long idUser, Long idTurn);

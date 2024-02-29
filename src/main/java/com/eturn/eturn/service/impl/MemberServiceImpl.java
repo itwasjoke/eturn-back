@@ -22,10 +22,11 @@ public class MemberServiceImpl implements MemberService {
 
     @Transactional
     @Override
-    public void createMember(Long userId, Long turnId, AccessMemberEnum access) {
+    public void createMember(Long userId, Long turnId, String access) {
         try {
+            AccessMemberEnum accessMemberEnum = AccessMemberEnum.valueOf(access);
             Member member = new Member();
-            member.setAccessMemberEnum(access);
+            member.setAccessMemberEnum(accessMemberEnum);
             member.setIdTurn(turnId);
             member.setIdUser(userId);
             memberRepository.save(member);
