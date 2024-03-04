@@ -105,12 +105,19 @@ public class TurnServiceImpl implements TurnService {
         if (user.getRoleEnum() == RoleEnum.STUDENT) {
             streamTurns = streamTurns.filter(
                     c -> c.getAccessTurnType() == AccessTurnEnum.FOR_STUDENT ||
-                            c.getAccessTurnType() == AccessTurnEnum.FOR_ALLOWED_GROUPS
+                            c.getAccessTurnType() == AccessTurnEnum.FOR_ALLOWED_ELEMENTS
             );
         }
-        if (user.getRoleEnum() == RoleEnum.NO_UNIVERSITY) {
+        else if(user.getRoleEnum()==RoleEnum.PROFESSOR){
+            streamTurns = streamTurns.filter(c ->
+                    c.getAccessTurnType()!=AccessTurnEnum.FOR_EMPLOYEE
+                    && c.getAccessTurnType()!=AccessTurnEnum.FOR_NO_UNIVERSITY
+            );
+        }
+        else if (user.getRoleEnum() == RoleEnum.NO_UNIVERSITY) {
             streamTurns = streamTurns.filter(c -> c.getAccessTurnType() == AccessTurnEnum.FOR_NO_UNIVERSITY);
         }
+        streamTurns = streamTurns.filter(c -> c.getAccessTurnType() != AccessTurnEnum.FOR_LINK);
 
         for (Map.Entry<String, String> entry : params.entrySet()) {
             String value = entry.getValue();
@@ -135,6 +142,12 @@ public class TurnServiceImpl implements TurnService {
                         throw new InvalidTypeTurnException("In function GetUserTurns (TurnServiceImpl.java) error: Turn type is " + value + ". Value can be: 'org' or 'edu'.");
                     }
                     streamTurns = streamTurns.filter(c -> c.getTurnType() == type);
+                    if (user.getRoleEnum()==RoleEnum.STUDENT){
+                        Group group = groupService.getGroup(user.getIdGroup());
+                        Faculty faculty = facultyService.getOneFaculty(user.getIdFaculty());
+                        Course course = courseService.getOneCourse(user.getIdCourse());
+                        streamTurns = streamTurns.filter(c-> c.getAllowedFaculties().contains(group) || c.getAllowedFaculties().contains(faculty) || c.getAllowedCourses().contains(course));
+                    }
                 }
                 case "Group" -> {
                     Group group = groupService.getOneGroup(value);

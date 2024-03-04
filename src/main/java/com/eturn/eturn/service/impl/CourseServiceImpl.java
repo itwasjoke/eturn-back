@@ -48,6 +48,10 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public List<CourseDTO> getAllList() {
-        return courseListMapper.map(courseRepository.findAll());
+        List<Course> c = courseRepository.findAll();
+        if (c.isEmpty()){
+            throw new NotFoundCourseException("no course found");
+        }
+        return courseListMapper.map(c);
     }
 }

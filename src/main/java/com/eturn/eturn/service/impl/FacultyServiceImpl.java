@@ -47,6 +47,10 @@ public class FacultyServiceImpl implements FacultyService {
 
     @Override
     public List<FacultyDTO> getAllList() {
-        return facultyListMapper.map(facultyRepository.findAll());
+        List<Faculty> f = facultyRepository.findAll();
+        if (f.isEmpty()){
+            throw new NotFoundFacultyException("Cannot found any faculties");
+        }
+        return facultyListMapper.map(f);
     }
 }

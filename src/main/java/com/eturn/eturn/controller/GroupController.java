@@ -39,6 +39,15 @@ public class GroupController {
         return groupService.getOneGroupDTO(number);
     }
 
+    @GetMapping
+    @Operation(
+            summary = "Получение групп по факультету",
+            description = "По идентификатору находит список групп факультета"
+    )
+    public Set<GroupDTO> getAllGroupsByFacultyId(@RequestParam @Parameter(description = "ID факультета") long facultyId){
+        return groupService.getAllGroups(facultyId);
+    }
+
     @PostMapping
 //    @PreAuthorize("hasRole('EMPLOYEE')")
     @Operation(

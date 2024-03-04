@@ -5,7 +5,7 @@ public enum AccessTurnEnum {
     FOR_EMPLOYEE,
     FOR_TEACHER,
     FOR_NO_UNIVERSITY,
-    FOR_ALLOWED_GROUPS,
+    FOR_ALLOWED_ELEMENTS,
     FOR_LINK;
 
     AccessTurnEnum() {

@@ -20,11 +20,14 @@ public class FacultyController {
         this.facultyService = facultyService;
     }
 
-//    @GetMapping
-////    @PreAuthorize("hasRole('EMPLOYEE')")
-//    private List<FacultyDTO> getAll(){
-//        return facultyService.getAllList();
-//    }
+    @GetMapping
+    @Operation(
+            summary = "Получение факультетов",
+            description = "Возвращает список групп"
+    )
+    private List<FacultyDTO> getAll(){
+        return facultyService.getAllList();
+    }
     @PostMapping
 //    @PreAuthorize("hasRole('EMPLOYEE')")
     @Operation(

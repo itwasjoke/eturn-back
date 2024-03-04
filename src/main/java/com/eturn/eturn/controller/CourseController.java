@@ -22,12 +22,16 @@ public class CourseController {
         this.courseService = courseService;
     }
 
-//    @GetMapping
-////    @PreAuthorize("hasRole('EMPLOYEE')")
-////    @PreAuthorize("GRANT(MEMBER)")
-//    public List<CourseDTO> getAllList(){
-//        return courseService.getAllList();
-//    }
+    @GetMapping
+//    @PreAuthorize("hasRole('EMPLOYEE')")
+//    @PreAuthorize("GRANT(MEMBER)")
+    @Operation(
+            summary = "Вывод списка курсов",
+            description = "Возвращает список курсов"
+    )
+    public List<CourseDTO> getAllList(){
+        return courseService.getAllList();
+    }
 
     @PostMapping
 //    @PreAuthorize("hasRole('EMPLOYEE')")

@@ -44,3 +44,4 @@ token:
 springdoc:
   swagger-ui:
     default-model-expand-depth: -1
+    disable-swagger-default-url: true

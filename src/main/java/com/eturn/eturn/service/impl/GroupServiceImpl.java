@@ -28,8 +28,12 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public Set<GroupDTO> getAllGroups() {
-        return groupListMapper.map(new HashSet<>(groupRepository.findAll()));
+    public Set<GroupDTO> getAllGroups(long id) {
+        Set<Group> groups = groupRepository.findAllByFacultyId(id);
+        if (groups.isEmpty()){
+            throw new NotFoundGroupException("groups not found");
+        }
+        return groupListMapper.map(new HashSet<>(groups));
     }
 
     @Override

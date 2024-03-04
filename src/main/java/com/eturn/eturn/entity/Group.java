@@ -17,6 +17,8 @@ public class Group {
 
     private String number;
 
+    private Long facultyId;
+
     @ManyToMany(mappedBy = "allowedGroups")
     private Set<Turn> turns;
 }

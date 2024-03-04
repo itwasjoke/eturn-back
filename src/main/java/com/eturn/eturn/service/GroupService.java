@@ -9,7 +9,7 @@ import java.util.Set;
 
 public interface GroupService {
 
-    Set<GroupDTO> getAllGroups();
+    Set<GroupDTO> getAllGroups(long id);
     Long createGroup(GroupDTO group);
     Group getOneGroup(String number);
     Group getGroup(Long id);
