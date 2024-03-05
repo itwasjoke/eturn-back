@@ -128,6 +128,12 @@ public class TurnServiceImpl implements TurnService {
                         streamTurns = streamTurns.filter(userTurns::contains);
                     } else if (value.equals("memberOut")) {
                         streamTurns = streamTurns.filter(c -> !userTurns.contains(c) && c.getAccessTurnType() != AccessTurnEnum.FOR_LINK);
+                        if (user.getRoleEnum()==RoleEnum.STUDENT){
+                            Group group = groupService.getGroup(user.getIdGroup());
+                            Faculty faculty = facultyService.getOneFaculty(user.getIdFaculty());
+                            Course course = courseService.getOneCourse(user.getIdCourse());
+                            streamTurns = streamTurns.filter(c-> c.getAllowedFaculties().contains(group) || c.getAllowedFaculties().contains(faculty) || c.getAllowedCourses().contains(course));
+                        }
                     } else {
                         throw new InvalidTypeTurnException("In function GetUserTurns (TurnServiceImpl.java) error: Turn type is " + value + ". Value can be: 'member_true' or 'member_false'.");
                     }
@@ -142,12 +148,6 @@ public class TurnServiceImpl implements TurnService {
                         throw new InvalidTypeTurnException("In function GetUserTurns (TurnServiceImpl.java) error: Turn type is " + value + ". Value can be: 'org' or 'edu'.");
                     }
                     streamTurns = streamTurns.filter(c -> c.getTurnType() == type);
-                    if (user.getRoleEnum()==RoleEnum.STUDENT){
-                        Group group = groupService.getGroup(user.getIdGroup());
-                        Faculty faculty = facultyService.getOneFaculty(user.getIdFaculty());
-                        Course course = courseService.getOneCourse(user.getIdCourse());
-                        streamTurns = streamTurns.filter(c-> c.getAllowedFaculties().contains(group) || c.getAllowedFaculties().contains(faculty) || c.getAllowedCourses().contains(course));
-                    }
                 }
                 case "Group" -> {
                     Group group = groupService.getOneGroup(value);
