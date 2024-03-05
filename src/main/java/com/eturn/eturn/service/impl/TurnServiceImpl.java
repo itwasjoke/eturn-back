@@ -131,14 +131,18 @@ public class TurnServiceImpl implements TurnService {
                         streamTurns = streamTurns.filter(c -> !userTurns.contains(c) && c.getAccessTurnType() != AccessTurnEnum.FOR_LINK);
                         if (user.getRoleEnum()==RoleEnum.STUDENT){
                             if (user.getIdGroup()!=null && user.getIdFaculty()!=null && user.getIdCourse() !=null){
-                                Group group = groupService.getGroup(user.getIdGroup());
-                                Faculty faculty = facultyService.getOneFaculty(user.getIdFaculty());
-                                Course course = courseService.getOneCourse(user.getIdCourse());
-                                streamTurns = streamTurns.filter(c-> c.getAllowedFaculties().contains(group) || c.getAllowedFaculties().contains(faculty) || c.getAllowedCourses().contains(course));
+                                Group groupThis = groupService.getGroup(user.getIdGroup());
+                                Faculty facultyThis = facultyService.getOneFaculty(user.getIdFaculty());
+                                Course courseThis = courseService.getOneCourse(user.getIdCourse());
+                                if (groupThis!=null && facultyThis !=null && courseThis!=null){
+                                    streamTurns = streamTurns.filter(c-> c.getAllowedGroups().contains(groupThis)
+                                            || c.getAllowedFaculties().contains(facultyThis)
+                                            || c.getAllowedCourses().contains(courseThis));
+                                }
                             }
                         }
                     } else {
-                        throw new InvalidTypeTurnException("In function GetUserTurns (TurnServiceImpl.java) error: Turn type is " + value + ". Value can be: 'member_true' or 'member_false'.");
+                        throw new InvalidTypeTurnException("In function GetUserTurns (TurnServiceImpl.java) error: Turn type is " + value + ". Value can be: 'memberIn' or 'memberOut'.");
                     }
                 }
                 case "Type" -> {
