@@ -2,6 +2,7 @@ package com.eturn.eturn.service.impl;
 
 import com.eturn.eturn.dto.TurnDTO;
 import com.eturn.eturn.dto.TurnMoreInfoDTO;
+import com.eturn.eturn.dto.UserDTO;
 import com.eturn.eturn.dto.mapper.TurnListMapper;
 import com.eturn.eturn.dto.mapper.TurnMapper;
 import com.eturn.eturn.dto.mapper.TurnMoreInfoMapper;
@@ -105,7 +106,8 @@ public class TurnServiceImpl implements TurnService {
         if (user.getRoleEnum() == RoleEnum.STUDENT) {
             streamTurns = streamTurns.filter(
                     c -> c.getAccessTurnType() == AccessTurnEnum.FOR_STUDENT ||
-                            c.getAccessTurnType() == AccessTurnEnum.FOR_ALLOWED_ELEMENTS
+                    c.getAccessTurnType() == AccessTurnEnum.FOR_ALLOWED_ELEMENTS ||
+                    c.getAccessTurnType() == AccessTurnEnum.FOR_LINK
             );
         }
         else if(user.getRoleEnum()==RoleEnum.PROFESSOR){
@@ -117,7 +119,6 @@ public class TurnServiceImpl implements TurnService {
         else if (user.getRoleEnum() == RoleEnum.NO_UNIVERSITY) {
             streamTurns = streamTurns.filter(c -> c.getAccessTurnType() == AccessTurnEnum.FOR_NO_UNIVERSITY);
         }
-        streamTurns = streamTurns.filter(c -> c.getAccessTurnType() != AccessTurnEnum.FOR_LINK);
 
         for (Map.Entry<String, String> entry : params.entrySet()) {
             String value = entry.getValue();
@@ -129,10 +130,12 @@ public class TurnServiceImpl implements TurnService {
                     } else if (value.equals("memberOut")) {
                         streamTurns = streamTurns.filter(c -> !userTurns.contains(c) && c.getAccessTurnType() != AccessTurnEnum.FOR_LINK);
                         if (user.getRoleEnum()==RoleEnum.STUDENT){
-                            Group group = groupService.getGroup(user.getIdGroup());
-                            Faculty faculty = facultyService.getOneFaculty(user.getIdFaculty());
-                            Course course = courseService.getOneCourse(user.getIdCourse());
-                            streamTurns = streamTurns.filter(c-> c.getAllowedFaculties().contains(group) || c.getAllowedFaculties().contains(faculty) || c.getAllowedCourses().contains(course));
+                            if (user.getIdGroup()!=null && user.getIdFaculty()!=null && user.getIdCourse() !=null){
+                                Group group = groupService.getGroup(user.getIdGroup());
+                                Faculty faculty = facultyService.getOneFaculty(user.getIdFaculty());
+                                Course course = courseService.getOneCourse(user.getIdCourse());
+                                streamTurns = streamTurns.filter(c-> c.getAllowedFaculties().contains(group) || c.getAllowedFaculties().contains(faculty) || c.getAllowedCourses().contains(course));
+                            }
                         }
                     } else {
                         throw new InvalidTypeTurnException("In function GetUserTurns (TurnServiceImpl.java) error: Turn type is " + value + ". Value can be: 'member_true' or 'member_false'.");
@@ -174,13 +177,14 @@ public class TurnServiceImpl implements TurnService {
 
     @Override
     @Transactional
-    public Long createTurn(TurnMoreInfoDTO turn) {
-        User userCreator = userService.getUserFrom(turn.creator());
+    public Long createTurn(TurnMoreInfoDTO turn, String login) {
+        UserDTO userDTO = userService.getUser(login);
+        User userCreator = userService.getUserFrom(userDTO.id());
         Set<Group> groups = groupService.getSetGroups(turn.allowedGroups());
         Turn turnDto = turnMoreInfoMapper.turnMoreDTOToTurn(turn,userCreator, groups);
         turnDto.setCountUsers(0);
         Turn turnNew = turnRepository.save(turnDto);
-        addTurnToUser(turnNew.getId(), userCreator.getLogin(), "CREATOR");
+        addTurnToUser(turnNew.getId(), login, "CREATOR");
         return turnNew.getId();
     }
 

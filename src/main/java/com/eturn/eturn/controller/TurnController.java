@@ -87,8 +87,10 @@ public class TurnController {
             summary = "Создание очереди",
             description = "Получает объект и создает очередь"
     )
-    public Long create(@RequestBody TurnMoreInfoDTO turn) {
-        return turnService.createTurn(turn);
+    public Long create(HttpServletRequest request, @RequestBody TurnMoreInfoDTO turn) {
+        var authentication = (Authentication) request.getUserPrincipal();
+        var userDetails = (UserDetails) authentication.getPrincipal();
+        return turnService.createTurn(turn, userDetails.getUsername());
     }
 
     @PutMapping(value = "/member")
