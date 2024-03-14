@@ -229,8 +229,9 @@ public class PositionServiceImpl implements PositionService {
     }
 
     @Override
-    public PositionMoreInfoDTO getFirstUserPosition(Long turnId, Long userId) {
-        User user = userService.getUserFrom(userId);
+    public PositionMoreInfoDTO getFirstUserPosition(Long turnId, String username) {
+        UserDTO userDTO = userService.getUser(username);
+        User user = userService.getUserFrom(userDTO.id());
         Turn turn = turnService.getTurnFrom(turnId);
         Optional<Position> p = positionRepository.findTopByTurnAndUser(turn, user);
         Optional<Position> pInTurn = positionRepository.findFirstByTurn(turn);

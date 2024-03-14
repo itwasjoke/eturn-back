@@ -5,6 +5,7 @@ spring:
   datasource:
 #    url: jdbc:postgresql://localhost:5432/eturn
 #    username: postgres
+#    password: postgres
 
 #    url: jdbc:postgresql://localhost:5432/postgres
 #    username: vsnigerev

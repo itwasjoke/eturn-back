@@ -36,8 +36,13 @@ public class PositionController {
             summary = "Получение первой позиции",
             description = "Отправляет объект с сущностью первой позиции пользователя"
     )
-    public PositionMoreInfoDTO getUserFirstPosition(@RequestParam @Parameter(description = "Идентификатор очереди") Long turnId, @RequestParam Long userId){
-        return positionService.getFirstUserPosition(turnId, userId);
+    public PositionMoreInfoDTO getUserFirstPosition(
+            HttpServletRequest request,
+            @RequestParam @Parameter(description = "Идентификатор очереди")Long turnId){
+        var authentication = (Authentication) request.getUserPrincipal();
+        var userDetails = (UserDetails) authentication.getPrincipal();
+
+        return positionService.getFirstUserPosition(turnId, userDetails.getUsername());
     }
 
     @GetMapping ("/all/{idTurn}")
@@ -49,7 +54,7 @@ public class PositionController {
             @PathVariable @Parameter(description = "Идентификатор очереди") Long idTurn,
             @RequestParam(defaultValue = "0") @Parameter(description = "Страница позиций") int page
     ){
-        return positionService.getPositonList(idTurn,page);
+        return positionService.getPositonList(idTurn, page);
     }
     @PostMapping
     @Operation(

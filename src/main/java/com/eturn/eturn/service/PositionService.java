@@ -22,5 +22,5 @@ public interface PositionService {
 
     void delete(Long id);
 
-    PositionMoreInfoDTO getFirstUserPosition(Long turnId, Long userId);
+    PositionMoreInfoDTO getFirstUserPosition(Long turnId, String username);
 }
