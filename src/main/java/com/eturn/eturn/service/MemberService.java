@@ -11,12 +11,11 @@ import java.util.List;
 public interface MemberService {
 
     void createMember(Long userId, Long turnId, String access);
-    Member getMember(Long idUser, Long idTurn);
+    Member getMember(String username, Long idTurn);
 
-    AccessMemberEnum getAccess(Long idUser, Long idTurn);
+    AccessMemberEnum getAccess(Long userId, Long idTurn);
+
+    long getCountMembers(Long turnId);
     void deleteTurnMembers(Long idTurn);
 
-    List<Member> getListMemeberTurn(Long idTurn);
-
-    long getConutByTurn(Long turnId);
 }

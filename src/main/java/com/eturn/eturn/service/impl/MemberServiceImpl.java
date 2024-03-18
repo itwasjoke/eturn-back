@@ -1,23 +1,28 @@
 package com.eturn.eturn.service.impl;
 
+import com.eturn.eturn.dto.UserDTO;
 import com.eturn.eturn.entity.Member;
 import com.eturn.eturn.enums.AccessMemberEnum;
+import com.eturn.eturn.exception.member.NotFoundMemberException;
 import com.eturn.eturn.exception.member.UnknownMemberException;
 import com.eturn.eturn.exception.user.NotFoundUserException;
 import com.eturn.eturn.repository.MemberRepository;
 import com.eturn.eturn.service.MemberService;
+import com.eturn.eturn.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
+
 
 @Service
 public class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository;
+    private final UserService userService;
 //    private final TurnService turnService;
-    public MemberServiceImpl(MemberRepository memberRepository) {
+    public MemberServiceImpl(MemberRepository memberRepository, UserService userService) {
         this.memberRepository = memberRepository;
+        this.userService = userService;
     }
 
     @Transactional
@@ -37,19 +42,26 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public Member getMember(Long idUser, Long idTurn) {
-        try{
-            return memberRepository.getByIdUserAndIdTurn(idUser,idTurn);
-        } catch (RuntimeException e){
-            throw new NotFoundUserException("Member not found in getMember method (MemberServiceImpl.java)");
-        }
+    public Member getMember(String username, Long idTurn) {
 
+        UserDTO user = userService.getUser(username);
+        Optional<Member> member = Optional.ofNullable(memberRepository.findByIdUserAndIdTurn(user.id(), idTurn));
+        if (member.isPresent()){
+            return member.get();
+        }
+        else{
+            throw new NotFoundMemberException("no member");
+        }
     }
 
     @Override
-    public AccessMemberEnum getAccess(Long idUser, Long idTurn) {
-        Member member = getMember(idUser, idTurn);
-        return member.getAccessMemberEnum();
+    public AccessMemberEnum getAccess(Long userId, Long idTurn) {
+        return memberRepository.getByIdUserAndIdTurn(userId, idTurn).getAccessMemberEnum();
+    }
+
+    @Override
+    public long getCountMembers(Long turnId) {
+        return memberRepository.countByIdTurn(turnId);
     }
 
     @Override
@@ -60,23 +72,5 @@ public class MemberServiceImpl implements MemberService {
             throw new UnknownMemberException("Cannot delete member on createMember method MemberServiceImpl.java " + e.getMessage());
         }
 
-    }
-
-    @Override
-    public List<Member> getListMemeberTurn(Long idTurn){
-        try {
-            return memberRepository.getMemberByIdTurn(idTurn);
-        } catch(RuntimeException e){
-            throw new UnknownMemberException("Cannot get member on createMember method MemberServiceImpl.java " + e.getMessage());
-        }
-    }
-
-    @Override
-    public long getConutByTurn(Long turnId) {
-        try {
-            return memberRepository.countByIdTurn(turnId);
-        } catch(RuntimeException e){
-            throw new UnknownMemberException("Cannot get count member on createMember method MemberServiceImpl.java " + e.getMessage());
-        }
     }
 }

@@ -70,7 +70,7 @@ public class PositionServiceImpl implements PositionService {
         User user = userService.getUserFrom(userDTO.id());
 
         // рассчет участников
-        long members = memberService.getConutByTurn(idTurn);
+        long members = memberService.getCountMembers(idTurn);
         // если человек меньше, чем разрешенное число,
         // то за него берется количество участников
         int PERMITTED_COUNT_PEOPLE_SYSTEM = 2;

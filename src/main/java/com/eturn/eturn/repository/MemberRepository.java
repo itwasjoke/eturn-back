@@ -11,6 +11,7 @@ public interface MemberRepository extends JpaRepository<Member,Long> {
     void deleteByIdTurn(Long idTurn);
 
     Member getByIdUserAndIdTurn(Long id_user, Long id_turn);
+    Member findByIdUserAndIdTurn(Long userId, Long turnId);
     List<Member> getMemberByIdTurn(Long idTurn);
     long countByIdTurn(Long idTurn);
 }
