@@ -16,8 +16,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -70,7 +72,7 @@ public class PositionServiceImpl implements PositionService {
         User user = userService.getUserFrom(userDTO.id());
 
         // рассчет участников
-        long members = memberService.getCountMembers(idTurn);
+        long members = memberService.getCountMembers(turn);
         // если человек меньше, чем разрешенное число,
         // то за него берется количество участников
         int PERMITTED_COUNT_PEOPLE_SYSTEM = 2;
@@ -125,6 +127,7 @@ public class PositionServiceImpl implements PositionService {
             newPosition.setStart(false);
             newPosition.setUser(user);
             newPosition.setTurn(turn);
+            newPosition.setDateStart(null);
             newPosition.setGroupName(userDTO.group());
             newPosition.setNumber(lastNumberPosition);
             Position p = positionRepository.save(newPosition);
@@ -179,7 +182,7 @@ public class PositionServiceImpl implements PositionService {
 //        return positionMoreInfoMapper.positionMoreInfoToPositionDTO(p, difference);
 //    }
     @Override
-    public List<PositionDTO> getPositonList(Long idTurn, int page) {
+    public List<PositionDTO> getPositionList(Long idTurn, int page) {
         Turn turn = turnService.getTurnFrom(idTurn);
         long sizePositions = positionRepository.countByTurn(turn);
         int size;
@@ -217,11 +220,19 @@ public class PositionServiceImpl implements PositionService {
     }
 
     @Override
+    @Transactional
     public void delete(Long id) {
         Optional<Position> position = positionRepository.findById(id);
         if (position.isPresent()) {
             Position pos = position.get();
             positionRepository.delete(pos);
+            Optional<Position> p = positionRepository.findFirstByTurn(pos.getTurn());
+            if (p.isPresent()){
+                Position changePosition = p.get();
+                changePosition.setDateStart(new Date());
+                positionRepository.save(changePosition);
+            }
+
         }
         else{
             throw new NotFoundPosException("No positions found");
@@ -229,10 +240,24 @@ public class PositionServiceImpl implements PositionService {
     }
 
     @Override
+    @Transactional
     public PositionMoreInfoDTO getFirstUserPosition(Long turnId, String username) {
+
+
         UserDTO userDTO = userService.getUser(username);
         User user = userService.getUserFrom(userDTO.id());
         Turn turn = turnService.getTurnFrom(turnId);
+
+        Date dateNow = new Date();
+        Optional<Position> firstPosition = positionRepository.findFirstByTurn(turn);
+        if (firstPosition.isPresent()){
+            long timeBetween = dateNow.getTime() - firstPosition.get().getDateStart().getTime();
+            // TODO do this param of turn
+            if (timeBetween > 120*1000){
+                delete(firstPosition.get().getId());
+            }
+        }
+
         Optional<Position> p = positionRepository.findTopByTurnAndUser(turn, user);
         Optional<Position> pInTurn = positionRepository.findFirstByTurn(turn);
         if (p.isPresent() && pInTurn.isPresent()){

@@ -54,7 +54,7 @@ public class PositionController {
             @PathVariable @Parameter(description = "Идентификатор очереди") Long idTurn,
             @RequestParam(defaultValue = "0") @Parameter(description = "Страница позиций") int page
     ){
-        return positionService.getPositonList(idTurn, page);
+        return positionService.getPositionList(idTurn, page);
     }
     @PostMapping
     @Operation(

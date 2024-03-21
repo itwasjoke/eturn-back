@@ -1,16 +1,13 @@
 package com.eturn.eturn.service.impl;
 
+import com.eturn.eturn.dto.MemberDTO;
 import com.eturn.eturn.dto.TurnDTO;
 import com.eturn.eturn.dto.TurnMoreInfoDTO;
 import com.eturn.eturn.dto.UserDTO;
 import com.eturn.eturn.dto.mapper.TurnListMapper;
 import com.eturn.eturn.dto.mapper.TurnMapper;
 import com.eturn.eturn.dto.mapper.TurnMoreInfoMapper;
-import com.eturn.eturn.entity.Course;
-import com.eturn.eturn.entity.Faculty;
-import com.eturn.eturn.entity.Group;
-import com.eturn.eturn.entity.Turn;
-import com.eturn.eturn.entity.User;
+import com.eturn.eturn.entity.*;
 import com.eturn.eturn.enums.AccessMemberEnum;
 import com.eturn.eturn.enums.AccessTurnEnum;
 import com.eturn.eturn.enums.RoleEnum;
@@ -195,8 +192,9 @@ public class TurnServiceImpl implements TurnService {
     @Override
     @Transactional
     public void updateTurn(Long idUser, Turn turn) {
+        User user = userService.getUserFrom(idUser);
 //        Turn turnUpdated = turnMapper.turnDTOToTurn(turn);
-        AccessMemberEnum accessMemberEnum = memberService.getAccess(idUser, turn.getId());
+        AccessMemberEnum accessMemberEnum = memberService.getAccess(user, turn);
         if (accessMemberEnum == AccessMemberEnum.CREATOR) {
             if (turnRepository.existsTurnById(turn.getId())){
                 Turn turnFromDb = turnRepository.getReferenceById(turn.getId());
@@ -214,15 +212,17 @@ public class TurnServiceImpl implements TurnService {
     @Override
     @Transactional
     public void deleteTurn(Long idUser, Long idTurn) {
-        AccessMemberEnum access = memberService.getAccess(idUser, idTurn);
-        if (access == AccessMemberEnum.CREATOR && turnRepository.existsTurnById(idTurn)) {
-            memberService.deleteTurnMembers(idTurn);
-            turnRepository.deleteTurnById(idTurn);
-        } else if (access != AccessMemberEnum.CREATOR){
-            throw new NoAccessDeleteTurnException("Only creator can delete turn information on deleteTurn method (TurnServiceImpl.java)");
-        }
-        else{
+        Optional<Turn> turn = turnRepository.findById(idTurn);
+        User user = userService.getUserFrom(idUser);
+        if (turn.isEmpty()){
             throw new NotFoundTurnException("No turn in database on deleteTurn method (TurnServiceImpl.java)");
+        }
+        AccessMemberEnum access = memberService.getAccess(user, turn.get());
+        if (access == AccessMemberEnum.CREATOR) {
+            memberService.deleteTurnMembers(turn.get());
+            turnRepository.deleteTurnById(idTurn);
+        } else {
+            throw new NoAccessDeleteTurnException("Only creator can delete turn information on deleteTurn method (TurnServiceImpl.java)");
         }
     }
 
@@ -242,12 +242,21 @@ public class TurnServiceImpl implements TurnService {
         turn.setCountUsers(users);
         turnRepository.save(turn);
 
-        memberService.createMember(user.getId(), turnId, access);
+        memberService.createMember(user, turn, access);
 
-        Set<Turn> turns = user.getTurns();
-        turns.add(turn);
-        user.setTurns(turns);
-        userService.updateUser(user);
+    }
+
+    @Override
+    public MemberDTO getMember(String username, Long idTurn) {
+
+        UserDTO userDTO = userService.getUser(username);
+        User user = userService.getUserFrom(userDTO.id());
+        Optional<Turn> turn = turnRepository.findById(idTurn);
+        if (turn.isEmpty()){
+            throw new NotFoundTurnException("turn not found in getMember function");
+        }
+        return memberService.getMember(user,turn.get());
+
     }
 
 }

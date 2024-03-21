@@ -2,10 +2,8 @@ package com.eturn.eturn.service;
 
 import com.eturn.eturn.dto.PositionDTO;
 import com.eturn.eturn.dto.PositionMoreInfoDTO;
-import com.eturn.eturn.entity.Position;
 
 import java.util.List;
-import java.util.Optional;
 
 
 public interface PositionService {
@@ -16,7 +14,7 @@ public interface PositionService {
 
     PositionMoreInfoDTO createPositionAndSave(String login, Long idTurn);
 
-    List<PositionDTO> getPositonList(Long idTurn, int page);
+    List<PositionDTO> getPositionList(Long idTurn, int page);
 
     void update(Long id);
 

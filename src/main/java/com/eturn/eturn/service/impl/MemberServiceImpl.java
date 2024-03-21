@@ -1,11 +1,13 @@
 package com.eturn.eturn.service.impl;
 
+import com.eturn.eturn.dto.MemberDTO;
 import com.eturn.eturn.dto.UserDTO;
 import com.eturn.eturn.entity.Member;
+import com.eturn.eturn.entity.Turn;
+import com.eturn.eturn.entity.User;
 import com.eturn.eturn.enums.AccessMemberEnum;
 import com.eturn.eturn.exception.member.NotFoundMemberException;
 import com.eturn.eturn.exception.member.UnknownMemberException;
-import com.eturn.eturn.exception.user.NotFoundUserException;
 import com.eturn.eturn.repository.MemberRepository;
 import com.eturn.eturn.service.MemberService;
 import com.eturn.eturn.service.UserService;
@@ -27,13 +29,13 @@ public class MemberServiceImpl implements MemberService {
 
     @Transactional
     @Override
-    public void createMember(Long userId, Long turnId, String access) {
+    public void createMember(User user, Turn turn, String access) {
         try {
             AccessMemberEnum accessMemberEnum = AccessMemberEnum.valueOf(access);
             Member member = new Member();
             member.setAccessMemberEnum(accessMemberEnum);
-            member.setIdTurn(turnId);
-            member.setIdUser(userId);
+            member.setTurn(turn);
+            member.setUser(user);
             memberRepository.save(member);
         }
         catch(Exception e){
@@ -42,35 +44,39 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public Member getMember(String username, Long idTurn) {
+    public AccessMemberEnum getAccess(User user, Turn turn) {
+        return memberRepository.getByUserAndTurn(user, turn).getAccessMemberEnum();
+    }
 
-        UserDTO user = userService.getUser(username);
-        Optional<Member> member = Optional.ofNullable(memberRepository.findByIdUserAndIdTurn(user.id(), idTurn));
+    @Override
+    public MemberDTO getMember(User user, Turn turn) {
+        Optional<Member> member = memberRepository.findMemberByUserAndTurn(user, turn);
         if (member.isPresent()){
-            return member.get();
+            Member memberToDTO = member.get();
+            return new MemberDTO(
+                    memberToDTO.getId(),
+                    memberToDTO.getUser().getId(),
+                    memberToDTO.getTurn().getId(),
+                    memberToDTO.getUser().getName(),
+                    memberToDTO.getAccessMemberEnum().toString()
+                    );
         }
         else{
-            throw new NotFoundMemberException("no member");
+            throw new NotFoundMemberException("Cannot find member on getMember method MemberServiceImpl.java");
         }
     }
 
     @Override
-    public AccessMemberEnum getAccess(Long userId, Long idTurn) {
-        return memberRepository.getByIdUserAndIdTurn(userId, idTurn).getAccessMemberEnum();
+    public long getCountMembers(Turn turn) {
+        return memberRepository.countByTurn(turn);
     }
 
     @Override
-    public long getCountMembers(Long turnId) {
-        return memberRepository.countByIdTurn(turnId);
-    }
-
-    @Override
-    public void deleteTurnMembers(Long idTurn) {
+    public void deleteTurnMembers(Turn turn) {
         try{
-            memberRepository.deleteByIdTurn(idTurn);
+            memberRepository.deleteByTurn(turn);
         } catch(RuntimeException e){
             throw new UnknownMemberException("Cannot delete member on createMember method MemberServiceImpl.java " + e.getMessage());
         }
-
     }
 }

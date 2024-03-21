@@ -4,6 +4,7 @@ import com.eturn.eturn.dto.UserCreateDTO;
 import com.eturn.eturn.dto.UserDTO;
 import com.eturn.eturn.dto.mapper.TurnListMapper;
 import com.eturn.eturn.dto.mapper.UserMapper;
+import com.eturn.eturn.entity.Member;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
 import com.eturn.eturn.enums.RoleEnum;
@@ -16,20 +17,18 @@ import com.eturn.eturn.service.DepartmentService;
 import com.eturn.eturn.service.FacultyService;
 import com.eturn.eturn.service.GroupService;
 import com.eturn.eturn.service.UserService;
-//import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-//import org.springframework.security.crypto.factory.PasswordEncoderFactories;
-//import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 
 @Service
 public class UserServiceImpl implements UserService {
 
-//    private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final FacultyService facultyService;
     private final CourseService courseService;
@@ -115,12 +114,17 @@ public class UserServiceImpl implements UserService {
         User userCreated = userRepository.save(u);
         return userCreated.getId();
     }
-
     @Override
     public Set<Turn> getUserTurns(Long id) {
         Optional<User> user = userRepository.findById(id);
         if (user.isPresent()) {
-            return user.get().getTurns();
+            Set<Member> members = user.get().getMemberTurns();
+            Iterator<Member> iterator = members.iterator();
+            Set<Turn> turns = new HashSet<>();
+            while(iterator.hasNext()){
+                turns.add(iterator.next().getTurn());
+            }
+            return turns;
         } else {
             throw new LocalNotFoundUserException("No user on getUserTurns method (UserServiceImpl.java");
         }

@@ -25,6 +25,9 @@ public class Turn {
     @OneToMany(mappedBy = "turn", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Position> positions;
 
+    @OneToMany(mappedBy = "turn")
+    private Set<Member> memberUsers;
+
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
     private User creator;
@@ -68,10 +71,12 @@ public class Turn {
     )
     private Set<Department> allowedDepartments;
 
-    @ManyToMany(mappedBy = "turns")
-    private Set<User> users;
+//    @ManyToMany(mappedBy = "turns")
+//    private Set<User> users;
 
     private int countUsers;
+
+    private int allowedTime;
 
 //    private Integer countPositions;
 //    private Integer allTime;

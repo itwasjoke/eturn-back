@@ -1,7 +1,9 @@
 package com.eturn.eturn.controller;
 
+import com.eturn.eturn.dto.MemberDTO;
 import com.eturn.eturn.dto.TurnDTO;
 import com.eturn.eturn.dto.TurnMoreInfoDTO;
+import com.eturn.eturn.entity.Member;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.service.PositionService;
 import com.eturn.eturn.service.TurnService;
@@ -105,6 +107,15 @@ public class TurnController {
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
         turnService.addTurnToUser(turnId, userDetails.getUsername(), "MEMBER");
+    }
+    @GetMapping("/member")
+    public MemberDTO getCurrentMember(
+            HttpServletRequest request,
+            @RequestParam Long turnId
+    ){
+        var authentication = (Authentication) request.getUserPrincipal();
+        var userDetails = (UserDetails) authentication.getPrincipal();
+        return turnService.getMember(userDetails.getUsername(), turnId);
     }
 //
 //    @PutMapping()

@@ -39,16 +39,19 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private RoleEnum roleEnum;
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(
-            name = "user_turn",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "turn_id")
-    )
-    private Set<Turn> turns;
-
+//    @ManyToMany(cascade = CascadeType.ALL)
+//    @JoinTable(
+//            name = "user_turn",
+//            joinColumns = @JoinColumn(name = "user_id"),
+//            inverseJoinColumns = @JoinColumn(name = "turn_id")
+//    )
+//    private Set<Turn> turns;
+//
     @OneToMany(mappedBy = "creator")
     private Set<Turn> createdTurns;
+
+    @OneToMany(mappedBy = "user")
+    private Set<Member> memberTurns;
 
     @OneToMany
     @JoinColumn(name = "turn_id")

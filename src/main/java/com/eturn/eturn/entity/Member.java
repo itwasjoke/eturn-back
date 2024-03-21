@@ -15,9 +15,14 @@ public class Member {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long idUser;
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    private Long idTurn;
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "turn_id")
+    private Turn turn;
+
 
     @Enumerated(EnumType.STRING)
     private AccessMemberEnum accessMemberEnum;

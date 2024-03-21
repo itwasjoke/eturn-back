@@ -29,7 +29,9 @@ public record TurnMoreInfoDTO(
         @Schema(description = "Допустимые кафедры")
         Set<Department> allowedDepartments,
         @Schema(description = "Допустимые курсы")
-        Set<Course> allowedCourses
+        Set<Course> allowedCourses,
+        @Schema(description = "Время на то, чтобы войти", example="1")
+        int allowedTime
 ) {
 
 }

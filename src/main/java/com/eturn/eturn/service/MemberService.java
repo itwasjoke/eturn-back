@@ -1,21 +1,24 @@
 package com.eturn.eturn.service;
 
+import com.eturn.eturn.dto.MemberDTO;
 import com.eturn.eturn.entity.Member;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
 import com.eturn.eturn.enums.AccessMemberEnum;
 
-import java.util.List;
+import java.util.Optional;
 
 
 public interface MemberService {
 
-    void createMember(Long userId, Long turnId, String access);
-    Member getMember(String username, Long idTurn);
+    void createMember(User user, Turn turn, String access);
 
-    AccessMemberEnum getAccess(Long userId, Long idTurn);
 
-    long getCountMembers(Long turnId);
-    void deleteTurnMembers(Long idTurn);
+    AccessMemberEnum getAccess(User user, Turn turn);
+
+    MemberDTO getMember(User user, Turn turn);
+
+    long getCountMembers(Turn turn);
+    void deleteTurnMembers(Turn turn);
 
 }
