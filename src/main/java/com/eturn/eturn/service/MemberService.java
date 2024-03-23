@@ -24,4 +24,8 @@ public interface MemberService {
 
     List<MemberDTO> getMemberList(Turn turn, String type);
 
+    void changeMemberStatus(long id, String type);
+
+    void deleteMember(long id);
+
 }

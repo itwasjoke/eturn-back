@@ -89,4 +89,22 @@ public class MemberServiceImpl implements MemberService {
         List<Member> members = memberRepository.getMemberByTurnAndAccessMemberEnum(turn, accessMemberEnum);
         return memberListMapper.map(members);
     }
+
+    @Override
+    public void changeMemberStatus(long id, String type) {
+        Optional<Member> member = memberRepository.findById(id);
+        if (member.isPresent()){
+            Member memberGet = member.get();
+            if (memberGet.getAccessMemberEnum()!=AccessMemberEnum.CREATOR){
+                AccessMemberEnum accessMemberEnum = AccessMemberEnum.valueOf(type);
+                memberGet.setAccessMemberEnum(accessMemberEnum);
+                memberRepository.save(memberGet);
+            }
+        }
+    }
+
+    @Override
+    public void deleteMember(long id) {
+        memberRepository.deleteById(id);
+    }
 }

@@ -31,4 +31,8 @@ public interface TurnService {
     List<MemberDTO> getMemberList(String username, String type, Long turnId);
     void addTurnToUser(Long turnId, String login, String access);
 
+    void changeMemberStatus(long id, String type);
+
+    void deleteMember(long id);
+
 }

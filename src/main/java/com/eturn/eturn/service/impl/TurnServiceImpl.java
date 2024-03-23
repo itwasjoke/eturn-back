@@ -247,6 +247,16 @@ public class TurnServiceImpl implements TurnService {
     }
 
     @Override
+    public void changeMemberStatus(long id, String type) {
+        memberService.changeMemberStatus(id,type);
+    }
+
+    @Override
+    public void deleteMember(long id) {
+        memberService.deleteMember(id);
+    }
+
+    @Override
     public MemberDTO getMember(String username, Long idTurn) {
 
         UserDTO userDTO = userService.getUser(username);

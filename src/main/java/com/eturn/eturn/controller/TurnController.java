@@ -35,11 +35,9 @@ import java.util.Map;
 public class TurnController {
 
     private final TurnService turnService;
-    private final PositionService positionService;
 
-    public TurnController(TurnService turnService, PositionService positionService) {
+    public TurnController(TurnService turnService) {
         this.turnService = turnService;
-        this.positionService=positionService;
     }
 
     @GetMapping("{idTurn}")
@@ -125,6 +123,14 @@ public class TurnController {
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
         return turnService.getMemberList(userDetails.getUsername(), type, turnId);
+    }
+    @DeleteMapping("/member/{id}")
+    public void deleteMember(@PathVariable String id){
+        turnService.deleteMember(Long.parseLong(id));
+    }
+    @PutMapping("/member/access")
+    public void changeMemberAccess(@RequestParam Long id, @RequestParam String type){
+        turnService.changeMemberStatus(id, type);
     }
 //
 //    @PutMapping()
