@@ -6,6 +6,7 @@ import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
 import com.eturn.eturn.enums.AccessMemberEnum;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -20,5 +21,7 @@ public interface MemberService {
 
     long getCountMembers(Turn turn);
     void deleteTurnMembers(Turn turn);
+
+    List<MemberDTO> getMemberList(Turn turn, String type);
 
 }

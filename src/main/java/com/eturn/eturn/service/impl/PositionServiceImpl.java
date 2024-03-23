@@ -251,10 +251,12 @@ public class PositionServiceImpl implements PositionService {
         Date dateNow = new Date();
         Optional<Position> firstPosition = positionRepository.findFirstByTurn(turn);
         if (firstPosition.isPresent()){
-            long timeBetween = dateNow.getTime() - firstPosition.get().getDateStart().getTime();
-            // TODO do this param of turn
-            if (timeBetween > 120*1000){
-                delete(firstPosition.get().getId());
+            if (firstPosition.get().getDateStart()!=null){
+                long timeBetween = dateNow.getTime() - firstPosition.get().getDateStart().getTime();
+                // TODO do this param of turn
+                if (timeBetween > 120*1000){
+                    delete(firstPosition.get().getId());
+                }
             }
         }
 

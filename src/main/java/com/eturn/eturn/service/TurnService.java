@@ -16,6 +16,7 @@ public interface TurnService {
 
     Turn getTurnFrom(Long id);
 
+
     List<TurnDTO> getUserTurns(String login, Map<String,String> params);
 
     Long createTurn(TurnMoreInfoDTO turn, String Login);
@@ -27,6 +28,7 @@ public interface TurnService {
 
     MemberDTO getMember(String username, Long idTurn);
 
+    List<MemberDTO> getMemberList(String username, String type, Long turnId);
     void addTurnToUser(Long turnId, String login, String access);
 
 }

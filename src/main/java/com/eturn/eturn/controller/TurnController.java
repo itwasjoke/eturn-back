@@ -117,6 +117,15 @@ public class TurnController {
         var userDetails = (UserDetails) authentication.getPrincipal();
         return turnService.getMember(userDetails.getUsername(), turnId);
     }
+    @GetMapping("/members")
+    public List<MemberDTO> getMemberList(
+            HttpServletRequest request,
+            @RequestParam String type, @RequestParam Long turnId
+    ){
+        var authentication = (Authentication) request.getUserPrincipal();
+        var userDetails = (UserDetails) authentication.getPrincipal();
+        return turnService.getMemberList(userDetails.getUsername(), type, turnId);
+    }
 //
 //    @PutMapping()
 //    public void update(

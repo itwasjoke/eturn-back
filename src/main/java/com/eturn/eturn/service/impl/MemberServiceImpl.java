@@ -1,7 +1,7 @@
 package com.eturn.eturn.service.impl;
 
 import com.eturn.eturn.dto.MemberDTO;
-import com.eturn.eturn.dto.UserDTO;
+import com.eturn.eturn.dto.mapper.MemberListMapper;
 import com.eturn.eturn.entity.Member;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
@@ -14,6 +14,7 @@ import com.eturn.eturn.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -22,9 +23,11 @@ public class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository;
     private final UserService userService;
 //    private final TurnService turnService;
-    public MemberServiceImpl(MemberRepository memberRepository, UserService userService) {
+    private final MemberListMapper memberListMapper;
+    public MemberServiceImpl(MemberRepository memberRepository, UserService userService, MemberListMapper memberListMapper) {
         this.memberRepository = memberRepository;
         this.userService = userService;
+        this.memberListMapper = memberListMapper;
     }
 
     @Transactional
@@ -78,5 +81,12 @@ public class MemberServiceImpl implements MemberService {
         } catch(RuntimeException e){
             throw new UnknownMemberException("Cannot delete member on createMember method MemberServiceImpl.java " + e.getMessage());
         }
+    }
+
+    @Override
+    public List<MemberDTO> getMemberList(Turn turn, String type) {
+        AccessMemberEnum accessMemberEnum = AccessMemberEnum.valueOf(type);
+        List<Member> members = memberRepository.getMemberByTurnAndAccessMemberEnum(turn, accessMemberEnum);
+        return memberListMapper.map(members);
     }
 }

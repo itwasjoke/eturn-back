@@ -259,4 +259,13 @@ public class TurnServiceImpl implements TurnService {
 
     }
 
+    @Override
+    public List<MemberDTO> getMemberList(String username, String type, Long turnId) {
+        Optional<Turn> turn = turnRepository.findById(turnId);
+        if (turn.isEmpty()){
+            throw new NotFoundTurnException("turn not found in getMember function");
+        }
+        return memberService.getMemberList(turn.get(), type);
+    }
+
 }
