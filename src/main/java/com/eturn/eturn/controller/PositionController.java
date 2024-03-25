@@ -29,8 +29,6 @@ public class PositionController {
     //        return positionService.getPositionById(id);
     //    }
 
-
-    // TODO Сделать через авторизацию
     @GetMapping(value = "/first")
     @Operation(
             summary = "Получение первой позиции",

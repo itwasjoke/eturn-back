@@ -209,8 +209,17 @@ public class PositionServiceImpl implements PositionService {
                 delete(id);
             }
             else{
-                pos.setStart(true);
-                positionRepository.save(pos);
+                Date dateNow = new Date();
+                long timeBetween = dateNow.getTime() - pos.getDateStart().getTime();
+                if (timeBetween > 120*1000){
+                    delete(pos.getId());
+                    throw new NotFoundPosException("You can't create position because it is already delete.");
+                }
+                else{
+                    pos.setStart(true);
+                    positionRepository.save(pos);
+                }
+
             }
         }
         else{
@@ -232,7 +241,6 @@ public class PositionServiceImpl implements PositionService {
                 changePosition.setDateStart(new Date());
                 positionRepository.save(changePosition);
             }
-
         }
         else{
             throw new NotFoundPosException("No positions found");
@@ -252,10 +260,11 @@ public class PositionServiceImpl implements PositionService {
         Optional<Position> firstPosition = positionRepository.findFirstByTurn(turn);
         if (firstPosition.isPresent()){
             if (firstPosition.get().getDateStart()!=null){
-                long timeBetween = dateNow.getTime() - firstPosition.get().getDateStart().getTime();
-                // TODO do this param of turn
-                if (timeBetween > 120*1000){
-                    delete(firstPosition.get().getId());
+                if (!firstPosition.get().isStart()){
+                    long timeBetween = dateNow.getTime() - firstPosition.get().getDateStart().getTime();
+                    if (timeBetween > 120*1000){
+                        delete(firstPosition.get().getId());
+                    }
                 }
             }
         }
