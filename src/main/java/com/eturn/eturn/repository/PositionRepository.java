@@ -19,7 +19,7 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
 
     Optional<Position> findFirstByUserAndTurn(User user,Turn turn);
     List<Position> getPositionByTurn(Turn turn);
-    Page<Position> findAllByTurn(Turn turn,Pageable pageable);
+    Page<Position> findAllByTurnOrderByIdAsc(Turn turn,Pageable pageable);
 
     Page<Position> findByTurnOrderByIdDesc(Turn turn, Pageable page);
     Optional<Position> findTopByTurnOrderByNumberDesc(Turn turn); //findLast

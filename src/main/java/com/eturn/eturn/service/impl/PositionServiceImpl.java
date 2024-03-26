@@ -139,48 +139,8 @@ public class PositionServiceImpl implements PositionService {
             }
             return positionMoreInfoMapper.positionMoreInfoToPositionDTO(p, differenceForUser);
         }
-
-
-
-//        if (members < PERMITTED_COUNT_PEOPLE) {
-//            if (ourPosition.isPresent()) {
-//                return new PositionMoreInfoDTO(null, null, null, false, 0, null, 0);
-//            } else {
-//                return createPosition(turn, user, userDTO, lastNumber, true);
-//            }
-//        } else {
-//            if (ourPosition.isPresent()) {
-//                long countBetween = positionRepository.countNumbers(ourPosition.get().getNumber(), turn);
-//                if (countBetween >= PERMITTED_COUNT_PEOPLE) {
-//                    return createPosition(turn, user, userDTO, lastNumber, false);
-//                }
-//                else{
-//                    int dif = (int) (PERMITTED_COUNT_PEOPLE - countBetween);
-//                    return new PositionMoreInfoDTO(null, null, null, false, 0, null, dif);
-//                }
-//            } else {
-//                return createPosition(turn, user, userDTO, lastNumber, true);
-//            }
-//        }
     }
 
-//    private PositionMoreInfoDTO createPosition(Turn turn, User user, UserDTO userDTO, int lastNumber, boolean need){
-//        Position newPosition = new Position();
-//        newPosition.setStart(false);
-//        newPosition.setUser(user);
-//        newPosition.setTurn(turn);
-//        newPosition.setGroupName(userDTO.group());
-//        newPosition.setNumber(lastNumber + 1);
-//        Position p = positionRepository.save(newPosition);
-//        int difference;
-//        if (need){
-//            difference = (int) positionRepository.countNumbersLeft(p.getNumber(), turn);
-//        }
-//        else{
-//            difference = -1;
-//        }
-//        return positionMoreInfoMapper.positionMoreInfoToPositionDTO(p, difference);
-//    }
     @Override
     public List<PositionDTO> getPositionList(Long idTurn, int page) {
         Turn turn = turnService.getTurnFrom(idTurn);
@@ -193,7 +153,7 @@ public class PositionServiceImpl implements PositionService {
             size = (int) sizePositions;
         }
         Pageable paging = PageRequest.of(page, size);
-        Page<Position> positions = positionRepository.findAllByTurn(turn, paging);
+        Page<Position> positions = positionRepository.findAllByTurnOrderByIdAsc(turn, paging);
         if (positions.isEmpty()){
             throw new NotFoundPosException("No positions found");
         }
@@ -219,6 +179,10 @@ public class PositionServiceImpl implements PositionService {
                         pos.setStart(true);
                         positionRepository.save(pos);
                     }
+                }
+                else{
+                    pos.setStart(true);
+                    positionRepository.save(pos);
                 }
             }
         }
