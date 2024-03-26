@@ -5,7 +5,6 @@ import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,7 +24,7 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
     Optional<Position> findTopByTurnOrderByNumberDesc(Turn turn); //findLast
     Optional<Position> findFirstByTurnOrderByNumber(Turn turn); //findLast
 
-    Optional<Position> findFirstByTurn(Turn turn);
+    Optional<Position> findFirstByTurnOrderByIdAsc(Turn turn);
 
     Optional<Position> findTopByTurnAndUser(Turn turn, User user);
 

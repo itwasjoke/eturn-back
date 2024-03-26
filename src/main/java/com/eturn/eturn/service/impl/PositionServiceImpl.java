@@ -6,7 +6,6 @@ import com.eturn.eturn.dto.UserDTO;
 import com.eturn.eturn.dto.mapper.PositionListMapper;
 import com.eturn.eturn.dto.mapper.PositionMapper;
 import com.eturn.eturn.dto.mapper.PositionMoreInfoMapper;
-import com.eturn.eturn.dto.mapper.TurnMapper;
 import com.eturn.eturn.entity.*;
 import com.eturn.eturn.exception.position.NoCreatePosException;
 import com.eturn.eturn.exception.position.NotFoundPosException;
@@ -18,7 +17,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -199,7 +197,7 @@ public class PositionServiceImpl implements PositionService {
         if (position.isPresent()) {
             Position pos = position.get();
             positionRepository.delete(pos);
-            Optional<Position> p = positionRepository.findFirstByTurn(pos.getTurn());
+            Optional<Position> p = positionRepository.findFirstByTurnOrderByIdAsc(pos.getTurn());
             if (p.isPresent()){
                 Position changePosition = p.get();
                 changePosition.setDateStart(new Date());
@@ -221,7 +219,7 @@ public class PositionServiceImpl implements PositionService {
         Turn turn = turnService.getTurnFrom(turnId);
 
         Date dateNow = new Date();
-        Optional<Position> firstPosition = positionRepository.findFirstByTurn(turn);
+        Optional<Position> firstPosition = positionRepository.findFirstByTurnOrderByIdAsc(turn);
         if (firstPosition.isPresent()){
             if (firstPosition.get().getDateStart()!=null){
                 if (!firstPosition.get().isStart()){
@@ -234,9 +232,9 @@ public class PositionServiceImpl implements PositionService {
         }
 
         Optional<Position> p = positionRepository.findTopByTurnAndUser(turn, user);
-        Optional<Position> pInTurn = positionRepository.findFirstByTurn(turn);
+        Optional<Position> pInTurn = positionRepository.findFirstByTurnOrderByIdAsc(turn);
         if (p.isPresent() && pInTurn.isPresent()){
-            if (pInTurn.get()==p.get()){
+            if (pInTurn.get().getId().equals(p.get().getId())){
                 int difference = 0;
                 return positionMoreInfoMapper.positionMoreInfoToPositionDTO(p.get(), difference);
             }
