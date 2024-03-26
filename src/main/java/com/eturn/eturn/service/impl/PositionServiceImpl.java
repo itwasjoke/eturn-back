@@ -209,17 +209,17 @@ public class PositionServiceImpl implements PositionService {
                 delete(id);
             }
             else{
-                Date dateNow = new Date();
-                long timeBetween = dateNow.getTime() - pos.getDateStart().getTime();
-                if (timeBetween > 120*1000){
-                    delete(pos.getId());
-                    throw new NotFoundPosException("You can't create position because it is already delete.");
+                if (pos.getDateStart()!=null) {
+                    Date dateNow = new Date();
+                    long timeBetween = dateNow.getTime() - pos.getDateStart().getTime();
+                    if (timeBetween > 120 * 1000) {
+                        delete(pos.getId());
+                        throw new NotFoundPosException("You can't create position because it is already delete.");
+                    } else {
+                        pos.setStart(true);
+                        positionRepository.save(pos);
+                    }
                 }
-                else{
-                    pos.setStart(true);
-                    positionRepository.save(pos);
-                }
-
             }
         }
         else{
