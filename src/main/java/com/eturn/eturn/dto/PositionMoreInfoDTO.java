@@ -25,7 +25,7 @@ public record PositionMoreInfoDTO(
         @Schema(description = "Сколько позиций осталось ждать", example="54")
         int difference,
         @Schema(description = "Дата начала отсчета", example="01.01.01 10:00")
-        Date dateStart
+        Date dateEnd
 ) {
 
 }

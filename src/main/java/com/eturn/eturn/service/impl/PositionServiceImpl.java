@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -44,22 +45,31 @@ public class PositionServiceImpl implements PositionService {
         this.memberService = memberService;
     }
 
-    //TODO Надо ли сохранять?
-//    @Override
-//    public PositionDTO getPositionById(Long id) {
-//        Optional<Position> position = positionRepository.findById(id);
-//        if (position.isPresent()){
-//            return positionMapper.positionToPositionDTO(position.get());
-//        }
-//        else throw new
-//    }
+    void deleteOverdueElements(Turn turn){
+        Optional<Position> positionFirstO = positionRepository.findFirstByTurnOrderByIdAsc(turn);
+        if (positionFirstO.isPresent()){
+            Position positionFirst = positionFirstO.get();
+            if (positionFirst.getDateEnd()!=null){
+                Date dateNow = new Date();
+                long timeBetween = dateNow.getTime() - positionFirst.getDateEnd().getTime();
+                if (timeBetween>0){
+                    timeBetween = timeBetween / 1000;
+                    timeBetween = timeBetween / 60;
+                    timeBetween = timeBetween / 2;
+                    timeBetween++;
+                    Pageable  paging = PageRequest.of(0, (int)timeBetween);
+                    Page<Position> positionsPage = positionRepository.findAllByTurnOrderByIdAsc(turn,paging);
+                    List<Position> positionList = positionsPage.stream().toList();
+                    Position p = positionList.get(positionList.size()-1);
+                    positionRepository.deletePositionsByTurnAndNumberLessThanEqual(turn, p.getNumber());
 
-//    @Override
-//    public Optional<Position> getLastPosition(Long idUser, Long idTurn) {
-//        User user = userService.getUserFrom(idUser);
-//        Turn turn = turnService.getTurnFrom(idTurn);
-//        return positionRepository.findFirstByUserAndTurnOrderByNumberDesc(user, turn);
-//    }
+                }
+            }
+        }
+        else{
+            throw new NotFoundPosException("No positions found");
+        }
+    }
 
     @Override
     public PositionMoreInfoDTO createPositionAndSave(String login, Long idTurn) {
@@ -125,7 +135,7 @@ public class PositionServiceImpl implements PositionService {
             newPosition.setStart(false);
             newPosition.setUser(user);
             newPosition.setTurn(turn);
-            newPosition.setDateStart(null);
+            newPosition.setDateEnd(null);
             newPosition.setGroupName(userDTO.group());
             newPosition.setNumber(lastNumberPosition);
             Position p = positionRepository.save(newPosition);
@@ -140,9 +150,12 @@ public class PositionServiceImpl implements PositionService {
     }
 
     @Override
+    @Transactional
     public List<PositionDTO> getPositionList(Long idTurn, int page) {
         Turn turn = turnService.getTurnFrom(idTurn);
         long sizePositions = positionRepository.countByTurn(turn);
+        deleteOverdueElements(turn);
+
         int size;
         if (sizePositions>20){
             size = 20;
@@ -162,27 +175,33 @@ public class PositionServiceImpl implements PositionService {
     public void update(Long id) {
         Optional<Position> position = positionRepository.findById(id);
         if (position.isPresent()){
-            Position pos = position.get();
-            if (pos.isStart()){
-                delete(id);
-            }
-            else{
-                if (pos.getDateStart()!=null) {
-                    Date dateNow = new Date();
-                    long timeBetween = dateNow.getTime() - pos.getDateStart().getTime();
-                    if (timeBetween > 120 * 1000) {
-                        delete(pos.getId());
-                        throw new NotFoundPosException("You can't create position because it is already delete.");
-                    } else {
+            Position posI = position.get();
+            deleteOverdueElements(posI.getTurn());
+            Optional<Position> positionO = positionRepository.findById(id);
+            if (positionO.isPresent()){
+                Position pos = positionO.get();
+                if (pos.isStart()){
+                    delete(id);
+                }
+                else{
+                    if (pos.getDateEnd()!=null) {
+                        Date dateNow = new Date();
+                        long timeBetween =  pos.getDateEnd().getTime() - dateNow.getTime();
+                        if (timeBetween > 120 * 1000) {
+                            delete(pos.getId());
+                            throw new NotFoundPosException("You can't create position because it is already delete.");
+                        } else {
+                            pos.setStart(true);
+                            positionRepository.save(pos);
+                        }
+                    }
+                    else{
                         pos.setStart(true);
                         positionRepository.save(pos);
                     }
                 }
-                else{
-                    pos.setStart(true);
-                    positionRepository.save(pos);
-                }
             }
+
         }
         else{
             throw new NotFoundPosException("No positions found");
@@ -200,7 +219,11 @@ public class PositionServiceImpl implements PositionService {
             Optional<Position> p = positionRepository.findFirstByTurnOrderByIdAsc(pos.getTurn());
             if (p.isPresent()){
                 Position changePosition = p.get();
-                changePosition.setDateStart(new Date());
+                Date date = new Date();
+                Calendar c = Calendar.getInstance();
+                c.setTime(date);
+                c.add(Calendar.MINUTE, 2);
+                changePosition.setDateEnd(c.getTime());
                 positionRepository.save(changePosition);
             }
         }
@@ -218,18 +241,7 @@ public class PositionServiceImpl implements PositionService {
         User user = userService.getUserFrom(userDTO.id());
         Turn turn = turnService.getTurnFrom(turnId);
 
-        Date dateNow = new Date();
-        Optional<Position> firstPosition = positionRepository.findFirstByTurnOrderByIdAsc(turn);
-        if (firstPosition.isPresent()){
-            if (firstPosition.get().getDateStart()!=null){
-                if (!firstPosition.get().isStart()){
-                    long timeBetween = dateNow.getTime() - firstPosition.get().getDateStart().getTime();
-                    if (timeBetween > 120*1000){
-                        delete(firstPosition.get().getId());
-                    }
-                }
-            }
-        }
+        deleteOverdueElements(turn);
 
         Optional<Position> p = positionRepository.findTopByTurnAndUser(turn, user);
         Optional<Position> pInTurn = positionRepository.findFirstByTurnOrderByIdAsc(turn);

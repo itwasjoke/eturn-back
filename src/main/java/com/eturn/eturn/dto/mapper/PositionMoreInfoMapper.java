@@ -19,7 +19,7 @@ public interface PositionMoreInfoMapper {
     @Mapping(target="group", source="position.groupName")
     @Mapping(target = "userId", source = "position.user.id")
     @Mapping(target = "start", source = "position.start")
-    @Mapping(target = "dateStart", source = "position.dateStart")
+    @Mapping(target = "dateEnd", source = "position.dateEnd")
     @Mapping(target = "difference", source = "dif")
     PositionMoreInfoDTO positionMoreInfoToPositionDTO(Position position, int dif);
 }

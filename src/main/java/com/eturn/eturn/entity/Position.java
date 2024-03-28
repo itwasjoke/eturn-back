@@ -30,5 +30,5 @@ public class Position {
 
     private int number;
 
-    private Date dateStart;
+    private Date dateEnd;
 }
