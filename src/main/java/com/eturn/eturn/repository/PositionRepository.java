@@ -23,14 +23,17 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
     Page<Position> findAllByTurnOrderByIdAsc(Turn turn,Pageable pageable);
 
     void deletePositionsByTurnAndNumberLessThanEqual(Turn turn, int number);
-
+    @Modifying
+    @Query("delete from Position p where p.turn=:turn and p.number<=:number")
+    void tryToDelete(@Param("turn") Turn turn, @Param("number") int number);
+    void deleteByTurnAndNumberLessThanEqual(Turn turn, int number);
     Page<Position> findByTurnOrderByIdDesc(Turn turn, Pageable page);
     Optional<Position> findTopByTurnOrderByNumberDesc(Turn turn); //findLast
     Optional<Position> findFirstByTurnOrderByNumber(Turn turn); //findLast
 
     Optional<Position> findFirstByTurnOrderByIdAsc(Turn turn);
 
-    Optional<Position> findTopByTurnAndUser(Turn turn, User user);
+    Optional<Position> findTopByTurnAndUserOrderByIdAsc(Turn turn, User user);
 
     long countByTurn(Turn turn);
 
