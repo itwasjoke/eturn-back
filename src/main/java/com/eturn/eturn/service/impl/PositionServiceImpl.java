@@ -65,7 +65,11 @@ public class PositionServiceImpl implements PositionService {
                     Optional<Position> positionFirstO2 = positionRepository.findFirstByTurnOrderByIdAsc(turn);
                     if (positionFirstO2.isPresent()){
                         Position positionF = positionFirstO2.get();
-                        positionF.setDateEnd(new Date());
+                        Date date = new Date();
+                        Calendar c = Calendar.getInstance();
+                        c.setTime(date);
+                        c.add(Calendar.MINUTE, 2);
+                        positionF.setDateEnd(c.getTime());
                         positionRepository.save(positionF);
                     }
                 }
