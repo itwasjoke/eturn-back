@@ -6,7 +6,6 @@ public enum AccessMemberEnum {
     MEMBER,
     MODERATOR,
     CREATOR;
-
     AccessMemberEnum() {
     }
 }

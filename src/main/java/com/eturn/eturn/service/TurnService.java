@@ -3,10 +3,7 @@ package com.eturn.eturn.service;
 import com.eturn.eturn.dto.MemberDTO;
 import com.eturn.eturn.dto.TurnDTO;
 import com.eturn.eturn.dto.TurnMoreInfoDTO;
-import com.eturn.eturn.entity.Member;
 import com.eturn.eturn.entity.Turn;
-import com.eturn.eturn.entity.User;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
@@ -31,8 +28,8 @@ public interface TurnService {
     List<MemberDTO> getMemberList(String username, String type, Long turnId);
     void addTurnToUser(Long turnId, String login, String access);
 
-    void changeMemberStatus(long id, String type);
+    void changeMemberStatus(long id, String type, String username);
 
-    void deleteMember(long id);
+    void deleteMember(long id, String username);
 
 }

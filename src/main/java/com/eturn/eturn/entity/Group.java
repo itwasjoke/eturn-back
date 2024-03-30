@@ -19,6 +19,6 @@ public class Group {
 
     private Long facultyId;
 
-    @ManyToMany(mappedBy = "allowedGroups")
+    @ManyToMany(mappedBy = "allowedGroups",fetch = FetchType.LAZY)
     private Set<Turn> turns;
 }

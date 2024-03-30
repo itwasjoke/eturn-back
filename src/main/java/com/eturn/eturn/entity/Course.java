@@ -22,7 +22,7 @@ public class Course {
 
     private Integer number;
 
-    @ManyToMany(mappedBy = "allowedCourses")
+    @ManyToMany(mappedBy = "allowedCourses",fetch = FetchType.LAZY)
     private Set<Turn> turns;
 
 }

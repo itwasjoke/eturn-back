@@ -47,13 +47,13 @@ public class User implements UserDetails {
 //    )
 //    private Set<Turn> turns;
 //
-    @OneToMany(mappedBy = "creator")
+    @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
     private Set<Turn> createdTurns;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private Set<Member> memberTurns;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "turn_id")
     private Set<Position> positions;
 

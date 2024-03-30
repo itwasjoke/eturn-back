@@ -3,9 +3,6 @@ package com.eturn.eturn.controller;
 import com.eturn.eturn.dto.MemberDTO;
 import com.eturn.eturn.dto.TurnDTO;
 import com.eturn.eturn.dto.TurnMoreInfoDTO;
-import com.eturn.eturn.entity.Member;
-import com.eturn.eturn.entity.Turn;
-import com.eturn.eturn.service.PositionService;
 import com.eturn.eturn.service.TurnService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -125,12 +122,16 @@ public class TurnController {
         return turnService.getMemberList(userDetails.getUsername(), type, turnId);
     }
     @DeleteMapping("/member/{id}")
-    public void deleteMember(@PathVariable String id){
-        turnService.deleteMember(Long.parseLong(id));
+    public void deleteMember(HttpServletRequest request, @PathVariable String id){
+        var authentication = (Authentication) request.getUserPrincipal();
+        var userDetails = (UserDetails) authentication.getPrincipal();
+        turnService.deleteMember(Long.parseLong(id), userDetails.getUsername());
     }
     @PutMapping("/member/access")
-    public void changeMemberAccess(@RequestParam Long id, @RequestParam String type){
-        turnService.changeMemberStatus(id, type);
+    public void changeMemberAccess(HttpServletRequest request, @RequestParam Long id, @RequestParam String type){
+        var authentication = (Authentication) request.getUserPrincipal();
+        var userDetails = (UserDetails) authentication.getPrincipal();
+        turnService.changeMemberStatus(id, type, userDetails.getUsername());
     }
 //
 //    @PutMapping()

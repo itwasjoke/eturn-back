@@ -6,6 +6,7 @@ import com.eturn.eturn.entity.Member;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
 import com.eturn.eturn.enums.AccessMemberEnum;
+import com.eturn.eturn.exception.member.NoAccessMemberException;
 import com.eturn.eturn.exception.member.NotFoundMemberException;
 import com.eturn.eturn.exception.member.UnknownMemberException;
 import com.eturn.eturn.repository.MemberRepository;
@@ -91,20 +92,58 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public void changeMemberStatus(long id, String type) {
+    public void changeMemberStatus(long id, String type, User user) {
         Optional<Member> member = memberRepository.findById(id);
         if (member.isPresent()){
             Member memberGet = member.get();
-            if (memberGet.getAccessMemberEnum()!=AccessMemberEnum.CREATOR){
-                AccessMemberEnum accessMemberEnum = AccessMemberEnum.valueOf(type);
-                memberGet.setAccessMemberEnum(accessMemberEnum);
-                memberRepository.save(memberGet);
+            Optional<Member> memberUser = memberRepository.findMemberByUserAndTurn(user, memberGet.getTurn());
+            if (memberUser.isPresent()){
+                if (memberUser.get().getAccessMemberEnum()==AccessMemberEnum.MODERATOR ||
+                        memberUser.get().getAccessMemberEnum()==AccessMemberEnum.CREATOR ){
+                        if (memberGet.getAccessMemberEnum()!=AccessMemberEnum.CREATOR){
+                            AccessMemberEnum accessMemberEnum = AccessMemberEnum.valueOf(type);
+                            memberGet.setAccessMemberEnum(accessMemberEnum);
+                            memberRepository.save(memberGet);
+                        }
+                }
+                else{
+                    throw new NoAccessMemberException("you don't have root for this operation");
+                }
             }
+            else{
+                throw new NotFoundMemberException("can't change member status because your member not found");
+            }
+
+        }
+        else{
+            throw new NotFoundMemberException("no member what you want to update");
         }
     }
 
     @Override
-    public void deleteMember(long id) {
-        memberRepository.deleteById(id);
+    public void deleteMember(long id, User user) {
+        Optional<Member> member = memberRepository.findById(id);
+        if (member.isPresent()){
+            Member memberGet = member.get();
+            if (memberGet.getAccessMemberEnum()==AccessMemberEnum.CREATOR){
+                throw new NoAccessMemberException("you cannot delete creator of the turn");
+            }
+            Optional<Member> memberUser = memberRepository.findMemberByUserAndTurn(user, memberGet.getTurn());
+            if (memberUser.isPresent()){
+                if (memberUser.get().getAccessMemberEnum()==AccessMemberEnum.MODERATOR ||
+                        memberUser.get().getAccessMemberEnum()==AccessMemberEnum.CREATOR || memberGet.getUser()==user){
+                    memberRepository.deleteById(id);
+                }
+                else{
+                    throw new NoAccessMemberException("you don't have root for this operation");
+                }
+            }
+            else{
+                throw new NotFoundMemberException("can't delete because your member not found and this is not your member");
+            }
+        }
+        else{
+            throw new NotFoundMemberException("no member what you want to delete");
+        }
     }
 }

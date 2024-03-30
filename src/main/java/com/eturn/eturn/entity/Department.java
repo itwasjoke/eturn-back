@@ -17,7 +17,7 @@ public class Department {
 
     private String name;
 
-    @ManyToMany(mappedBy = "allowedDepartments")
+    @ManyToMany(mappedBy = "allowedDepartments", fetch = FetchType.LAZY)
     private Set<Turn> turns;
 
 }

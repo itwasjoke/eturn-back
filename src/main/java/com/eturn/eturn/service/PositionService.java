@@ -16,9 +16,11 @@ public interface PositionService {
 
     List<PositionDTO> getPositionList(Long idTurn, int page);
 
-    void update(Long id);
+    void update(Long id, String username);
 
-    void delete(Long id);
+    void delete(Long id, String username);
 
     PositionMoreInfoDTO getFirstUserPosition(Long turnId, String username);
+
+    PositionMoreInfoDTO getFirstPosition(Long turnId, String username);
 }

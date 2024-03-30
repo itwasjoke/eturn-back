@@ -6,8 +6,10 @@ import com.eturn.eturn.exception.faculty.AlreadyExistFacultyException;
 import com.eturn.eturn.exception.faculty.NotFoundFacultyException;
 import com.eturn.eturn.exception.group.AlreadyExistGroupException;
 import com.eturn.eturn.exception.group.NotFoundGroupException;
+import com.eturn.eturn.exception.member.NoAccessMemberException;
 import com.eturn.eturn.exception.member.NotFoundMemberException;
 import com.eturn.eturn.exception.member.UnknownMemberException;
+import com.eturn.eturn.exception.position.NoAccessPosException;
 import com.eturn.eturn.exception.position.NoCreatePosException;
 import com.eturn.eturn.exception.position.NotFoundPosException;
 import com.eturn.eturn.exception.turn.*;
@@ -106,6 +108,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
     }
 
+    @ExceptionHandler(NoAccessPosException.class)
+    public ResponseEntity<Object> handleNoAccessPosException(NoAccessPosException e, WebRequest request) {
+        String body = "Нет доступа к информации по этой позиции.";
+        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.METHOD_NOT_ALLOWED, request);
+    }
+
     //
     // MEMBER
     //
@@ -115,6 +123,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         String body = "Участник очереди не найден.";
         log.error("Error with this message: " + e.getMessage());
         return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+    }
+
+    @ExceptionHandler(NoAccessMemberException.class)
+    public ResponseEntity<Object> handleNoAccessPosException(NoAccessMemberException e, WebRequest request) {
+        String body = "Ваш статус участника не соотвествует операции.";
+        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.METHOD_NOT_ALLOWED, request);
     }
 
     @ExceptionHandler(UnknownMemberException.class)

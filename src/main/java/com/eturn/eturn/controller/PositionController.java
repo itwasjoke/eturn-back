@@ -31,7 +31,7 @@ public class PositionController {
 
     @GetMapping(value = "/first")
     @Operation(
-            summary = "Получение первой позиции",
+            summary = "Получение первой позиции пользователя",
             description = "Отправляет объект с сущностью первой позиции пользователя"
     )
     public PositionMoreInfoDTO getUserFirstPosition(
@@ -41,6 +41,20 @@ public class PositionController {
         var userDetails = (UserDetails) authentication.getPrincipal();
 
         return positionService.getFirstUserPosition(turnId, userDetails.getUsername());
+    }
+
+    @GetMapping(value = "/first/in")
+    @Operation(
+            summary = "Получение первой позиции очереди",
+            description = "Отправляет объект с сущностью первой позиции очереди"
+    )
+    public PositionMoreInfoDTO getFirstPosition(
+            HttpServletRequest request,
+            @RequestParam @Parameter(description = "Идентификатор очереди")Long turnId
+    ){
+        var authentication = (Authentication) request.getUserPrincipal();
+        var userDetails = (UserDetails) authentication.getPrincipal();
+        return positionService.getFirstPosition(turnId, userDetails.getUsername());
     }
 
     @GetMapping ("/all/{idTurn}")
@@ -74,16 +88,23 @@ public class PositionController {
             description = "Находит позицию и изменяет ее статус из 'вход' на 'выход' и с 'выход' на удаление позиции"
     )
     public void updateStatus(
+            HttpServletRequest request,
             @RequestParam @Parameter(description = "Идентификатор позиции") Long id
     ){
-        positionService.update(id);
+        var authentication = (Authentication) request.getUserPrincipal();
+        var userDetails = (UserDetails) authentication.getPrincipal();
+        positionService.update(id, userDetails.getUsername());
     }
     @DeleteMapping("/{id}")
     @Operation(
             summary = "Удаление позиции",
             description = "Берет текущего авторизированного пользователя и создает позицию для него"
     )
-    public void deletePosition(@PathVariable @Parameter(description = "Идентификатор позиции") Long id){
-        positionService.delete(id);
+    public void deletePosition(
+            HttpServletRequest request,
+            @PathVariable @Parameter(description = "Идентификатор позиции") Long id){
+        var authentication = (Authentication) request.getUserPrincipal();
+        var userDetails = (UserDetails) authentication.getPrincipal();
+        positionService.delete(id, userDetails.getUsername());
     }
 }

@@ -25,7 +25,7 @@ public class Turn {
     @OneToMany(mappedBy = "turn", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Position> positions;
 
-    @OneToMany(mappedBy = "turn")
+    @OneToMany(mappedBy = "turn", fetch = FetchType.LAZY)
     private Set<Member> memberUsers;
 
     @ManyToOne(cascade = CascadeType.ALL)
