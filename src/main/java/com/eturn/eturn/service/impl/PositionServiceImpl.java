@@ -8,6 +8,7 @@ import com.eturn.eturn.dto.mapper.PositionListMapper;
 import com.eturn.eturn.dto.mapper.PositionMapper;
 import com.eturn.eturn.dto.mapper.PositionMoreInfoMapper;
 import com.eturn.eturn.entity.*;
+import com.eturn.eturn.enums.AccessMemberEnum;
 import com.eturn.eturn.exception.position.NoAccessPosException;
 import com.eturn.eturn.exception.position.NoCreatePosException;
 import com.eturn.eturn.exception.position.NotFoundPosException;
@@ -197,7 +198,11 @@ public class PositionServiceImpl implements PositionService {
         if (position.isPresent()){
             Position posI = position.get();
             MemberDTO memberDTO = memberService.getMember(posI.getUser(), posI.getTurn());
-            if ((posI.getUser()==user && memberDTO.access().equals("MEMBER")) || memberDTO.access().equals("MODERATOR") || memberDTO.access().equals("CREATOR")){
+            String access = memberDTO.access();
+            if (posI.getUser()==user
+                    || access.equals(AccessMemberEnum.CREATOR.toString())
+                    || access.equals(AccessMemberEnum.MODERATOR.toString()))
+            {
                 deleteOverdueElements(posI.getTurn());
                 Optional<Position> positionO = positionRepository.findById(id);
                 if (positionO.isPresent()){
@@ -231,7 +236,11 @@ public class PositionServiceImpl implements PositionService {
         if (position.isPresent()) {
             Position pos = position.get();
             MemberDTO memberDTO = memberService.getMember(user, pos.getTurn());
-            if ((pos.getUser()==user && memberDTO.access().equals("MEMBER")) || memberDTO.access().equals("MODERATOR") || memberDTO.access().equals("CREATOR")){
+            String access = memberDTO.access();
+            if ((pos.getUser()==user && access.equals(AccessMemberEnum.MEMBER.toString()))
+                    || access.equals(AccessMemberEnum.CREATOR.toString())
+                    || access.equals(AccessMemberEnum.MODERATOR.toString()))
+            {
                 positionRepository.delete(pos);
                 Optional<Position> p = positionRepository.findFirstByTurnOrderByIdAsc(pos.getTurn());
                 if (p.isPresent()){
