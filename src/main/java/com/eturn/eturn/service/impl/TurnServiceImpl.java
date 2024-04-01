@@ -72,10 +72,15 @@ public class TurnServiceImpl implements TurnService {
     }
 
     @Override
+    @Transactional
     public TurnDTO getTurn(Long id) {
         Optional<Turn> turn = turnRepository.findById(id);
         if (turn.isPresent()){
-            return turnMapper.turnToTurnDTO(turn.get());
+            Turn turnIn = turn.get();
+            long members = memberService.getCountMembers(turnIn);
+            turnIn.setCountUsers((int)members);
+            turnRepository.save(turnIn);
+            return turnMapper.turnToTurnDTO(turnIn);
         }
         else{
             throw new NotFoundTurnException("No turn in database on getTurn method (TurnServiceImpl.java)");
@@ -183,7 +188,6 @@ public class TurnServiceImpl implements TurnService {
         User userCreator = userService.getUserFrom(userDTO.id());
         Set<Group> groups = groupService.getSetGroups(turn.allowedGroups());
         Turn turnDto = turnMoreInfoMapper.turnMoreDTOToTurn(turn,userCreator, groups);
-        turnDto.setCountUsers(0);
         Turn turnNew = turnRepository.save(turnDto);
         addTurnToUser(turnNew.getId(), login, "CREATOR");
         return turnNew.getId();
@@ -228,9 +232,7 @@ public class TurnServiceImpl implements TurnService {
 
     @Override
     public void countUser(Turn turn) {
-        int users = turn.getCountUsers() + 1;
-        turn.setCountUsers(users);
-        turnRepository.save(turn);
+
     }
 
     @Override
@@ -238,9 +240,6 @@ public class TurnServiceImpl implements TurnService {
     public void addTurnToUser(Long turnId, String login, String access) {
         User user = userService.findByLogin(login);
         Turn turn = getTurnFrom(turnId);
-        int users = turn.getCountUsers()+1;
-        turn.setCountUsers(users);
-        turnRepository.save(turn);
         memberService.createMember(user, turn, access);
     }
 

@@ -197,7 +197,7 @@ public class PositionServiceImpl implements PositionService {
         Optional<Position> position = positionRepository.findById(id);
         if (position.isPresent()){
             Position posI = position.get();
-            MemberDTO memberDTO = memberService.getMember(posI.getUser(), posI.getTurn());
+            MemberDTO memberDTO = memberService.getMember(user, posI.getTurn());
             String access = memberDTO.access();
             if (posI.getUser()==user
                     || access.equals(AccessMemberEnum.CREATOR.toString())

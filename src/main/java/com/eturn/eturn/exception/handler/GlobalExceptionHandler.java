@@ -98,7 +98,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(NoCreatePosException.class)
     public ResponseEntity<Object> handleNoCreatePosException(NoCreatePosException e, WebRequest request) {
-        String body = "Вы уже вставали в очередь недавно. Вы сможете занять место через " + e.getMessage() +" позиций.";
+        String body = e.getMessage();
         return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
