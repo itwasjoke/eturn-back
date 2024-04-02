@@ -269,9 +269,10 @@ public class PositionServiceImpl implements PositionService {
         UserDTO userDTO = userService.getUser(username);
         User user = userService.getUserFrom(userDTO.id());
         Member member = memberService.getMemberFrom(id);
+        User userMember = member.getUser();
         Turn turn = member.getTurn();
         memberService.deleteMember(id, user);
-        positionRepository.deletePositionsByUserAndTurn(user,turn);
+        positionRepository.deletePositionsByUserAndTurn(userMember,turn);
     }
 
     @Override
@@ -280,9 +281,13 @@ public class PositionServiceImpl implements PositionService {
         UserDTO userDTO = userService.getUser(username);
         User user = userService.getUserFrom(userDTO.id());
         Member member = memberService.getMemberFrom(id);
+        User userMember = member.getUser();
         Turn turn = member.getTurn();
         memberService.changeMemberStatus(id, type, user);
-        positionRepository.deletePositionsByUserAndTurn(user,turn);
+        if (type.equals("BLOCKED")){
+            positionRepository.deletePositionsByUserAndTurn(userMember,turn);
+        }
+
 
     }
 
