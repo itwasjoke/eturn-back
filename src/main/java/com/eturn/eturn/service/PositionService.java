@@ -20,6 +20,9 @@ public interface PositionService {
 
     void delete(Long id, String username);
 
+    void deleteMember(long id, String username);
+    void changeMemberStatus(long id, String type, String username);
+
     PositionMoreInfoDTO getFirstUserPosition(Long turnId, String username);
 
     PositionMoreInfoDTO getFirstPosition(Long turnId, String username);

@@ -19,17 +19,12 @@ import java.util.Optional;
 public interface PositionRepository extends JpaRepository<Position, Long> {
 
     Optional<Position> findFirstByUserAndTurn(User user,Turn turn);
-    List<Position> getPositionByTurn(Turn turn);
     Page<Position> findAllByTurnOrderByIdAsc(Turn turn,Pageable pageable);
 
-    void deletePositionsByTurnAndNumberLessThanEqual(Turn turn, int number);
     @Modifying
     @Query("delete from Position p where p.turn=:turn and p.number<=:number")
     void tryToDelete(@Param("turn") Turn turn, @Param("number") int number);
-    void deleteByTurnAndNumberLessThanEqual(Turn turn, int number);
     Page<Position> findByTurnOrderByIdDesc(Turn turn, Pageable page);
-    Optional<Position> findTopByTurnOrderByNumberDesc(Turn turn); //findLast
-    Optional<Position> findFirstByTurnOrderByNumber(Turn turn); //findLast
 
     Optional<Position> findFirstByTurnOrderByIdAsc(Turn turn);
 
@@ -37,8 +32,7 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
 
     long countByTurn(Turn turn);
 
-    @Query(value = "select count(*) from Position p where p.turn = :t and p.number > :num")
-    long countNumbers(@Param("num") int num, @Param("t") Turn t);
+    void deletePositionsByUserAndTurn(User user, Turn turn);
     @Query(value = "select count(*) from Position p where p.turn = :t and p.number < :num")
     long countNumbersLeft(@Param("num") int num, @Param("t") Turn t);
 

@@ -208,7 +208,7 @@ public class PositionServiceImpl implements PositionService {
                 if (positionO.isPresent()){
                     Position pos = positionO.get();
                     if (pos.isStart()){
-                        delete(id, pos.getUser().getUsername());
+                        delete(id, user.getUsername());
                     }
                     else{
                         pos.setStart(true);
@@ -261,6 +261,29 @@ public class PositionServiceImpl implements PositionService {
         else{
             throw new NotFoundPosException("No positions found");
         }
+    }
+
+    @Override
+    @Transactional
+    public void deleteMember(long id, String username) {
+        UserDTO userDTO = userService.getUser(username);
+        User user = userService.getUserFrom(userDTO.id());
+        Member member = memberService.getMemberFrom(id);
+        Turn turn = member.getTurn();
+        memberService.deleteMember(id, user);
+        positionRepository.deletePositionsByUserAndTurn(user,turn);
+    }
+
+    @Override
+    @Transactional
+    public void changeMemberStatus(long id, String type, String username) {
+        UserDTO userDTO = userService.getUser(username);
+        User user = userService.getUserFrom(userDTO.id());
+        Member member = memberService.getMemberFrom(id);
+        Turn turn = member.getTurn();
+        memberService.changeMemberStatus(id, type, user);
+        positionRepository.deletePositionsByUserAndTurn(user,turn);
+
     }
 
     @Override

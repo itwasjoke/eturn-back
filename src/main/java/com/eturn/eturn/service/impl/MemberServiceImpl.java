@@ -35,6 +35,10 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void createMember(User user, Turn turn, String access) {
         try {
+            Optional<Member> memberOptional = memberRepository.findMemberByUserAndTurn(user,turn);
+            if (memberOptional.isPresent()){
+                throw new UnknownMemberException("this member already exists");
+            }
             AccessMemberEnum accessMemberEnum = AccessMemberEnum.valueOf(access);
             Member member = new Member();
             member.setAccessMemberEnum(accessMemberEnum);
@@ -44,6 +48,17 @@ public class MemberServiceImpl implements MemberService {
         }
         catch(Exception e){
             throw new UnknownMemberException("Cannot create member on createMember method MemberServiceImpl.java");
+        }
+    }
+
+    @Override
+    public Member getMemberFrom(long id) {
+        Optional<Member> member = memberRepository.findById(id);
+        if (member.isPresent()){
+            return member.get();
+        }
+        else{
+            throw new NotFoundMemberException("member by id not found");
         }
     }
 
@@ -79,6 +94,7 @@ public class MemberServiceImpl implements MemberService {
     public void deleteTurnMembers(Turn turn) {
         try{
             memberRepository.deleteByTurn(turn);
+
         } catch(RuntimeException e){
             throw new UnknownMemberException("Cannot delete member on createMember method MemberServiceImpl.java " + e.getMessage());
         }
