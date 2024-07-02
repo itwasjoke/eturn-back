@@ -14,11 +14,7 @@ public record UserDTO(
         @Schema(description = "Факультет", example="ФКТИ")
         String faculty,
         @Schema(description = "Группа", example="2000")
-        String group,
-        @Schema(description = "Курс", example="2")
-        String course,
-        @Schema(description = "Кафедра", example="ТОЭ")
-        String department
+        String group
 ) {
 
 }

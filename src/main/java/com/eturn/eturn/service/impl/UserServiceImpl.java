@@ -12,8 +12,6 @@ import com.eturn.eturn.exception.user.AuthPasswordException;
 import com.eturn.eturn.exception.user.LocalNotFoundUserException;
 import com.eturn.eturn.exception.user.NotFoundUserException;
 import com.eturn.eturn.repository.UserRepository;
-import com.eturn.eturn.service.CourseService;
-import com.eturn.eturn.service.DepartmentService;
 import com.eturn.eturn.service.FacultyService;
 import com.eturn.eturn.service.GroupService;
 import com.eturn.eturn.service.UserService;
@@ -31,22 +29,17 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final FacultyService facultyService;
-    private final CourseService courseService;
     private final GroupService groupService;
     private final UserMapper userMapper;
     private final TurnListMapper turnListMapper;
-    private final DepartmentService departmentService;
 
-    public UserServiceImpl(UserRepository userRepository, FacultyService facultyService, CourseService courseService,
-                           GroupService groupService, UserMapper userMapper, TurnListMapper turnListMapper,
-                           DepartmentService departmentService) {
+    public UserServiceImpl(UserRepository userRepository, FacultyService facultyService,
+                           GroupService groupService, UserMapper userMapper, TurnListMapper turnListMapper) {
         this.userRepository = userRepository;
         this.facultyService = facultyService;
-        this.courseService = courseService;
         this.groupService = groupService;
         this.userMapper = userMapper;
         this.turnListMapper = turnListMapper;
-        this.departmentService = departmentService;
     }
 
     @Override
@@ -61,34 +54,22 @@ public class UserServiceImpl implements UserService {
         if (u.isPresent()) {
             User user = u.get();
             String group = null;
-            String course = null;
-            String department = null;
             String faculty = null;
             if (user.getRoleEnum() == RoleEnum.STUDENT) {
                 if (user.getIdGroup() != null) {
                     group = groupService.getGroup(user.getIdGroup()).getNumber();
                 }
-                if (user.getIdCourse() != null) {
-                    course = courseService.getOneCourse(user.getIdCourse()).getNumber().toString();
-                }
                 if (user.getIdFaculty() != null) {
                     faculty = facultyService.getOneFaculty(user.getIdFaculty()).getName();
                 }
-            } else if (user.getRoleEnum() == RoleEnum.EMPLOYEE || user.getRoleEnum() == RoleEnum.PROFESSOR) {
-                if (user.getIdDepartment() != null) {
-                    department = departmentService.getById(user.getIdDepartment()).getName();
-                }
-
             }
             String role = null;
             RoleEnum R = user.getRoleEnum();
             switch (R) {
                 case STUDENT -> role = "Студент";
                 case EMPLOYEE -> role = "Сотрудник";
-                case PROFESSOR -> role = "Преподаватель";
-                case NO_UNIVERSITY -> role = "Посетитель";
             }
-            return userMapper.userToUserDTO(user, faculty, course, department, group, role);
+            return userMapper.userToUserDTO(user, faculty, group, role);
         } else {
             throw new NotFoundUserException("No user in database on getUser method (UserServiceImpl.java");
         }

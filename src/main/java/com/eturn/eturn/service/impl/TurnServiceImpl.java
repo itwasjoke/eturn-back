@@ -14,7 +14,6 @@ import com.eturn.eturn.enums.RoleEnum;
 import com.eturn.eturn.enums.TurnEnum;
 import com.eturn.eturn.exception.turn.*;
 import com.eturn.eturn.repository.TurnRepository;
-import com.eturn.eturn.service.CourseService;
 import com.eturn.eturn.service.FacultyService;
 import com.eturn.eturn.service.GroupService;
 import com.eturn.eturn.service.MemberService;
@@ -32,7 +31,6 @@ public class TurnServiceImpl implements TurnService {
     private final UserService userService;
     private final GroupService groupService;
     private final FacultyService facultyService;
-    private final CourseService courseService;
     private final MemberService memberService;
     final private  TurnMapper turnMapper;
     final private  TurnListMapper turnListMapper;
@@ -45,7 +43,6 @@ public class TurnServiceImpl implements TurnService {
             UserService userService,
             GroupService groupService,
             FacultyService facultyService,
-            CourseService courseService,
             MemberService memberService,
             TurnMapper turnMapper,
             TurnListMapper turnListMapper,
@@ -54,7 +51,6 @@ public class TurnServiceImpl implements TurnService {
         this.userService = userService;
         this.groupService = groupService;
         this.facultyService = facultyService;
-        this.courseService = courseService;
         this.memberService = memberService;
         this.turnMapper = turnMapper;
         this.turnListMapper = turnListMapper;
@@ -107,20 +103,11 @@ public class TurnServiceImpl implements TurnService {
         User user = userService.findByLogin(login);
         if (user.getRoleEnum() == RoleEnum.STUDENT) {
             streamTurns = streamTurns.filter(
-                    c -> c.getAccessTurnType() == AccessTurnEnum.FOR_STUDENT ||
-                    c.getAccessTurnType() == AccessTurnEnum.FOR_ALLOWED_ELEMENTS ||
+                    c -> c.getAccessTurnType() == AccessTurnEnum.FOR_ALLOWED_ELEMENTS ||
                     c.getAccessTurnType() == AccessTurnEnum.FOR_LINK
             );
         }
-        else if(user.getRoleEnum()==RoleEnum.PROFESSOR){
-            streamTurns = streamTurns.filter(c ->
-                    c.getAccessTurnType()!=AccessTurnEnum.FOR_EMPLOYEE
-                    && c.getAccessTurnType()!=AccessTurnEnum.FOR_NO_UNIVERSITY
-            );
-        }
-        else if (user.getRoleEnum() == RoleEnum.NO_UNIVERSITY) {
-            streamTurns = streamTurns.filter(c -> c.getAccessTurnType() == AccessTurnEnum.FOR_NO_UNIVERSITY);
-        }
+
 
         for (Map.Entry<String, String> entry : params.entrySet()) {
             String value = entry.getValue();
@@ -132,14 +119,12 @@ public class TurnServiceImpl implements TurnService {
                     } else if (value.equals("memberOut")) {
                         streamTurns = streamTurns.filter(c -> !userTurns.contains(c) && c.getAccessTurnType() != AccessTurnEnum.FOR_LINK);
                         if (user.getRoleEnum()==RoleEnum.STUDENT){
-                            if (user.getIdGroup()!=null && user.getIdFaculty()!=null && user.getIdCourse() !=null){
+                            if (user.getIdGroup()!=null && user.getIdFaculty()!=null){
                                 Group groupThis = groupService.getGroup(user.getIdGroup());
                                 Faculty facultyThis = facultyService.getOneFaculty(user.getIdFaculty());
-                                Course courseThis = courseService.getOneCourse(user.getIdCourse());
-                                if (groupThis!=null && facultyThis !=null && courseThis!=null){
+                                if (groupThis!=null && facultyThis !=null){
                                     streamTurns = streamTurns.filter(c-> c.getAllowedGroups().contains(groupThis)
-                                            || c.getAllowedFaculties().contains(facultyThis)
-                                            || c.getAllowedCourses().contains(courseThis));
+                                            || c.getAllowedFaculties().contains(facultyThis));
                                 }
                             }
                         }
@@ -165,10 +150,6 @@ public class TurnServiceImpl implements TurnService {
                 case "Faculty" -> {
                     Faculty faculty = facultyService.getOneFaculty(Long.parseLong(value));
                     streamTurns = streamTurns.filter(c -> c.getAllowedFaculties().contains(faculty));
-                }
-                case "Course" -> {
-                    Course course = courseService.getOneCourse(Long.parseLong(value));
-                    streamTurns = streamTurns.filter(c -> c.getAllowedCourses().contains(course));
                 }
             }
 

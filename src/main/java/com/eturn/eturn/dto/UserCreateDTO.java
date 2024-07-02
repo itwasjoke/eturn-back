@@ -13,10 +13,7 @@ public record UserCreateDTO(
         Long facultyId,
         @Schema(description = "Идентификатор группы", example="1")
         Long groupId,
-        @Schema(description = "Идентификатор курса", example="1")
-        Long courseId,
-        @Schema(description = "Идентификатор кафедры", example="1")
-        Long departmentId,
+
         @Schema(description = "Логин", example="user123")
         String login,
         @Schema(description = "Пароль", example="password123")

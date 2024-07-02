@@ -46,15 +46,6 @@ public class Turn {
     )
     private Set<Group> allowedGroups;
 
-
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(
-            name = "turn_course",
-            joinColumns = @JoinColumn(name="turn_id"),
-            inverseJoinColumns = @JoinColumn(name="course_id")
-    )
-    private Set<Course> allowedCourses;
-
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
             name = "turn_faculty",
@@ -63,16 +54,9 @@ public class Turn {
     )
     private Set<Faculty> allowedFaculties;
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(
-            name = "turn_department",
-            joinColumns = @JoinColumn(name="turn_id"),
-            inverseJoinColumns = @JoinColumn(name="department_id")
-    )
-    private Set<Department> allowedDepartments;
+    private Date dateStart;
 
-//    @ManyToMany(mappedBy = "turns")
-//    private Set<User> users;
+    private Date dateEnd;
 
     private int countUsers;
 

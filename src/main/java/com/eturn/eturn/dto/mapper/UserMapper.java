@@ -17,15 +17,11 @@ import org.mapstruct.ReportingPolicy;
 public interface UserMapper {
     @Mapping(target = "faculty", source = "faculty")
     @Mapping(target = "group", source = "group")
-    @Mapping(target = "course", source = "course")
-    @Mapping(target = "department", source = "department")
     @Mapping(target = "role", source = "role")
-    UserDTO userToUserDTO(User user, String faculty, String course, String department, String group, String role);
+    UserDTO userToUserDTO(User user, String faculty, String group, String role);
 
     @Mapping(target = "roleEnum", source = "role")
     @Mapping(target = "idGroup", source = "dto.groupId")
-    @Mapping(target = "idCourse", source = "dto.courseId")
-    @Mapping(target = "idDepartment", source = "dto.departmentId")
     @Mapping(target = "idFaculty", source = "dto.facultyId")
 //    @Mapping(target = "password", source = "passwordEncode")
     User userCreateDTOtoUser(UserCreateDTO dto, RoleEnum role);

@@ -26,10 +26,6 @@ public record TurnMoreInfoDTO(
         Set<GroupDTO> allowedGroups,
         @Schema(description = "Допустимые факультеты")
         Set<Faculty> allowedFaculties,
-        @Schema(description = "Допустимые кафедры")
-        Set<Department> allowedDepartments,
-        @Schema(description = "Допустимые курсы")
-        Set<Course> allowedCourses,
         @Schema(description = "Время на то, чтобы войти", example="1")
         int allowedTime
 ) {

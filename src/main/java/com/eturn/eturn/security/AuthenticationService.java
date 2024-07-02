@@ -39,8 +39,6 @@ public class AuthenticationService {
                 userCreateDTO.role(),
                 userCreateDTO.facultyId(),
                 userCreateDTO.groupId(),
-                userCreateDTO.courseId(),
-                userCreateDTO.departmentId(),
                 userCreateDTO.login(),
                 password
         );

@@ -30,10 +30,6 @@ public class User implements UserDetails {
 
     private Long idGroup;
 
-    private Long idCourse;
-
-    private Long idDepartment;
-
     private Long idFaculty;
 
     @Enumerated(EnumType.STRING)
