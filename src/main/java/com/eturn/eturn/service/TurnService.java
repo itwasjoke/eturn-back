@@ -19,7 +19,7 @@ public interface TurnService {
     Long createTurn(TurnMoreInfoDTO turn, String Login);
     void updateTurn(Long idUser, Turn turn);
 
-    void deleteTurn(Long idUser, Long idTurn);
+    void deleteTurn(String username, Long idTurn);
 
     void countUser(Turn turn);
 

@@ -196,15 +196,16 @@ public class TurnServiceImpl implements TurnService {
     }
     @Override
     @Transactional
-    public void deleteTurn(Long idUser, Long idTurn) {
+    public void     deleteTurn(String username, Long idTurn) {
         Optional<Turn> turn = turnRepository.findById(idTurn);
-        User user = userService.getUserFrom(idUser);
+        UserDTO userDTO = userService.getUser(username);
+        User user = userService.getUserFrom(userDTO.id());
         if (turn.isEmpty()){
             throw new NotFoundTurnException("No turn in database on deleteTurn method (TurnServiceImpl.java)");
         }
         AccessMemberEnum access = memberService.getAccess(user, turn.get());
         if (access == AccessMemberEnum.CREATOR) {
-            memberService.deleteTurnMembers(turn.get());
+            //memberService.deleteTurnMembers(turn.get());
             turnRepository.deleteTurnById(idTurn);
         } else {
             throw new NoAccessDeleteTurnException("Only creator can delete turn information on deleteTurn method (TurnServiceImpl.java)");

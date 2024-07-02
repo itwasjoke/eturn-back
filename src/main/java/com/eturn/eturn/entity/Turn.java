@@ -25,10 +25,10 @@ public class Turn {
     @OneToMany(mappedBy = "turn", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Position> positions;
 
-    @OneToMany(mappedBy = "turn", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "turn", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<Member> memberUsers;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne()
     @JoinColumn(name = "user_id")
     private User creator;
 
@@ -38,7 +38,7 @@ public class Turn {
     @Enumerated(EnumType.STRING)
     private AccessTurnEnum accessTurnType;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany()
     @JoinTable(
             name = "turn_group",
             joinColumns = @JoinColumn(name="turn_id"),
@@ -46,7 +46,7 @@ public class Turn {
     )
     private Set<Group> allowedGroups;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany()
     @JoinTable(
             name = "turn_faculty",
             joinColumns = @JoinColumn(name="turn_id"),

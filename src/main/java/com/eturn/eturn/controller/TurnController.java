@@ -145,11 +145,13 @@ public class TurnController {
 //        turnService.updateTurn(idUser, turn);
 //    }
 
-//    @DeleteMapping()
-//    public void delete(
-//        @RequestParam long idUser,
-//        @RequestParam long idTurn
-//    ) {
-//        turnService.deleteTurn(idUser,idTurn);
-//    }
+    @DeleteMapping("/{idTurn}")
+    public void delete(
+            HttpServletRequest request,
+            @PathVariable long idTurn
+    ) {
+        var authentication = (Authentication) request.getUserPrincipal();
+        var userDetails = (UserDetails) authentication.getPrincipal();
+        turnService.deleteTurn(userDetails.getUsername(),idTurn);
+    }
 }
