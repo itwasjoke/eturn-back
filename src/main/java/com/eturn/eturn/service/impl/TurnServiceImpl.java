@@ -167,8 +167,8 @@ public class TurnServiceImpl implements TurnService {
     public Long createTurn(TurnMoreInfoDTO turn, String login) {
         UserDTO userDTO = userService.getUser(login);
         User userCreator = userService.getUserFrom(userDTO.id());
-        Set<Group> groups = groupService.getSetGroups(turn.allowedGroups());
-        Turn turnDto = turnMoreInfoMapper.turnMoreDTOToTurn(turn,userCreator, groups);
+        //Set<Group> groups = groupService.getSetGroups(turn.allowedGroups());
+        Turn turnDto = turnMoreInfoMapper.turnMoreDTOToTurn(turn,userCreator);
         Turn turnNew = turnRepository.save(turnDto);
         addTurnToUser(turnNew.getId(), login, "CREATOR");
         return turnNew.getId();
