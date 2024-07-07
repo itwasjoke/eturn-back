@@ -6,6 +6,7 @@ import com.eturn.eturn.enums.TurnEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 
+import java.util.Date;
 import java.util.Set;
 
 @Schema(description = "Очередь с подробной информацией")
@@ -27,7 +28,12 @@ public record TurnMoreInfoDTO(
         @Schema(description = "Допустимые факультеты")
         Set<Faculty> allowedFaculties,
         @Schema(description = "Время на то, чтобы войти", example="1")
-        int allowedTime
+        int allowedTime,
+        @Schema(description = "Дата начала")
+        Date dateStart,
+
+        @Schema(description = "Дата конца")
+        Date dateEnd
 ) {
 
 }
