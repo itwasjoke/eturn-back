@@ -2,7 +2,8 @@ package com.eturn.eturn.controller;
 
 import com.eturn.eturn.dto.MemberDTO;
 import com.eturn.eturn.dto.TurnDTO;
-import com.eturn.eturn.dto.TurnMoreInfoDTO;
+import com.eturn.eturn.dto.TurnForListDTO;
+import com.eturn.eturn.dto.TurnCreatingDTO;
 import com.eturn.eturn.service.PositionService;
 import com.eturn.eturn.service.TurnService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -54,7 +55,7 @@ public class TurnController {
             summary = "Получение списка очередей",
             description = "На основе данных авторизации определяет текущего пользователя и параметров фильтрует список очередей под пользователя"
     )
-    public List<TurnDTO> getUserTurns(
+    public List<TurnForListDTO> getUserTurns(
         HttpServletRequest request,
         @RequestParam @Parameter(description = "Тип очереди turn/edu") String type,
         @RequestParam @Parameter(description = "Тип доступа memberIn/memberOut") String access,
@@ -87,7 +88,7 @@ public class TurnController {
             summary = "Создание очереди",
             description = "Получает объект и создает очередь"
     )
-    public Long create(HttpServletRequest request, @RequestBody TurnMoreInfoDTO turn) {
+    public Long create(HttpServletRequest request, @RequestBody TurnCreatingDTO turn) {
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
         return turnService.createTurn(turn, userDetails.getUsername());

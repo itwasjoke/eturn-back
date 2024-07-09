@@ -1,17 +1,11 @@
 package com.eturn.eturn.service.impl;
 
-import com.eturn.eturn.dto.MemberDTO;
-import com.eturn.eturn.dto.TurnDTO;
-import com.eturn.eturn.dto.TurnMoreInfoDTO;
-import com.eturn.eturn.dto.UserDTO;
-import com.eturn.eturn.dto.mapper.TurnListMapper;
+import com.eturn.eturn.dto.*;
+import com.eturn.eturn.dto.mapper.TurnForListMapper;
 import com.eturn.eturn.dto.mapper.TurnMapper;
-import com.eturn.eturn.dto.mapper.TurnMoreInfoMapper;
+import com.eturn.eturn.dto.mapper.TurnCreatingMapper;
 import com.eturn.eturn.entity.*;
 import com.eturn.eturn.enums.AccessMemberEnum;
-import com.eturn.eturn.enums.AccessTurnEnum;
-import com.eturn.eturn.enums.RoleEnum;
-import com.eturn.eturn.enums.TurnEnum;
 import com.eturn.eturn.exception.turn.*;
 import com.eturn.eturn.repository.TurnRepository;
 import com.eturn.eturn.service.FacultyService;
@@ -23,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 @Service
 public class TurnServiceImpl implements TurnService {
@@ -33,9 +26,9 @@ public class TurnServiceImpl implements TurnService {
     private final FacultyService facultyService;
     private final MemberService memberService;
     final private  TurnMapper turnMapper;
-    final private  TurnListMapper turnListMapper;
 
-    final private TurnMoreInfoMapper turnMoreInfoMapper;
+    final private TurnCreatingMapper turnCreatingMapper;
+    final private TurnForListMapper turnForListMapper;
 
 
     public TurnServiceImpl(
@@ -45,16 +38,15 @@ public class TurnServiceImpl implements TurnService {
             FacultyService facultyService,
             MemberService memberService,
             TurnMapper turnMapper,
-            TurnListMapper turnListMapper,
-            TurnMoreInfoMapper turnMoreInfoMapper) {
+            TurnCreatingMapper turnCreatingMapper, TurnForListMapper turnForListMapper) {
         this.turnRepository = turnRepository;
         this.userService = userService;
         this.groupService = groupService;
         this.facultyService = facultyService;
         this.memberService = memberService;
         this.turnMapper = turnMapper;
-        this.turnListMapper = turnListMapper;
-        this.turnMoreInfoMapper = turnMoreInfoMapper;
+        this.turnCreatingMapper = turnCreatingMapper;
+        this.turnForListMapper = turnForListMapper;
     }
 
 
@@ -93,82 +85,42 @@ public class TurnServiceImpl implements TurnService {
         }
     }
     @Override
-    public List<TurnDTO> getUserTurns(String login, Map<String, String> params) {
+    public List<TurnForListDTO> getUserTurns(String login, Map<String, String> params) {
+        User user = userService.findByLogin(login);
 
-        List<Turn> allTurns = turnRepository.findAll();
+//        List<Turn> allTurns = new ArrayList<>();
+//        List<String> allAccessMemberTypes = new ArrayList<>();
+//        turnRepository.results(user.getId(), user.getIdGroup(), user.getIdFaculty()).forEach((record) -> {
+//            Turn turn = (Turn)record[0];
+//            String accessMemberType = (String)record[1];
+//            assert false;
+//            allTurns.add(turn);
+//            allAccessMemberTypes.add(accessMemberType);
+//        });
+        String access = params.get("Access");
+        List<Object[]> allTurns = new ArrayList<>();
+        if (Objects.equals(access, "memberOut")) {
+            allTurns = turnRepository.resultsMemberOut(user.getId(), user.getIdGroup(), user.getIdFaculty(), params.get("Type"));
+        } else if (Objects.equals(access, "memberIn")){
+            allTurns = turnRepository.resultsMemberIn(user.getId(), params.get("Type"));
+        }
         if (allTurns.isEmpty()){
             throw new NotFoundAllTurnsException("No turn in database on getUserTurns method (TurnServiceImpl.java)");
         }
-        Stream<Turn> streamTurns = allTurns.stream();
-        User user = userService.findByLogin(login);
-        if (user.getRoleEnum() == RoleEnum.STUDENT) {
-            streamTurns = streamTurns.filter(
-                    c -> c.getAccessTurnType() == AccessTurnEnum.FOR_ALLOWED_ELEMENTS ||
-                    c.getAccessTurnType() == AccessTurnEnum.FOR_LINK
-            );
+        List<TurnForListDTO> turnForList = new ArrayList<>();
+        for ( Object[] obj : allTurns ) {
+            turnForList.add ( turnForListMapper.turnToTurnForListDTO( (Turn) obj[0], (String) obj[1] ));
         }
-
-
-        for (Map.Entry<String, String> entry : params.entrySet()) {
-            String value = entry.getValue();
-            switch (entry.getKey()) {
-                case "Access" -> {
-                    Set<Turn> userTurns = userService.getUserTurns(user.getId());
-                    if (value.equals("memberIn")) {
-                        streamTurns = streamTurns.filter(userTurns::contains);
-                    } else if (value.equals("memberOut")) {
-                        streamTurns = streamTurns.filter(c -> !userTurns.contains(c) && c.getAccessTurnType() != AccessTurnEnum.FOR_LINK);
-                        if (user.getRoleEnum()==RoleEnum.STUDENT){
-                            if (user.getIdGroup()!=null && user.getIdFaculty()!=null){
-                                Group groupThis = groupService.getGroup(user.getIdGroup());
-                                Faculty facultyThis = facultyService.getOneFaculty(user.getIdFaculty());
-                                if (groupThis!=null && facultyThis !=null){
-                                    streamTurns = streamTurns.filter(c-> c.getAllowedGroups().contains(groupThis)
-                                            || c.getAllowedFaculties().contains(facultyThis));
-                                }
-                            }
-                        }
-                    } else {
-                        throw new InvalidTypeTurnException("In function GetUserTurns (TurnServiceImpl.java) error: Turn type is " + value + ". Value can be: 'memberIn' or 'memberOut'.");
-                    }
-                }
-                case "Type" -> {
-                    TurnEnum type;
-                    if (Objects.equals(value, "org")) {
-                        type = TurnEnum.ORG;
-                    } else if (Objects.equals(value, "edu")) {
-                        type = TurnEnum.EDU;
-                    } else {
-                        throw new InvalidTypeTurnException("In function GetUserTurns (TurnServiceImpl.java) error: Turn type is " + value + ". Value can be: 'org' or 'edu'.");
-                    }
-                    streamTurns = streamTurns.filter(c -> c.getTurnType() == type);
-                }
-                case "Group" -> {
-                    Group group = groupService.getOneGroup(value);
-                    streamTurns = streamTurns.filter(c -> c.getAllowedGroups().contains(group));
-                }
-                case "Faculty" -> {
-                    Faculty faculty = facultyService.getOneFaculty(Long.parseLong(value));
-                    streamTurns = streamTurns.filter(c -> c.getAllowedFaculties().contains(faculty));
-                }
-            }
-
-        }
-        List<Turn> endTurns = streamTurns.toList();
-        if (endTurns.isEmpty()){
-            throw new NotFoundAllTurnsException("Search filters resulted in zero results.");
-        }
-        return turnListMapper.map(endTurns);
-
+        return turnForList;
     }
 
     @Override
     @Transactional
-    public Long createTurn(TurnMoreInfoDTO turn, String login) {
+    public Long createTurn(TurnCreatingDTO turn, String login) {
         UserDTO userDTO = userService.getUser(login);
         User userCreator = userService.getUserFrom(userDTO.id());
         //Set<Group> groups = groupService.getSetGroups(turn.allowedGroups());
-        Turn turnDto = turnMoreInfoMapper.turnMoreDTOToTurn(turn,userCreator);
+        Turn turnDto = turnCreatingMapper.turnMoreDTOToTurn(turn,userCreator);
         Turn turnNew = turnRepository.save(turnDto);
         addTurnToUser(turnNew.getId(), login, "CREATOR");
         return turnNew.getId();

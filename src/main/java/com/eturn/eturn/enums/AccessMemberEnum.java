@@ -5,7 +5,9 @@ public enum AccessMemberEnum {
     UNCONFIRMED,
     MEMBER,
     MODERATOR,
-    CREATOR;
+    CREATOR,
+    INVITED,
+    REFUSED;
     AccessMemberEnum() {
     }
 }

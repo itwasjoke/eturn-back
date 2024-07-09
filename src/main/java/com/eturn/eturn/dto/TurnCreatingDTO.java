@@ -10,7 +10,7 @@ import java.util.Date;
 import java.util.Set;
 
 @Schema(description = "Очередь с подробной информацией")
-public record TurnMoreInfoDTO(
+public record TurnCreatingDTO(
         @Schema(description = "Идентификатор очереди", example="1")
         Long id,
         @Schema(description = "Имя очереди", example="Очередь за булочкой")

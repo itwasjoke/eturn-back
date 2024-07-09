@@ -2,7 +2,6 @@ package com.eturn.eturn.service.impl;
 
 import com.eturn.eturn.dto.UserCreateDTO;
 import com.eturn.eturn.dto.UserDTO;
-import com.eturn.eturn.dto.mapper.TurnListMapper;
 import com.eturn.eturn.dto.mapper.UserMapper;
 import com.eturn.eturn.entity.Member;
 import com.eturn.eturn.entity.Turn;
@@ -31,15 +30,13 @@ public class UserServiceImpl implements UserService {
     private final FacultyService facultyService;
     private final GroupService groupService;
     private final UserMapper userMapper;
-    private final TurnListMapper turnListMapper;
 
     public UserServiceImpl(UserRepository userRepository, FacultyService facultyService,
-                           GroupService groupService, UserMapper userMapper, TurnListMapper turnListMapper) {
+                           GroupService groupService, UserMapper userMapper) {
         this.userRepository = userRepository;
         this.facultyService = facultyService;
         this.groupService = groupService;
         this.userMapper = userMapper;
-        this.turnListMapper = turnListMapper;
     }
 
     @Override

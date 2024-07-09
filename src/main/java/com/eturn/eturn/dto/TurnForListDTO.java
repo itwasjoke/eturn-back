@@ -3,13 +3,10 @@ package com.eturn.eturn.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.Date;
 
-@Schema(description = "Очередь")
-public record TurnDTO(
+public record TurnForListDTO(
         @Schema(description = "Идентификатор очереди", example="1")
         Long id,
         @Size(min = 1, max = 255)
@@ -20,12 +17,11 @@ public record TurnDTO(
         String description,
         @Schema(description = "Количество участников", example="1")
         int countUsers,
-        @Schema(description = "Имя создателя", example="Иванов Иван Иванович")
-        String creator,
         @Schema(description = "Идентификатор пользователя", example="1")
         long userId,
+        int allowedTime,
         Date dateStart,
-        Date dateEnd
+        Date dateEnd,
+        String accessMember
 ) {
-
 }

@@ -2,7 +2,8 @@ package com.eturn.eturn.service;
 
 import com.eturn.eturn.dto.MemberDTO;
 import com.eturn.eturn.dto.TurnDTO;
-import com.eturn.eturn.dto.TurnMoreInfoDTO;
+import com.eturn.eturn.dto.TurnForListDTO;
+import com.eturn.eturn.dto.TurnCreatingDTO;
 import com.eturn.eturn.entity.Turn;
 
 import java.util.List;
@@ -14,9 +15,9 @@ public interface TurnService {
     Turn getTurnFrom(Long id);
 
 
-    List<TurnDTO> getUserTurns(String login, Map<String,String> params);
+    List<TurnForListDTO> getUserTurns(String login, Map<String,String> params);
 
-    Long createTurn(TurnMoreInfoDTO turn, String Login);
+    Long createTurn(TurnCreatingDTO turn, String Login);
     void updateTurn(Long idUser, Turn turn);
 
     void deleteTurn(String username, Long idTurn);
