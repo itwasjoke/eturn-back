@@ -14,7 +14,6 @@ import java.util.Optional;
 @Repository
 public interface MemberRepository extends JpaRepository<Member,Long> {
     void deleteByTurn(Turn turn);
-
     Member getByUserAndTurn(User user, Turn turn);
     Optional<Member> findMemberByUserAndTurn(User user, Turn turn);
     List<Member> getMemberByTurnAndAccessMemberEnum(Turn turn, AccessMemberEnum accessMemberEnum);

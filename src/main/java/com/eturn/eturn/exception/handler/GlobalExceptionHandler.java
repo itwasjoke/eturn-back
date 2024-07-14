@@ -84,6 +84,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
+    @ExceptionHandler(InvalidLengthTurnException.class)
+    public ResponseEntity<Object> handleInvalidLengthTurnException(InvalidLengthTurnException e, WebRequest request) {
+        log.error("Error with this message: " + e.getMessage());
+        String body = "Очередь слишком длинная (или дата начала уже прошла)";
+        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
     //
     // USERS
     //

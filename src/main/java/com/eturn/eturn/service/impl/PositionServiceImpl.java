@@ -192,7 +192,7 @@ public class PositionServiceImpl implements PositionService {
     @Override
     public void update(Long id, String username) {
         TurnDTO turn = turnService.getTurn(id);
-        if (turn.dateStart().getTime() > new Date().getTime()) // Проверить, работает или нет
+        if (turn.dateStart().getTime() > new Date().getTime())
             throw new DateNotArrivedPosException("The date has not come yet");
         UserDTO userDTO = userService.getUser(username);
         User user = userService.getUserFrom(userDTO.id());
