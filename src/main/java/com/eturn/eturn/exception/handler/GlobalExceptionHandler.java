@@ -9,6 +9,7 @@ import com.eturn.eturn.exception.group.NotFoundGroupException;
 import com.eturn.eturn.exception.member.NoAccessMemberException;
 import com.eturn.eturn.exception.member.NotFoundMemberException;
 import com.eturn.eturn.exception.member.UnknownMemberException;
+import com.eturn.eturn.exception.position.DateNotArrivedPosException;
 import com.eturn.eturn.exception.position.NoAccessPosException;
 import com.eturn.eturn.exception.position.NoCreatePosException;
 import com.eturn.eturn.exception.position.NotFoundPosException;
@@ -69,6 +70,20 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.METHOD_NOT_ALLOWED, request);
     }
 
+    @ExceptionHandler(InvalidDataTurnException.class)
+    public ResponseEntity<Object> handleInvalidDataTurnException(InvalidDataTurnException e, WebRequest request) {
+        log.error("Error with this message: " + e.getMessage());
+        String body = "Дата начала очереди больше даты конца";
+        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    @ExceptionHandler(InvalidTimeToCreateTurnException.class)
+    public ResponseEntity<Object> handleInvalidTimeToCreateTurnException(InvalidTimeToCreateTurnException e, WebRequest request) {
+        log.error("Error with this message: " + e.getMessage());
+        String body = "Время жизни очереди слишком большое (или маленькое)";
+        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
     //
     // USERS
     //
@@ -112,6 +127,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handleNoAccessPosException(NoAccessPosException e, WebRequest request) {
         String body = "Нет доступа к информации по этой позиции.";
         return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.METHOD_NOT_ALLOWED, request);
+    }
+
+    @ExceptionHandler(DateNotArrivedPosException.class)
+    public ResponseEntity<Object> handleDateNotArrivedPosException(DateNotArrivedPosException e, WebRequest request) {
+        String body = "Дата начала очереди ещё не наступила.";
+        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
     //

@@ -1,14 +1,12 @@
 package com.eturn.eturn.service.impl;
 
-import com.eturn.eturn.dto.MemberDTO;
-import com.eturn.eturn.dto.PositionDTO;
-import com.eturn.eturn.dto.PositionMoreInfoDTO;
-import com.eturn.eturn.dto.UserDTO;
+import com.eturn.eturn.dto.*;
 import com.eturn.eturn.dto.mapper.PositionListMapper;
 import com.eturn.eturn.dto.mapper.PositionMapper;
 import com.eturn.eturn.dto.mapper.PositionMoreInfoMapper;
 import com.eturn.eturn.entity.*;
 import com.eturn.eturn.enums.AccessMemberEnum;
+import com.eturn.eturn.exception.position.DateNotArrivedPosException;
 import com.eturn.eturn.exception.position.NoAccessPosException;
 import com.eturn.eturn.exception.position.NoCreatePosException;
 import com.eturn.eturn.exception.position.NotFoundPosException;
@@ -22,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Stream;
+import java.util.Date;
 
 @Service
 public class PositionServiceImpl implements PositionService {
@@ -192,6 +191,9 @@ public class PositionServiceImpl implements PositionService {
 
     @Override
     public void update(Long id, String username) {
+        TurnDTO turn = turnService.getTurn(id);
+        if (turn.dateStart().getTime() > new Date().getTime()) // Проверить, работает или нет
+            throw new DateNotArrivedPosException("The date has not come yet");
         UserDTO userDTO = userService.getUser(username);
         User user = userService.getUserFrom(userDTO.id());
         Optional<Position> position = positionRepository.findById(id);

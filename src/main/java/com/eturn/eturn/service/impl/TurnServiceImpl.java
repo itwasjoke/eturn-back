@@ -99,6 +99,8 @@ public class TurnServiceImpl implements TurnService {
 //        });
         String access = params.get("Access");
         List<Object[]> allTurns = new ArrayList<>();
+//        Date now = new Date();
+//        turnRepository.deleteOldTurns(now); пока не работает
         if (Objects.equals(access, "memberOut")) {
             allTurns = turnRepository.resultsMemberOut(user.getId(), user.getIdGroup(), user.getIdFaculty(), params.get("Type"));
         } else if (Objects.equals(access, "memberIn")){
@@ -116,14 +118,28 @@ public class TurnServiceImpl implements TurnService {
 
     @Override
     @Transactional
-    public Long createTurn(TurnCreatingDTO turn, String login) {
-        UserDTO userDTO = userService.getUser(login);
-        User userCreator = userService.getUserFrom(userDTO.id());
-        //Set<Group> groups = groupService.getSetGroups(turn.allowedGroups());
-        Turn turnDto = turnCreatingMapper.turnMoreDTOToTurn(turn,userCreator);
-        Turn turnNew = turnRepository.save(turnDto);
-        addTurnToUser(turnNew.getId(), login, "CREATOR");
-        return turnNew.getId();
+    public Long createTurn(TurnCreatingDTO turnDTO, String login) {
+        if (turnDTO.dateEnd().getTime() > turnDTO.dateStart().getTime()) {
+            UserDTO userDTO = userService.getUser(login);
+            long timeDiff = turnDTO.dateEnd().getTime() - turnDTO.dateStart().getTime();
+            long year = 31556952000L;
+            System.out.println(userDTO.role());
+            System.out.println(timeDiff);
+            if (Objects.equals(userDTO.role(), "Студент") && (timeDiff > 259200000 || timeDiff < 0)) { // Студент?
+                throw new InvalidTimeToCreateTurnException("Invalid turn duration");
+            }
+            if (Objects.equals(userDTO.role(), "EMPLOYEE") && (timeDiff > year || timeDiff < 0)) {
+                throw new InvalidTimeToCreateTurnException("Invalid turn duration");
+            }
+            User userCreator = userService.getUserFrom(userDTO.id());
+            //Set<Group> groups = groupService.getSetGroups(turn.allowedGroups());
+            Turn turn = turnCreatingMapper.turnMoreDTOToTurn(turnDTO, userCreator);
+            Turn turnNew = turnRepository.save(turn);
+            addTurnToUser(turnNew.getId(), login, "CREATOR");
+            return turnNew.getId();
+        } else
+            throw new InvalidDataTurnException("The dateEnd cannot be earlier than the dateStart on createTurn method (TurnServiceImpl.java)");
+
     }
 
     @Override
