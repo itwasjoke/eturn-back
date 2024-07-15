@@ -4,6 +4,7 @@ import com.eturn.eturn.entity.Group;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
 import java.util.Set;
 
 @Repository
@@ -13,5 +14,7 @@ public interface GroupRepository extends JpaRepository<Group,Long> {
     Set<Group> findAllByFacultyId(Long id);
     //boolean existsById(int id_group);
     Group getByNumber(String numGroup);
+
+    Optional<Group> getGroupByNumber(String number);
 
 }

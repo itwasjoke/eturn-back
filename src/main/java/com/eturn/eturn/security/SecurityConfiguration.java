@@ -17,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.List;
@@ -46,7 +47,8 @@ public class SecurityConfiguration {
                 // Настройка доступа к конечным точкам
                 .authorizeHttpRequests(request -> request
                         // Можно указать конкретный путь, * - 1 уровень вложенности, ** - любое количество уровней вложенности
-                        .requestMatchers("/auth/sign-up", "/error/**", "/auth/sign-in", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        // TODO Убрать "/auth/sign-in", "/auth/sign-up", когда тестирование пользователей закончится
+                        .requestMatchers("/auth/etuid", "/error/**", "/auth/sign-in", "/auth/sign-up", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
 //                        .requestMatchers("/group/**", "/course", "/faculty/**").hasRole("EMPLOYEE")
                         .anyRequest().authenticated()
 //                        .requestMatchers("/swagger-ui/**", "/swagger-resources/*", "/v3/api-docs/**").permitAll()
@@ -60,6 +62,11 @@ public class SecurityConfiguration {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public RestTemplate template() {
+        return new RestTemplate();
     }
 
     @Bean

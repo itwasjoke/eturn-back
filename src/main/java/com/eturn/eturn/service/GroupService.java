@@ -5,13 +5,16 @@ import com.eturn.eturn.entity.Group;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public interface GroupService {
 
     Set<GroupDTO> getAllGroups(long id);
-    Long createGroup(GroupDTO group);
+    Group createGroup(GroupDTO group);
     Group getOneGroup(String number);
+
+    Optional<Group> getOneGroupOptional(String number);
     Group getGroup(Long id);
     GroupDTO getOneGroupDTO(String number);
 

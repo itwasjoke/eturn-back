@@ -37,10 +37,10 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public Long createGroup(GroupDTO group) {
+    public Group createGroup(GroupDTO group) {
         if (!groupRepository.existsByNumber(group.name())){
             Group groupDb = groupMapper.DTOtoGroup(group);
-            return groupRepository.save(groupDb).getId();
+            return groupRepository.save(groupDb);
         }
         else{
             throw new AlreadyExistGroupException("group already exist");
@@ -55,6 +55,11 @@ public class GroupServiceImpl implements GroupService {
         else{
             throw new NotFoundGroupException("Cannot find group by NUMBER.");
         }
+    }
+
+    @Override
+    public Optional<Group> getOneGroupOptional(String number) {
+        return groupRepository.getGroupByNumber(number);
     }
 
     @Override

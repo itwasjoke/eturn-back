@@ -19,6 +19,7 @@ import java.util.Set;
 @Table(name = "users")
 public class User implements UserDetails {
     @Id
+    // TODO Удалить эту аннотацию @GeneratedValue при использовании ETU ID
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 

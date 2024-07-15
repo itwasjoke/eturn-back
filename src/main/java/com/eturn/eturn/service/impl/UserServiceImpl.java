@@ -1,11 +1,10 @@
 package com.eturn.eturn.service.impl;
 
+import com.eturn.eturn.dto.GroupDTO;
 import com.eturn.eturn.dto.UserCreateDTO;
 import com.eturn.eturn.dto.UserDTO;
 import com.eturn.eturn.dto.mapper.UserMapper;
-import com.eturn.eturn.entity.Member;
-import com.eturn.eturn.entity.Turn;
-import com.eturn.eturn.entity.User;
+import com.eturn.eturn.entity.*;
 import com.eturn.eturn.enums.RoleEnum;
 import com.eturn.eturn.exception.user.AuthPasswordException;
 import com.eturn.eturn.exception.user.LocalNotFoundUserException;
@@ -83,14 +82,33 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Long createUser(UserCreateDTO user) {
-        if (userRepository.existsByLogin(user.login())){
+    public Optional<User> getUserFromOptional(Long id) {
+        return userRepository.findById(id);
+    }
+
+    @Override
+    public Faculty getFacultyForUser(String faculty) {
+        return facultyService.getOneFacultyOptional(faculty);
+    }
+
+    @Override
+    public Group getGroupForUser(String group, Faculty faculty) {
+        Optional<Group> g = groupService.getOneGroupOptional(group);
+        if (g.isPresent()){
+            return g.get();
+        }
+        else {
+            GroupDTO newGroup = new GroupDTO(null, group, faculty.getId());
+            return groupService.createGroup(newGroup);
+        }
+    }
+
+    @Override
+    public User createUser(User user) {
+        if (userRepository.existsByLogin(user.getLogin())){
             throw new RuntimeException("This user already exists");
         }
-        RoleEnum r = RoleEnum.valueOf(user.role());
-        User u = userMapper.userCreateDTOtoUser(user, r);
-        User userCreated = userRepository.save(u);
-        return userCreated.getId();
+        return userRepository.save(user);
     }
     @Override
     public Set<Turn> getUserTurns(Long id) {

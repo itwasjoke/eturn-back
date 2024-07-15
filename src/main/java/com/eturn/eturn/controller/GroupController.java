@@ -54,7 +54,7 @@ public class GroupController {
             summary = "Создание группы",
             description = "Создает новую группу"
     )
-    public Long createGroup(@RequestBody GroupDTO groupDTO){
+    public Group createGroup(@RequestBody GroupDTO groupDTO){
         return groupService.createGroup(groupDTO);
     }
 }

@@ -8,9 +8,11 @@ import com.eturn.eturn.exception.faculty.AlreadyExistFacultyException;
 import com.eturn.eturn.exception.faculty.NotFoundFacultyException;
 import com.eturn.eturn.repository.FacultyRepository;
 import com.eturn.eturn.service.FacultyService;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class FacultyServiceImpl implements FacultyService {
@@ -31,6 +33,20 @@ public class FacultyServiceImpl implements FacultyService {
             return facultyRepository.getReferenceById(id);
         } else {
             throw new NotFoundFacultyException("Cannot get faculty by ID.");
+        }
+    }
+
+    @Transactional
+    @Override
+    public Faculty getOneFacultyOptional(String faculty) {
+        Optional<Faculty> facultyFrom = facultyRepository.getFacultyByName(faculty);
+        if (facultyFrom.isPresent()) {
+            return facultyFrom.get();
+        }
+        else{
+            Faculty f = new Faculty();
+            f.setName(faculty);
+            return facultyRepository.save(f);
         }
     }
 

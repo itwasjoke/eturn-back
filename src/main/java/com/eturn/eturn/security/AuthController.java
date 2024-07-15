@@ -20,20 +20,7 @@ public class AuthController {
         this.authenticationService = authenticationService;
     }
 
-    @GetMapping("/test")
-    @Operation(
-            summary = "Проверка вывода данных о пользователе",
-            description = "Вывод имени авторизированного пользователя"
-    )
-    String getGreetings(@RequestParam String text, HttpServletRequest request) {
-        // Получаем результат аутентификации
-        var authentication = (Authentication) request.getUserPrincipal();
-        // Получаем информацию о пользователе
-        var userDetails = (UserDetails) authentication.getPrincipal();
-        // Используем
-        return "Hello "+userDetails.getUsername()+" "+text;
-    }
-
+    // TODO Удалить запрос, когда необходимость в тестировании пользователей отсутствует.
     @PostMapping("/sign-up")
     @Operation(
             summary = "Регистрация",
@@ -43,6 +30,7 @@ public class AuthController {
         return authenticationService.signUp(request);
     }
 
+    // TODO Удалить запрос, когда необходимость в тестировании пользователей отсутствует.
     @PostMapping("/sign-in")
     @Operation(
             summary = "Вход",
@@ -53,6 +41,15 @@ public class AuthController {
             @RequestParam @Parameter(description = "Пароль") String password
     ){
         return authenticationService.signIn(login, password);
+    }
+
+    @PostMapping("/etuid")
+    @Operation(
+            summary = "Вход",
+            description = "Отправка логина и пароля, получение токена авторизации"
+    )
+    public JwtAuthenticationResponse signIn(@RequestBody String token){
+        return authenticationService.auth(token);
     }
 
 }
