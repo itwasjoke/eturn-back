@@ -6,6 +6,7 @@ import com.eturn.eturn.dto.mapper.TurnMapper;
 import com.eturn.eturn.dto.mapper.TurnCreatingMapper;
 import com.eturn.eturn.entity.*;
 import com.eturn.eturn.enums.AccessMemberEnum;
+import com.eturn.eturn.enums.RoleEnum;
 import com.eturn.eturn.exception.turn.*;
 import com.eturn.eturn.repository.TurnRepository;
 import com.eturn.eturn.service.FacultyService;
@@ -16,6 +17,8 @@ import com.eturn.eturn.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.*;
 
 @Service
@@ -84,6 +87,7 @@ public class TurnServiceImpl implements TurnService {
             throw new LocalNotFoundTurnException("No turn in database on getTurnFrom method (TurnServiceImpl.java)");
         }
     }
+    @Transactional
     @Override
     public List<TurnForListDTO> getUserTurns(String login, Map<String, String> params) {
         User user = userService.findByLogin(login);
@@ -99,6 +103,9 @@ public class TurnServiceImpl implements TurnService {
 //        });
         String access = params.get("Access");
         List<Object[]> allTurns = new ArrayList<>();
+        Date now = new Date();
+        turnRepository.deleteByDateEndIsLessThan(now);
+        turnRepository.deleteOldTurns(now);
         if (Objects.equals(access, "memberOut")) {
             allTurns = turnRepository.resultsMemberOut(user.getId(), user.getIdGroup(), user.getIdFaculty(), params.get("Type"));
         } else if (Objects.equals(access, "memberIn")){
@@ -116,14 +123,31 @@ public class TurnServiceImpl implements TurnService {
 
     @Override
     @Transactional
-    public Long createTurn(TurnCreatingDTO turn, String login) {
-        UserDTO userDTO = userService.getUser(login);
-        User userCreator = userService.getUserFrom(userDTO.id());
-        //Set<Group> groups = groupService.getSetGroups(turn.allowedGroups());
-        Turn turnDto = turnCreatingMapper.turnMoreDTOToTurn(turn,userCreator);
-        Turn turnNew = turnRepository.save(turnDto);
-        addTurnToUser(turnNew.getId(), login, "CREATOR");
-        return turnNew.getId();
+    public Long createTurn(TurnCreatingDTO turnDTO, String login) {
+        if (turnDTO.dateEnd().getTime() > turnDTO.dateStart().getTime()) {
+            UserDTO userDTO = userService.getUser(login);
+            User user = userService.getUserFrom(userDTO.id());
+            Date now = new Date();
+            long timeDiff = turnDTO.dateEnd().getTime() - turnDTO.dateStart().getTime();
+            long year = 1000*60*60*24*365L;
+            long month = 1000*60*60*24*31L;
+            if (user.getRoleEnum() == RoleEnum.STUDENT && (timeDiff > 1000*60*60*24*3 || timeDiff < 0))
+                throw new InvalidTimeToCreateTurnException("Invalid turn duration");
+            if (user.getRoleEnum() == RoleEnum.EMPLOYEE && (timeDiff > year || timeDiff < 0))
+                throw new InvalidTimeToCreateTurnException("Invalid turn duration");
+            if (user.getRoleEnum() == RoleEnum.STUDENT && ((turnDTO.dateStart().getTime() - now.getTime() > month) || (turnDTO.dateStart().getTime() - now.getTime() < 0)))
+                throw new InvalidLengthTurnException("The turn is too long (or short)");
+            if (user.getRoleEnum() == RoleEnum.EMPLOYEE && ((turnDTO.dateStart().getTime() - now.getTime() > month * 3) || (turnDTO.dateStart().getTime() - now.getTime() < 0)))
+                throw new InvalidLengthTurnException("The turn is too long (or short)");
+            User userCreator = userService.getUserFrom(userDTO.id());
+            //Set<Group> groups = groupService.getSetGroups(turn.allowedGroups());
+            Turn turn = turnCreatingMapper.turnMoreDTOToTurn(turnDTO, userCreator);
+            Turn turnNew = turnRepository.save(turn);
+            addTurnToUser(turnNew.getId(), login, "CREATOR");
+            return turnNew.getId();
+        } else
+            throw new InvalidDataTurnException("The dateEnd cannot be earlier than the dateStart on createTurn method (TurnServiceImpl.java)");
+
     }
 
     @Override
