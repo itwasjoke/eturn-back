@@ -20,8 +20,6 @@ public record TurnForListDTO(
         int countUsers,
         @Schema(description = "Идентификатор пользователя", example="1")
         long userId,
-        int positionCount,
-        int timer,
         String tags,
         Date dateStart,
         Date dateEnd,

@@ -14,7 +14,7 @@ import java.util.Set;
 @Getter
 @Setter
 @Entity
-@NamedNativeQuery(name = "getMemberOutTurns", query = "SELECT m.access_member_enum, t.id, t.name, t.description, t.user_id, t.date_start, t.date_end, t.count_users, t.timer, t.position_count, t.tags " +
+@NamedNativeQuery(name = "getMemberOutTurns", query = "SELECT m.access_member_enum, t.id, t.name, t.description, t.user_id, t.date_start, t.date_end, t.count_users, t.tags " +
         "FROM turn AS t " +
         "INNER JOIN turn_faculty AS tf ON t.id = tf.turn_id " +
         "LEFT JOIN member AS m ON (t.id = m.turn_id AND m.user_id = :userId) " +
@@ -24,7 +24,7 @@ import java.util.Set;
         "AND m.access_member_enum IS NULL " +
         "OR (m.user_id = :userId AND m.access_member_enum = 'INVITED') " +
         "UNION " +
-        "SELECT m.access_member_enum, t.id, t.name, t.description, t.user_id, t.date_start, t.date_end, t.count_users, t.timer, t.position_count, t.tags " +
+        "SELECT m.access_member_enum, t.id, t.name, t.description, t.user_id, t.date_start, t.date_end, t.count_users, t.tags " +
         "FROM turn AS t " +
         "INNER JOIN turn_group AS tg ON t.id = tg.turn_id " +
         "LEFT JOIN member AS m ON (t.id = m.turn_id AND m.user_id = :userId)" +
@@ -34,7 +34,7 @@ import java.util.Set;
         "AND tg.group_id = :groupId " +
         "AND m.access_member_enum IS NULL " +
         "OR (m.user_id = :userId AND m.access_member_enum = 'INVITED') ", resultSetMapping = "TurnMapping")
-@NamedNativeQuery(name = "getMemberInTurns", query = "SELECT m.access_member_enum, t.id, t.name, t.description, t.user_id, t.date_start, t.date_end, t.count_users, t.timer, t.position_count, t.tags " +
+@NamedNativeQuery(name = "getMemberInTurns", query = "SELECT m.access_member_enum, t.id, t.name, t.description, t.user_id, t.date_start, t.date_end, t.count_users, t.tags " +
         "FROM turn AS t " +
         "LEFT JOIN member AS m ON (t.id = m.turn_id AND m.user_id = :userId) " +
         "WHERE m.user_id = :userId AND t.turn_type = :turnType AND m.access_member_enum != 'INVITED'" +
@@ -55,8 +55,8 @@ import java.util.Set;
                         @FieldResult(name = "dateEnd", column = "date_end"),
                         @FieldResult(name = "countUsers", column = "count_users"),
                         @FieldResult(name = "tags", column = "tags"),
-                        @FieldResult(name = "timer", column = "timer"),
-                        @FieldResult(name = "positionCount", column = "position_count")
+                        //@FieldResult(name = "timer", column = "timer"),
+                        //@FieldResult(name = "positionCount", column = "position_count")
                 }
         ),
         columns = @ColumnResult(name = "access_member_enum", type = String.class)
@@ -109,19 +109,19 @@ public class Turn {
 
     private int countUsers;
 
-    private int timer;
+    private Integer timer;
 
-    private int positionCount;
+    private Integer positionCount;
 
     private String tags;
     // Среднее время в миллисекундах
 
-    private double smoothedValue;
+    private Double smoothedValue;
 
-    private long totalTime = 0;
+    private Long totalTime = 0L;
 
-    private int averageTime = 0;
+    private Integer averageTime = 0;
 
-    private int countPositionsLeft = 0;
+    private Integer countPositionsLeft = 0;
 
 }
