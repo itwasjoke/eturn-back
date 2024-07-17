@@ -90,15 +90,6 @@ public class MemberServiceImpl implements MemberService {
         return memberRepository.countByTurn(turn);
     }
 
-    @Override
-    public void deleteTurnMembers(Turn turn) {
-        try{
-            memberRepository.deleteByTurn(turn);
-
-        } catch(RuntimeException e){
-            throw new UnknownMemberException("Cannot delete member on createMember method MemberServiceImpl.java " + e.getMessage());
-        }
-    }
 
     @Override
     public List<MemberDTO> getMemberList(Turn turn, String type) {
@@ -161,5 +152,10 @@ public class MemberServiceImpl implements MemberService {
         else{
             throw new NotFoundMemberException("no member what you want to delete");
         }
+    }
+
+    @Override
+    public void deleteMemberFrom(Turn turn, User user) {
+        memberRepository.deleteByTurnAndUser(turn, user);
     }
 }

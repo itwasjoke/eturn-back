@@ -17,8 +17,6 @@ import com.eturn.eturn.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.*;
 
 @Service
@@ -50,16 +48,6 @@ public class TurnServiceImpl implements TurnService {
         this.turnMapper = turnMapper;
         this.turnCreatingMapper = turnCreatingMapper;
         this.turnForListMapper = turnForListMapper;
-    }
-
-
-    @Override
-    public List<Turn> getAllTurns() {
-        List<Turn> turns = turnRepository.findAll();
-        if (turns.isEmpty()){
-            throw new LocalNotFoundTurnException("empty turnList on getAllTurns method (TurnServiceImpl.java");
-        }
-        return turns;
     }
 
     @Override
@@ -143,33 +131,13 @@ public class TurnServiceImpl implements TurnService {
             //Set<Group> groups = groupService.getSetGroups(turn.allowedGroups());
             Turn turn = turnCreatingMapper.turnMoreDTOToTurn(turnDTO, userCreator);
             Turn turnNew = turnRepository.save(turn);
-            addTurnToUser(turnNew.getId(), login, "CREATOR");
+            memberService.createMember(userCreator, turnNew, "CREATOR");
             return turnNew.getId();
         } else
             throw new InvalidDataTurnException("The dateEnd cannot be earlier than the dateStart on createTurn method (TurnServiceImpl.java)");
 
     }
 
-    @Override
-    @Transactional
-    public void updateTurn(Long idUser, Turn turn) {
-        User user = userService.getUserFrom(idUser);
-//        Turn turnUpdated = turnMapper.turnDTOToTurn(turn);
-        AccessMemberEnum accessMemberEnum = memberService.getAccess(user, turn);
-        if (accessMemberEnum == AccessMemberEnum.CREATOR) {
-            if (turnRepository.existsTurnById(turn.getId())){
-                Turn turnFromDb = turnRepository.getReferenceById(turn.getId());
-                turnFromDb.setName(turn.getName());
-                turnRepository.save(turnFromDb);
-            }
-            else{
-                throw new NotFoundTurnException("No turn in database on getTurn method (TurnServiceImpl.java)");
-            }
-        }
-        else{
-            throw new NoAccessUpdateTurnException("Only creator can update turn information on updateTurn method (TurnServiceImpl.java)");
-        }
-    }
     @Override
     @Transactional
     public void     deleteTurn(String username, Long idTurn) {
@@ -189,17 +157,11 @@ public class TurnServiceImpl implements TurnService {
     }
 
     @Override
-    public void countUser(Turn turn) {
-
+    public void saveTurn(Turn turn) {
+        turnRepository.save(turn);
     }
 
-    @Override
-    @Transactional
-    public void addTurnToUser(Long turnId, String login, String access) {
-        User user = userService.findByLogin(login);
-        Turn turn = getTurnFrom(turnId);
-        memberService.createMember(user, turn, access);
-    }
+
 
 
 

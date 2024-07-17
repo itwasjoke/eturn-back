@@ -2,6 +2,8 @@ package com.eturn.eturn.service;
 
 import com.eturn.eturn.dto.PositionDTO;
 import com.eturn.eturn.dto.PositionMoreInfoDTO;
+import com.eturn.eturn.entity.Turn;
+import com.eturn.eturn.entity.User;
 
 import java.util.List;
 
@@ -26,4 +28,6 @@ public interface PositionService {
     PositionMoreInfoDTO getFirstUserPosition(Long turnId, String username);
 
     PositionMoreInfoDTO getFirstPosition(Long turnId, String username);
+
+    void addTurnToUser(User user, Turn turn);
 }

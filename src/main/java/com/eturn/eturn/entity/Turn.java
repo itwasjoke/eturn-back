@@ -109,11 +109,14 @@ public class Turn {
 
     private int allowedTime;
 
+    // Среднее время в миллисекундах
 
-//    private Integer countPositions;
-//    private Integer allTime;
-//    private Integer averageTime;
-//    private Integer elapsedTime;
-//    private Integer positionsLeft;
-//    private Date turnLiveTime;
+    private double smoothedValue;
+
+    private long totalTime = 0;
+
+    private int averageTime = 0;
+
+    private int countPositionsLeft = 0;
+
 }

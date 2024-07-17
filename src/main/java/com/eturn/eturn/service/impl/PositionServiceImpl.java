@@ -29,18 +29,16 @@ public class PositionServiceImpl implements PositionService {
     private final PositionListMapper positionListMapper;
     private final TurnService turnService;
     private final PositionMoreInfoMapper positionMoreInfoMapper;
-    private final PositionMapper positionMapper;
     private final MemberService memberService;
 
 
     public PositionServiceImpl(PositionRepository positionRepository, UserService userService,
-                               PositionListMapper positionListMapper, TurnService turnService, PositionMoreInfoMapper positionMoreInfoMapper, PositionMapper positionMapper, MemberService memberService) {
+                               PositionListMapper positionListMapper, TurnService turnService, PositionMoreInfoMapper positionMoreInfoMapper, MemberService memberService) {
         this.positionRepository = positionRepository;
         this.userService = userService;
         this.positionListMapper = positionListMapper;
         this.turnService = turnService;
         this.positionMoreInfoMapper = positionMoreInfoMapper;
-        this.positionMapper = positionMapper;
         this.memberService = memberService;
     }
 
@@ -191,14 +189,14 @@ public class PositionServiceImpl implements PositionService {
 
     @Override
     public void update(Long id, String username) {
-        TurnDTO turn = turnService.getTurn(id);
-        if (turn.dateStart().getTime() > new Date().getTime())
-            throw new DateNotArrivedPosException("The date has not come yet");
         UserDTO userDTO = userService.getUser(username);
         User user = userService.getUserFrom(userDTO.id());
         Optional<Position> position = positionRepository.findById(id);
         if (position.isPresent()){
             Position posI = position.get();
+            Turn turn = posI.getTurn();
+            if (turn.getDateStart().getTime() > new Date().getTime())
+                throw new DateNotArrivedPosException("The date has not come yet");
             MemberDTO memberDTO = memberService.getMember(user, posI.getTurn());
             String access = memberDTO.access();
             if (posI.getUser()==user
@@ -211,9 +209,30 @@ public class PositionServiceImpl implements PositionService {
                     Position pos = positionO.get();
                     if (pos.isStart()){
                         delete(id, user.getUsername());
+                        long time = new Date().getTime() - pos.getDateStart().getTime();
+                        int countPositions = turn.getCountPositionsLeft();
+                        if (countPositions == 0) {
+                            countPositions++;
+                            turn.setCountPositionsLeft(countPositions);
+                            turn.setAverageTime((int)time);
+                            turn.setTotalTime(time);
+                            turn.setSmoothedValue((int)time);
+                        }
+                        else {
+                            countPositions++;
+                            double smoothedValue = 0.99 * time + (1-0.99) * turn.getSmoothedValue();
+                            long totalTime = turn.getTotalTime();
+                            totalTime += (long) smoothedValue;
+                            int averageTime = (int) totalTime/countPositions;
+                            turn.setSmoothedValue(smoothedValue);
+                            turn.setCountPositionsLeft(countPositions);
+                            turn.setAverageTime(averageTime);
+                            turnService.saveTurn(turn);
+                        }
                     }
                     else{
                         pos.setStart(true);
+                        pos.setDateStart(new Date());
                         positionRepository.save(pos);
                     }
                 }
@@ -253,6 +272,9 @@ public class PositionServiceImpl implements PositionService {
                     c.add(Calendar.MINUTE, 2);
                     changePosition.setDateEnd(c.getTime());
                     positionRepository.save(changePosition);
+                }
+                else if (access.equals(AccessMemberEnum.MEMBER.toString())) {
+                    memberService.deleteMemberFrom(pos.getTurn(), user);
                 }
             }
             else{
@@ -342,6 +364,11 @@ public class PositionServiceImpl implements PositionService {
         else{
             throw new NotFoundPosException("No positions found");
         }
+    }
+
+    @Override
+    public void addTurnToUser(User user, Turn turn) {
+        memberService.createMember(user, turn, "MEMBER");
     }
 
 }

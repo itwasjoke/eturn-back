@@ -19,12 +19,13 @@ public interface MemberService {
     MemberDTO getMember(User user, Turn turn);
 
     long getCountMembers(Turn turn);
-    void deleteTurnMembers(Turn turn);
 
     List<MemberDTO> getMemberList(Turn turn, String type);
 
     void changeMemberStatus(long id, String type, User user);
 
     void deleteMember(long id, User user);
+
+    void deleteMemberFrom(Turn turn, User user);
 
 }

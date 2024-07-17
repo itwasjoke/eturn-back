@@ -93,20 +93,6 @@ public class TurnController {
         var userDetails = (UserDetails) authentication.getPrincipal();
         return turnService.createTurn(turn, userDetails.getUsername());
     }
-
-    @PutMapping(value = "/member")
-    @Operation(
-            summary = "Добавление участника",
-            description = "Добавляет пользователя к объекту очереди"
-    )
-    public void updateMember(
-            HttpServletRequest request,
-            @RequestParam @Parameter(description = "Идентификатор очереди") Long turnId
-    ){
-        var authentication = (Authentication) request.getUserPrincipal();
-        var userDetails = (UserDetails) authentication.getPrincipal();
-        turnService.addTurnToUser(turnId, userDetails.getUsername(), "MEMBER");
-    }
     @GetMapping("/member")
     public MemberDTO getCurrentMember(
             HttpServletRequest request,
@@ -137,14 +123,6 @@ public class TurnController {
         var userDetails = (UserDetails) authentication.getPrincipal();
         positionService.changeMemberStatus(id, type, userDetails.getUsername());
     }
-//
-//    @PutMapping()
-//    public void update(
-//        @RequestBody Turn turn,
-//        @RequestParam long idUser
-//    ) {
-//        turnService.updateTurn(idUser, turn);
-//    }
 
     @DeleteMapping("/{idTurn}")
     public void delete(

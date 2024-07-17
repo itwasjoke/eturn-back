@@ -31,4 +31,6 @@ public class Position {
     private int number;
 
     private Date dateEnd;
+
+    private Date dateStart;
 }
