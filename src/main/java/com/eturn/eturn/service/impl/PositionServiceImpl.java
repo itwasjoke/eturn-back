@@ -43,7 +43,10 @@ public class PositionServiceImpl implements PositionService {
     }
 
     @Transactional
-    void deleteOverdueElements(Turn turn){
+    public void deleteOverdueElements(Turn turn){
+        if (turn.getTimer() == 0) {
+            return;
+        }
         Optional<Position> positionFirstO = positionRepository.findFirstByTurnOrderByIdAsc(turn);
         if (positionFirstO.isPresent()){
             Position positionFirst = positionFirstO.get();
@@ -53,7 +56,7 @@ public class PositionServiceImpl implements PositionService {
                 if (timeBetween>0){
                     timeBetween = timeBetween / 1000;
                     timeBetween = timeBetween / 60;
-                    timeBetween = timeBetween / 2;
+                    timeBetween = timeBetween / turn.getTimer();
                     timeBetween++;
                     Pageable  paging = PageRequest.of(0, (int)timeBetween);
                     Page<Position> positionsPage = positionRepository.findAllByTurnOrderByIdAsc(turn,paging);
@@ -66,7 +69,7 @@ public class PositionServiceImpl implements PositionService {
                         Date date = new Date();
                         Calendar c = Calendar.getInstance();
                         c.setTime(date);
-                        c.add(Calendar.MINUTE, 2);
+                        c.add(Calendar.MINUTE, turn.getTimer());
                         positionF.setDateEnd(c.getTime());
                         positionRepository.save(positionF);
                     }
@@ -90,7 +93,10 @@ public class PositionServiceImpl implements PositionService {
             long members = memberService.getCountMembers(turn);
             // если человек меньше, чем разрешенное число,
             // то за него берется количество участников
-            int PERMITTED_COUNT_PEOPLE_SYSTEM = 2;
+            int PERMITTED_COUNT_PEOPLE_SYSTEM = turn.getPositionCount();
+            if (PERMITTED_COUNT_PEOPLE_SYSTEM == 0) {
+                PERMITTED_COUNT_PEOPLE_SYSTEM = 20;
+            }
             int PERMITTED_COUNT_PEOPLE = PERMITTED_COUNT_PEOPLE_SYSTEM;
             if (members < PERMITTED_COUNT_PEOPLE_SYSTEM){
                 PERMITTED_COUNT_PEOPLE = (int) members;
@@ -269,7 +275,7 @@ public class PositionServiceImpl implements PositionService {
                     Date date = new Date();
                     Calendar c = Calendar.getInstance();
                     c.setTime(date);
-                    c.add(Calendar.MINUTE, 2);
+                    c.add(Calendar.MINUTE, pos.getTurn().getTimer());
                     changePosition.setDateEnd(c.getTime());
                     positionRepository.save(changePosition);
                 }

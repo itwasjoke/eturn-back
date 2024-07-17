@@ -130,6 +130,19 @@ public class TurnServiceImpl implements TurnService {
             User userCreator = userService.getUserFrom(userDTO.id());
             //Set<Group> groups = groupService.getSetGroups(turn.allowedGroups());
             Turn turn = turnCreatingMapper.turnMoreDTOToTurn(turnDTO, userCreator);
+            String allowedGroups = "";
+            if (turnDTO.allowedGroups() != null) {
+                for (GroupDTO groupDTO : turnDTO.allowedGroups()) {
+                    allowedGroups = allowedGroups + groupDTO.name() + " ";
+                }
+            }
+            String allowedFaculties = "";
+            if (turnDTO.allowedFaculties() != null) {
+                for (Faculty faculty : turnDTO.allowedFaculties()) {
+                    allowedFaculties = allowedFaculties + faculty.getName() + " ";
+                }
+            }
+            turn.setTags(turnDTO.name() + " " + turnDTO.description() + " " + allowedGroups + allowedFaculties + user.getName());
             Turn turnNew = turnRepository.save(turn);
             memberService.createMember(userCreator, turnNew, "CREATOR");
             return turnNew.getId();

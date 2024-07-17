@@ -19,10 +19,12 @@ public interface TurnForListMapper {
     @Mapping(target = "description",source = "turn.description")
     @Mapping(target = "userId", source = "turn.creator.id")
     @Mapping(target = "countUsers",source = "turn.countUsers")
-    @Mapping(target = "allowedTime", source = "turn.allowedTime")
+    @Mapping(target = "timer", source = "turn.timer")
     @Mapping(target = "dateStart",source = "turn.dateStart")
     @Mapping(target = "dateEnd", source = "turn.dateEnd")
     @Mapping(target = "accessMember", source = "access")
+    @Mapping(target = "positionCount", source = "turn.positionCount")
+    @Mapping(target = "tags", source = "turn.tags")
 
     TurnForListDTO turnToTurnForListDTO(Turn turn, String access);
 }
