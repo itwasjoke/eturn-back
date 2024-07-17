@@ -10,9 +10,15 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import jakarta.validation.ValidationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Validated
 @RestController
 @RequestMapping(value ="/turn", produces = "application/json; charset=utf-8")
 @Tag(name = "Очереди", description = "Обработка информации об очередях")
@@ -88,7 +95,11 @@ public class TurnController {
             summary = "Создание очереди",
             description = "Получает объект и создает очередь"
     )
-    public Long create(HttpServletRequest request, @RequestBody TurnCreatingDTO turn) {
+    public Long create(HttpServletRequest request,@Valid @RequestBody TurnCreatingDTO turn, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            List<FieldError> errors = bindingResult.getFieldErrors();
+            throw new ValidationException("Ошибка валидации:", (Throwable) errors);
+        }
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
         return turnService.createTurn(turn, userDetails.getUsername());
