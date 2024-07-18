@@ -27,11 +27,6 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public Group createGroup(Group group) {
-        return groupRepository.save(group);
-    }
-
-    @Override
     public Optional<Group> getGroup(String number) {
         return groupRepository.getGroupByNumber(number);
     }

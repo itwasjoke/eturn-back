@@ -6,6 +6,7 @@ import com.eturn.eturn.dto.mapper.TurnMapper;
 import com.eturn.eturn.dto.mapper.TurnCreatingMapper;
 import com.eturn.eturn.entity.*;
 import com.eturn.eturn.enums.AccessMemberEnum;
+import com.eturn.eturn.enums.AccessTurnEnum;
 import com.eturn.eturn.enums.RoleEnum;
 import com.eturn.eturn.exception.turn.*;
 import com.eturn.eturn.repository.TurnRepository;
@@ -130,19 +131,21 @@ public class TurnServiceImpl implements TurnService {
             User userCreator = userService.getUserFrom(userDTO.id());
             //Set<Group> groups = groupService.getSetGroups(turn.allowedGroups());
             Turn turn = turnCreatingMapper.turnMoreDTOToTurn(turnDTO, userCreator);
-            String allowedGroups = "";
-            if (turnDTO.allowedGroups() != null) {
-                for (GroupDTO groupDTO : turnDTO.allowedGroups()) {
-                    allowedGroups = allowedGroups + groupDTO.name() + " ";
+            String allowedElements = " ";
+            if (turn.getAccessTurnType() == AccessTurnEnum.FOR_ALLOWED_ELEMENTS) {
+                if (turn.getAllowedGroups() != null) {
+                    for (Group group : turn.getAllowedGroups()) {
+                        allowedElements = allowedElements + group.getNumber() + " ";
+                    }
+                }
+                if (turn.getAllowedFaculties() != null) {
+                    for (Faculty faculty : turn.getAllowedFaculties()) {
+                        allowedElements = allowedElements + faculty.getName() + " ";
+                    }
                 }
             }
-            String allowedFaculties = "";
-            if (turnDTO.allowedFaculties() != null) {
-                for (Faculty faculty : turnDTO.allowedFaculties()) {
-                    allowedFaculties = allowedFaculties + faculty.getName() + " ";
-                }
-            }
-            turn.setTags(turnDTO.name() + " " + turnDTO.description() + " " + allowedGroups + allowedFaculties + user.getName());
+            String tags = turn.getName() + " " + turn.getDescription() + allowedElements + userCreator.getName();
+            turn.setTags(tags);
             Turn turnNew = turnRepository.save(turn);
             memberService.createMember(userCreator, turnNew, "CREATOR");
             return turnNew.getId();

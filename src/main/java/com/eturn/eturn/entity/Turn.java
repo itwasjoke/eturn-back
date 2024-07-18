@@ -107,7 +107,7 @@ public class Turn {
 
     private Date dateEnd;
 
-    private int countUsers;
+    private Integer countUsers;
 
     private Integer timer;
 

@@ -14,8 +14,8 @@ import org.mapstruct.ReportingPolicy;
 )
 public interface GroupMapper {
     @Mapping(target = "turns", ignore = true)
-    @Mapping(target = "number", source = "dto.name")
+    @Mapping(target = "number", source = "dto.number")
     Group DTOtoGroup(GroupDTO dto);
-    @Mapping(target = "name", source = "group.number")
+    @Mapping(target = "number", source = "group.number")
     GroupDTO groupToDTO(Group group);
 }

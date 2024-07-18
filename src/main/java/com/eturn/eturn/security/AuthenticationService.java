@@ -151,6 +151,8 @@ public class AuthenticationService {
 
         RoleEnum r = RoleEnum.valueOf(userCreateDTO.role());
         User user = userMapper.userCreateDTOtoUser(userCreateDTO, r);
+        String password = passwordEncoder.encode(userCreateDTO.password());
+        user.setPassword(password);
         User newUser = userService.createUser(user);
 
         var jwt = "Bearer "+jwtService.generateToken(newUser);
