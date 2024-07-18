@@ -222,7 +222,7 @@ public class PositionServiceImpl implements PositionService {
                             turn.setCountPositionsLeft(countPositions);
                             turn.setAverageTime((int)time);
                             turn.setTotalTime(time);
-                            turn.setSmoothedValue((int)time);
+                            turn.setSmoothedValue((double)time);
                         }
                         else {
                             countPositions++;
