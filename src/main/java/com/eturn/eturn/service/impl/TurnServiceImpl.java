@@ -95,7 +95,7 @@ public class TurnServiceImpl implements TurnService {
         turnRepository.deleteByDateEndIsLessThan(now);
         turnRepository.deleteOldTurns(now);
         if (Objects.equals(access, "memberOut")) {
-            allTurns = turnRepository.resultsMemberOut(user.getId(), user.getIdGroup(), user.getIdFaculty(), params.get("Type"));
+            allTurns = turnRepository.resultsMemberOut(user.getId(), user.getGroup().getId(), user.getGroup().getFaculty().getId(), params.get("Type"));
         } else if (Objects.equals(access, "memberIn")){
             allTurns = turnRepository.resultsMemberIn(user.getId(), params.get("Type"));
         }

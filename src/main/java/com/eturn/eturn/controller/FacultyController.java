@@ -1,6 +1,7 @@
 package com.eturn.eturn.controller;
 
 import com.eturn.eturn.dto.FacultyDTO;
+import com.eturn.eturn.entity.Faculty;
 import com.eturn.eturn.service.FacultyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -23,10 +24,10 @@ public class FacultyController {
     @PostMapping
 //    @PreAuthorize("hasRole('EMPLOYEE')")
     @Operation(
-            summary = "Создание факультетов",
-            description = "Создает все факультеты и группы из систем университета"
+            summary = "Создание факультета",
+            description = "Создает все факультет"
     )
-    private void create(){
-        facultyService.createFaculty();
+    private void create(@RequestBody FacultyDTO facultyDTO){
+        facultyService.createFaculty(facultyDTO);
     }
 }

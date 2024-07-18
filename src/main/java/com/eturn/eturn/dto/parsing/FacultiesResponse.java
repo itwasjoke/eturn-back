@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 @Setter
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class FacultyResponse {
+public class FacultiesResponse {
 
     @JsonProperty("id")
     private Long id;

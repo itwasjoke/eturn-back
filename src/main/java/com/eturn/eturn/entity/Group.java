@@ -12,12 +12,13 @@ import java.util.Set;
 @Table(name = "groups")
 public class Group {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String number;
-
-    private Long facultyId;
+    private Integer course;
+    @ManyToOne
+    @JoinColumn(name = "faculty_id")
+    private Faculty faculty;
 
     @ManyToMany(mappedBy = "allowedGroups",fetch = FetchType.LAZY)
     private Set<Turn> turns;

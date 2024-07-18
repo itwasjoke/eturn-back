@@ -29,21 +29,13 @@ public class User implements UserDetails {
 
     private String name;
 
-    private Long idGroup;
-
-    private Long idFaculty;
+    @ManyToOne
+    @JoinColumn(name = "group_id")
+    private Group group;
 
     @Enumerated(EnumType.STRING)
     private RoleEnum roleEnum;
 
-//    @ManyToMany(cascade = CascadeType.ALL)
-//    @JoinTable(
-//            name = "user_turn",
-//            joinColumns = @JoinColumn(name = "user_id"),
-//            inverseJoinColumns = @JoinColumn(name = "turn_id")
-//    )
-//    private Set<Turn> turns;
-//
     @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
     private Set<Turn> createdTurns;
 

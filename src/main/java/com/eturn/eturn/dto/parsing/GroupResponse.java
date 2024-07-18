@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @JsonIgnoreProperties(ignoreUnknown = true)
-class GroupResponse {
+public class GroupResponse {
 
     @JsonProperty("id")
     private Long id;

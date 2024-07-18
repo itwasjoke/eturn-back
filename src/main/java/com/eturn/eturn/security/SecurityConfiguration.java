@@ -48,7 +48,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(request -> request
                         // Можно указать конкретный путь, * - 1 уровень вложенности, ** - любое количество уровней вложенности
                         // TODO Убрать "/auth/sign-in", "/auth/sign-up", когда тестирование пользователей закончится
-                        .requestMatchers("/auth/etuid", "/error/**", "/auth/sign-in", "/auth/sign-up", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/auth/etuid", "/auth/groups", "/error/**", "/auth/sign-in", "/auth/sign-up", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
 //                        .requestMatchers("/group/**", "/course", "/faculty/**").hasRole("EMPLOYEE")
                         .anyRequest().authenticated()
 //                        .requestMatchers("/swagger-ui/**", "/swagger-resources/*", "/v3/api-docs/**").permitAll()

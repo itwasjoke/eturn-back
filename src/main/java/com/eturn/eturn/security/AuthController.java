@@ -43,6 +43,11 @@ public class AuthController {
         return authenticationService.signIn(login, password);
     }
 
+    @PostMapping("/groups")
+    public void createGroups() {
+        authenticationService.createFaculties();
+    }
+
     @PostMapping("/etuid")
     @Operation(
             summary = "Вход",

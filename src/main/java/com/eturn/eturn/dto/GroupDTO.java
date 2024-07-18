@@ -10,7 +10,7 @@ public record GroupDTO(
         @Schema(description = "Номер группы", example="2000")
         String name,
         @Schema(description = "Идентификатор факультета", example="1")
-        Long facultyId
+        FacultyDTO faculty
 ) {
 
 }

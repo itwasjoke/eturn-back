@@ -8,12 +8,9 @@ import java.util.Optional;
 
 public interface GroupService {
 
-    void createGroup(Group group);
+    Group createGroup(Group group);
 
-    Group createGroup(GroupDTO groupDTO);
-
+    void createOptionalGroup(Long id, String number, Integer course, Faculty faculty);
     Optional<Group> getGroup(String number);
-    Group getGroup(Long id);
 
-    Group getGroupForUser(String group, Faculty faculty);
 }

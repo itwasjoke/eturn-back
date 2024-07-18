@@ -9,11 +9,9 @@ import java.util.Set;
 
 @Repository
 public interface GroupRepository extends JpaRepository<Group,Long> {
-    boolean existsByNumber(String numGroup);
+
     boolean existsById(Long idGroup);
-    Set<Group> findAllByFacultyId(Long id);
-    //boolean existsById(int id_group);
-    Group getByNumber(String numGroup);
+    Group getGroupById(Long id);
 
     Optional<Group> getGroupByNumber(String number);
 

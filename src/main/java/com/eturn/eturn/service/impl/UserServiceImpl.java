@@ -25,15 +25,10 @@ import java.util.Set;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final FacultyService facultyService;
-    private final GroupService groupService;
     private final UserMapper userMapper;
 
-    public UserServiceImpl(UserRepository userRepository, FacultyService facultyService,
-                           GroupService groupService, UserMapper userMapper) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
-        this.facultyService = facultyService;
-        this.groupService = groupService;
         this.userMapper = userMapper;
     }
 
@@ -45,12 +40,8 @@ public class UserServiceImpl implements UserService {
             String group = null;
             String faculty = null;
             if (user.getRoleEnum() == RoleEnum.STUDENT) {
-                if (user.getIdGroup() != null) {
-                    group = groupService.getGroup(user.getIdGroup()).getNumber();
-                }
-                if (user.getIdFaculty() != null) {
-                    faculty = facultyService.getOneFaculty(user.getIdFaculty()).getName();
-                }
+                group = user.getGroup().getNumber();
+                faculty = user.getGroup().getFaculty().getName();
             }
             String role = null;
             RoleEnum R = user.getRoleEnum();
@@ -79,24 +70,6 @@ public class UserServiceImpl implements UserService {
         return userRepository.findById(id);
     }
 
-//    @Override
-//    public Faculty getFacultyForUser(String faculty) {
-//        return facultyService.getOneFacultyOptional(faculty);
-//    }
-//
-//    @Override
-//    public Group getGroupForUser(String group, Faculty faculty) {
-//        Optional<Group> g = groupService.getGroup(group);
-//        if (g.isPresent()){
-//            return g.get();
-//        }
-//        else {
-//
-//            GroupDTO newGroup = new GroupDTO(null, group, faculty.getId());
-//            return groupService.createGroup(newGroup);
-//        }
-//    }
-
     @Override
     public User createUser(User user) {
         if (userRepository.existsByLogin(user.getLogin())){
@@ -121,23 +94,4 @@ public class UserServiceImpl implements UserService {
         return this::findByLogin;
     }
 
-
-//    @Transactional
-//    @Override
-//    public void addTurn(Long userId, Long turnId) {
-//        Turn t = turnService.getTurnFrom(turnId);
-//        turnService.countUser(t);
-//        Optional<User> user = userRepository.findById(userId);
-//        if (user.isPresent()){
-//            User u = user.get();
-//            Set<Turn> turns = u.getTurns();
-//            turns.add(t);
-//            u.setTurns(turns);
-//            userRepository.save(u);
-//        }
-//        else{
-//            throw new NotFoundException("User not found");
-//        }
-//
-//    }
 }

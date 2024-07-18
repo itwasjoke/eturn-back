@@ -51,5 +51,3 @@ springdoc:
 external:
   api:
     url: "https://lk.etu.ru/api/profile/0"
-
-faculties: "https://digital.etu.ru/api/mobile/groups"

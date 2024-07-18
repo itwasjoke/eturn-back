@@ -27,19 +27,8 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public Group createGroup(GroupDTO group) {
-        if (!groupRepository.existsByNumber(group.name())){
-            Group groupDb = groupMapper.DTOtoGroup(group);
-            return groupRepository.save(groupDb);
-        }
-        else{
-            throw new AlreadyExistGroupException("group already exist");
-        }
-    }
-
-    @Override
-    public void createGroup(Group group) {
-        groupRepository.save(group);
+    public Group createGroup(Group group) {
+        return groupRepository.save(group);
     }
 
     @Override
@@ -48,26 +37,25 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public Group getGroup(Long id) {
-            Optional<Group> group = groupRepository.findById(id);
-            if (group.isPresent()){
-                return group.get();
+    public void createOptionalGroup(Long id, String number, Integer course, Faculty faculty) {
+        if (groupRepository.existsById(id)){
+            Group groupExisted = groupRepository.getGroupById(id);
+            if (groupExisted.getNumber()!=number || groupExisted.getCourse()!=course || groupExisted.getFaculty().getId()!=faculty.getId()){
+                Group group = new Group();
+                group.setId(id);
+                group.setFaculty(faculty);
+                group.setNumber(number);
+                group.setCourse(course);
+                groupRepository.save(group);
             }
-            else{
-                throw new NotFoundGroupException("Cannot find group by ID.");
-            }
-    }
-
-    @Override
-    public Group getGroupForUser(String group, Faculty faculty) {
-        Optional<Group> g = getGroup(group);
-        if (g.isPresent()){
-            return g.get();
         }
         else {
-
-            GroupDTO newGroup = new GroupDTO(null, group, faculty.getId());
-            return createGroup(newGroup);
+            Group group = new Group();
+            group.setId(id);
+            group.setFaculty(faculty);
+            group.setNumber(number);
+            group.setCourse(course);
+            groupRepository.save(group);
         }
     }
 }

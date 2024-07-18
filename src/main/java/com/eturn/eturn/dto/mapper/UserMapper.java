@@ -21,8 +21,6 @@ public interface UserMapper {
     UserDTO userToUserDTO(User user, String faculty, String group, String role);
 
     @Mapping(target = "roleEnum", source = "role")
-    @Mapping(target = "idGroup", source = "dto.groupId")
-    @Mapping(target = "idFaculty", source = "dto.facultyId")
 //    @Mapping(target = "password", source = "passwordEncode")
     User userCreateDTOtoUser(UserCreateDTO dto, RoleEnum role);
     }

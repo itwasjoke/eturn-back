@@ -10,6 +10,9 @@ import lombok.Setter;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FacultyResponse {
 
+    @JsonProperty("id")
+    private Long id;
+
     @JsonProperty("dv")
     private String name;
 }
