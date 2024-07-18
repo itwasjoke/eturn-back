@@ -279,6 +279,7 @@ public class PositionServiceImpl implements PositionService {
                     changePosition.setDateEnd(c.getTime());
                     positionRepository.save(changePosition);
                 }
+                //TODO Андрей написал херню!!!
                 else if (access.equals(AccessMemberEnum.MEMBER.toString())) {
                     memberService.deleteMemberFrom(pos.getTurn(), user);
                 }
