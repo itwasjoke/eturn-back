@@ -20,21 +20,13 @@ public class FacultyController {
         this.facultyService = facultyService;
     }
 
-    @GetMapping
-    @Operation(
-            summary = "Получение факультетов",
-            description = "Возвращает список групп"
-    )
-    private List<FacultyDTO> getAll(){
-        return facultyService.getAllList();
-    }
     @PostMapping
 //    @PreAuthorize("hasRole('EMPLOYEE')")
     @Operation(
-            summary = "Создание факультета",
-            description = "Создает новый факультет"
+            summary = "Создание факультетов",
+            description = "Создает все факультеты и группы из систем университета"
     )
-    private Long create(@RequestBody FacultyDTO dto){
-        return facultyService.createFaculty(dto);
+    private void create(){
+        facultyService.createFaculty();
     }
 }

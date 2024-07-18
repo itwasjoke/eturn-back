@@ -1,7 +1,6 @@
 package com.eturn.eturn.service.impl;
 
 import com.eturn.eturn.dto.GroupDTO;
-import com.eturn.eturn.dto.UserCreateDTO;
 import com.eturn.eturn.dto.UserDTO;
 import com.eturn.eturn.dto.mapper.UserMapper;
 import com.eturn.eturn.entity.*;
@@ -36,12 +35,6 @@ public class UserServiceImpl implements UserService {
         this.facultyService = facultyService;
         this.groupService = groupService;
         this.userMapper = userMapper;
-    }
-
-    @Override
-    public RoleEnum checkRoot(Long id) {
-        User user = userRepository.getReferenceById(id);
-        return user.getRoleEnum();
     }
 
     @Override
@@ -82,26 +75,27 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<User> getUserFromOptional(Long id) {
+    public Optional<User> getUser(Long id) {
         return userRepository.findById(id);
     }
 
-    @Override
-    public Faculty getFacultyForUser(String faculty) {
-        return facultyService.getOneFacultyOptional(faculty);
-    }
-
-    @Override
-    public Group getGroupForUser(String group, Faculty faculty) {
-        Optional<Group> g = groupService.getOneGroupOptional(group);
-        if (g.isPresent()){
-            return g.get();
-        }
-        else {
-            GroupDTO newGroup = new GroupDTO(null, group, faculty.getId());
-            return groupService.createGroup(newGroup);
-        }
-    }
+//    @Override
+//    public Faculty getFacultyForUser(String faculty) {
+//        return facultyService.getOneFacultyOptional(faculty);
+//    }
+//
+//    @Override
+//    public Group getGroupForUser(String group, Faculty faculty) {
+//        Optional<Group> g = groupService.getGroup(group);
+//        if (g.isPresent()){
+//            return g.get();
+//        }
+//        else {
+//
+//            GroupDTO newGroup = new GroupDTO(null, group, faculty.getId());
+//            return groupService.createGroup(newGroup);
+//        }
+//    }
 
     @Override
     public User createUser(User user) {
@@ -109,26 +103,6 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("This user already exists");
         }
         return userRepository.save(user);
-    }
-    @Override
-    public Set<Turn> getUserTurns(Long id) {
-        Optional<User> user = userRepository.findById(id);
-        if (user.isPresent()) {
-            Set<Member> members = user.get().getMemberTurns();
-            Iterator<Member> iterator = members.iterator();
-            Set<Turn> turns = new HashSet<>();
-            while(iterator.hasNext()){
-                turns.add(iterator.next().getTurn());
-            }
-            return turns;
-        } else {
-            throw new LocalNotFoundUserException("No user on getUserTurns method (UserServiceImpl.java");
-        }
-    }
-
-    @Override
-    public void updateUser(User user) {
-        userRepository.save(user);
     }
 
     @Override
@@ -140,17 +114,6 @@ public class UserServiceImpl implements UserService {
         else throw new NotFoundUserException("Auth error on findByLogin method (UserServiceImpl.java");
     }
 
-    @Override
-    public Long loginUser(String username, String password) {
-        Optional<User> u = userRepository.findUserByLogin(username);
-        if (u.isPresent()){
-            if (u.get().getPassword().equals(password)){
-               return u.get().getId();
-            }
-            else throw new AuthPasswordException("Auth error password");
-        }
-        else throw new NotFoundUserException("Auth error on loginUser method (UserServiceImpl.java");
-    }
 
 
     @Override
@@ -158,12 +121,7 @@ public class UserServiceImpl implements UserService {
         return this::findByLogin;
     }
 
-    @Override
-    public User getCurrentUser() {
-        // Получение имени пользователя из контекста Spring Security
-        var username = SecurityContextHolder.getContext().getAuthentication().getName();
-        return findByLogin(username);
-    }
+
 //    @Transactional
 //    @Override
 //    public void addTurn(Long userId, Long turnId) {

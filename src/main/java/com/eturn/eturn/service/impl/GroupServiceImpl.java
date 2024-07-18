@@ -3,6 +3,7 @@ package com.eturn.eturn.service.impl;
 import com.eturn.eturn.dto.GroupDTO;
 import com.eturn.eturn.dto.mapper.GroupListMapper;
 import com.eturn.eturn.dto.mapper.GroupMapper;
+import com.eturn.eturn.entity.Faculty;
 import com.eturn.eturn.entity.Group;
 import com.eturn.eturn.exception.group.AlreadyExistGroupException;
 import com.eturn.eturn.exception.group.NotFoundGroupException;
@@ -19,21 +20,10 @@ import java.util.Set;
 public class GroupServiceImpl implements GroupService {
     private final GroupRepository groupRepository;
     private final GroupMapper groupMapper;
-    private final GroupListMapper groupListMapper;
 
-    public GroupServiceImpl(GroupRepository groupRepository, GroupMapper groupMapper, GroupListMapper groupListMapper) {
+    public GroupServiceImpl(GroupRepository groupRepository, GroupMapper groupMapper) {
         this.groupRepository = groupRepository;
         this.groupMapper = groupMapper;
-        this.groupListMapper = groupListMapper;
-    }
-
-    @Override
-    public Set<GroupDTO> getAllGroups(long id) {
-        Set<Group> groups = groupRepository.findAllByFacultyId(id);
-        if (groups.isEmpty()){
-            throw new NotFoundGroupException("groups not found");
-        }
-        return groupListMapper.map(new HashSet<>(groups));
     }
 
     @Override
@@ -48,17 +38,12 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public Group getOneGroup(String number) {
-        if (groupRepository.existsByNumber(number)){
-            return groupRepository.getByNumber(number);
-        }
-        else{
-            throw new NotFoundGroupException("Cannot find group by NUMBER.");
-        }
+    public void createGroup(Group group) {
+        groupRepository.save(group);
     }
 
     @Override
-    public Optional<Group> getOneGroupOptional(String number) {
+    public Optional<Group> getGroup(String number) {
         return groupRepository.getGroupByNumber(number);
     }
 
@@ -74,27 +59,15 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public GroupDTO getOneGroupDTO(String number) {
-        if (groupRepository.existsByNumber(number)){
-            return groupMapper.groupToDTO(groupRepository.getByNumber(number));
+    public Group getGroupForUser(String group, Faculty faculty) {
+        Optional<Group> g = getGroup(group);
+        if (g.isPresent()){
+            return g.get();
         }
-        else{
-            throw new NotFoundGroupException("Cannot find group by FROM DTO.");
-        }
-    }
+        else {
 
-    @Override
-    public Set<Group> getSetGroups(Set<GroupDTO> groups) {
-        HashSet<Group> groupSet = new HashSet<Group>();
-        for (GroupDTO g : groups){
-            Optional<Group> groupDb = groupRepository.findById(g.id());
-            if (groupDb.isPresent()){
-                groupSet.add(groupDb.get());
-            }
-            else{
-                throw new NotFoundGroupException("Cannot find set of groups by ID.");
-            }
+            GroupDTO newGroup = new GroupDTO(null, group, faculty.getId());
+            return createGroup(newGroup);
         }
-        return groupSet;
     }
 }

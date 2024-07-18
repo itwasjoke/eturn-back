@@ -2,6 +2,7 @@ package com.eturn.eturn.service;
 
 import com.eturn.eturn.dto.FacultyDTO;
 import com.eturn.eturn.entity.Faculty;
+import com.eturn.eturn.entity.Group;
 import com.eturn.eturn.repository.FacultyRepository;
 import org.springframework.stereotype.Service;
 
@@ -15,8 +16,7 @@ public interface FacultyService {
 
     Faculty getOneFacultyOptional(String faculty);
 
-    Long createFaculty(FacultyDTO dto);
-
-    List<FacultyDTO> getAllList();
+    void createFaculty();
+    Faculty getFacultyForUser(String faculty);
 
 }

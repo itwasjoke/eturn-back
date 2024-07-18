@@ -60,7 +60,7 @@ public class AuthenticationService {
         EtuIdUser etuIdUser = response.getBody();
         User currentUser;
         if (etuIdUser != null) {
-            Optional<User> user = userService.getUserFromOptional(etuIdUser.getId());
+            Optional<User> user = userService.getUser(etuIdUser.getId());
             if (user.isPresent()) {
                 currentUser = user.get();
             } else {
@@ -72,10 +72,10 @@ public class AuthenticationService {
                 EtuIdEducation etuIdEducation = etuIdUser.getEducations().get(0);
                 EduGroups eduGroups = etuIdEducation.getEduGroups();
                 FacultyResponse facultyResponse = eduGroups.getFacultyResponse();
-                Faculty f = userService.getFacultyForUser(facultyResponse.getName());
-                Group g = userService.getGroupForUser(eduGroups.getName(), f);
-                newUser.setIdFaculty(f.getId());
-                newUser.setIdGroup(g.getId());
+//                Faculty f = userService.getFacultyForUser(facultyResponse.getName());
+//                Group g = userService.getGroupForUser(eduGroups.getName(), f);
+//                newUser.setIdFaculty(f.getId());
+//                newUser.setIdGroup(g.getId());
                 RoleEnum roleEnum;
                 switch (etuIdUser.getPosition()) {
                     case "Учащийся":

@@ -23,8 +23,6 @@ public record TurnCreatingDTO(
         @Schema(description = "Описание очереди", example="Готовим банковские карты. Всем приятного аппетита!")
         @Size(min = 1, max = 200)
         String description,
-        @Schema(description = "Идентификатор создателя", example="1")
-        @NotNull Long creator,
         @Schema(description = "Тип очереди", example="EDU / ORG")
         @Enumerated()
         @NotNull TurnEnum turnType,

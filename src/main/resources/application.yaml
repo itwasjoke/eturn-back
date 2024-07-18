@@ -24,7 +24,7 @@ spring:
     generate-ddl: true
 
 server:
-  port: 8089
+  port: 8088
 
 token:
   signing:
@@ -51,3 +51,5 @@ springdoc:
 external:
   api:
     url: "https://lk.etu.ru/api/profile/0"
+
+faculties: "https://digital.etu.ru/api/mobile/groups"

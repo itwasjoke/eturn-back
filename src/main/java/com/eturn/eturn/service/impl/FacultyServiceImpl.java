@@ -1,30 +1,37 @@
 package com.eturn.eturn.service.impl;
 
-import com.eturn.eturn.dto.FacultyDTO;
-import com.eturn.eturn.dto.mapper.FacultyListMapper;
 import com.eturn.eturn.dto.mapper.FacultyMapper;
 import com.eturn.eturn.entity.Faculty;
 import com.eturn.eturn.exception.faculty.AlreadyExistFacultyException;
 import com.eturn.eturn.exception.faculty.NotFoundFacultyException;
 import com.eturn.eturn.repository.FacultyRepository;
+import com.eturn.eturn.security.EtuIdUser;
+import com.eturn.eturn.security.FacultyResponse;
 import com.eturn.eturn.service.FacultyService;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class FacultyServiceImpl implements FacultyService {
-
+    @Value("${faculties}")
+    private String externalApiUrl;
     private final FacultyRepository facultyRepository;
     private final FacultyMapper facultyMapper;
-    private final FacultyListMapper facultyListMapper;
-
-    public FacultyServiceImpl(FacultyRepository facultyRepository, FacultyMapper facultyMapper, FacultyListMapper facultyListMapper) {
+    private final RestTemplate restTemplate;
+    public FacultyServiceImpl(FacultyRepository facultyRepository, FacultyMapper facultyMapper, RestTemplate restTemplate) {
         this.facultyRepository = facultyRepository;
         this.facultyMapper = facultyMapper;
-        this.facultyListMapper = facultyListMapper;
+        this.restTemplate = restTemplate;
     }
 
     @Override
@@ -51,22 +58,34 @@ public class FacultyServiceImpl implements FacultyService {
     }
 
     @Override
-    public Long createFaculty(FacultyDTO dto) {
-       if (!facultyRepository.existsByName(dto.name())){
-           Faculty f = facultyRepository.save(facultyMapper.DTOtoFaculty(dto));
-           return f.getId();
-       }
-       else{
-           throw new AlreadyExistFacultyException("Cannot create Faculty because it exists");
-       }
+    public void createFaculty() {
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<List<FacultyResponse>> response = restTemplate.exchange(
+                externalApiUrl,
+                HttpMethod.GET,
+                entity,
+                new ParameterizedTypeReference<List<FacultyResponse>>(){}
+        );
+        if (response.getStatusCode().is2xxSuccessful() && !response.getBody().isEmpty()) {
+            List<FacultyResponse> facultyResponses = response.getBody();
+            // Получаем первый элемент массива
+            // ... остальной код
+        } else {
+            throw new RuntimeException("Ошибка аутентификации на внешнем сервере");
+        }
+//       if (!facultyRepository.existsByName(dto.name())){
+//           Faculty f = facultyRepository.save(facultyMapper.DTOtoFaculty(dto));
+//           return f.getId();
+//       }
+//       else{
+//           throw new AlreadyExistFacultyException("Cannot create Faculty because it exists");
+//       }
     }
 
     @Override
-    public List<FacultyDTO> getAllList() {
-        List<Faculty> f = facultyRepository.findAll();
-        if (f.isEmpty()){
-            throw new NotFoundFacultyException("Cannot found any faculties");
-        }
-        return facultyListMapper.map(f);
+    public Faculty getFacultyForUser(String faculty) {
+        getOneFacultyOptional(faculty);
     }
 }
