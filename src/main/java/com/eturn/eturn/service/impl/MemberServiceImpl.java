@@ -86,6 +86,12 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    public Boolean memberExist(User user, Turn turn) {
+        Optional<Member> member = memberRepository.findMemberByUserAndTurn(user, turn);
+        return member.isPresent();
+    }
+
+    @Override
     public long getCountMembers(Turn turn) {
         return memberRepository.countByTurn(turn);
     }

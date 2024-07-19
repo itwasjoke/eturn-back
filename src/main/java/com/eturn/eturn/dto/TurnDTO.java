@@ -25,7 +25,9 @@ public record TurnDTO(
         @Schema(description = "Идентификатор пользователя", example="1")
         long userId,
         Date dateStart,
-        Date dateEnd
+        Date dateEnd,
+        @Schema(description = "Среднее время", example="10000")
+        Integer averageTime
 ) {
 
 }
