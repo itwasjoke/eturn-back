@@ -4,12 +4,16 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 public class HashGenerator {
 
-    public static String generateSHA256Hash(long longValue) {
+    public static String generateSHA256Hash(String stringValue) {
         try {
-            // Преобразуем long в массив байтов
-            byte[] bytes = BigInteger.valueOf(longValue).toByteArray();
+            // Преобразуем строку в массив байтов
+            byte[] bytes = stringValue.getBytes("UTF-8"); // Используем UTF-8 для кодирования строки
 
             // Получаем объект MessageDigest для алгоритма SHA-256
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -22,8 +26,11 @@ public class HashGenerator {
 
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("Не удалось получить алгоритм хеширования SHA-256", e);
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка при кодировании строки в байты", e);
         }
     }
+
     private static String bytesToHex(byte[] hash) {
         StringBuilder hexString = new StringBuilder();
         for (byte b : hash) {

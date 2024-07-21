@@ -116,7 +116,24 @@ public class TurnServiceImpl implements TurnService {
             turn.setTags(tags);
             turn.setCountUsers(0);
             Turn turnNew = turnRepository.save(turn);
-            turnNew.setHash(HashGenerator.generateSHA256Hash(turnNew.getId()));
+            StringBuilder textForHash = new StringBuilder("eturn" + turnNew.getId().toString() + "29" + "queue");
+            String hash = HashGenerator.generateSHA256Hash(textForHash.toString());
+            Random random = new Random();
+            int count = 0;
+            while (turnRepository.existsAllByHash(hash)) {
+                int randomNumber = random.nextInt(10);
+                textForHash.append(randomNumber);
+                hash = HashGenerator.generateSHA256Hash(textForHash.toString());
+                count++;
+                if (count>10) {
+                    break;
+                }
+            }
+            if (count>10) {
+                // TODO Создать нормальное исключение
+                throw new InvalidDataTurnException("error");
+            }
+            turnNew.setHash(hash);
             Turn turnWithHash = turnRepository.save(turnNew);
             memberService.createMember(userCreator, turnWithHash, "CREATOR");
             return turnWithHash.getHash();
