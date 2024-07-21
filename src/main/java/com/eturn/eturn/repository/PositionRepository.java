@@ -35,6 +35,7 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
     long countByTurn(Turn turn);
 
     void deletePositionsByUserAndTurn(User user, Turn turn);
+    void deleteAllByTurnAndUser(Turn turn, User user);
     @Query(value = "select count(*) from Position p where p.turn = :t and p.number < :num")
     long countNumbersLeft(@Param("num") int num, @Param("t") Turn t);
 

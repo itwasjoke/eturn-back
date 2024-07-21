@@ -53,7 +53,7 @@ public class PositionController {
         return positionService.getFirstPosition(hash, userDetails.getUsername());
     }
 
-    @GetMapping ("/all/{idTurn}")
+    @GetMapping ("/all/{hash}")
     @Operation(
             summary = "Получение позиций очереди",
             description = "Отправляет список позиций, которые принадлежат определенной очереди"

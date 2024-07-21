@@ -332,12 +332,21 @@ public class PositionServiceImpl implements PositionService {
         User user = userService.getUserFrom(userDTO.id());
         Member member = memberService.changeMemberStatus(id, type, user);
         if (member.getAccessMemberEnum() == AccessMemberEnum.MEMBER){
-            if (positionRepository.existsAllByTurnAndUser(member.getTurn(), user)){
+            Turn turn = member.getTurn();
+            if (
+                    !positionRepository.existsAllByTurnAndUser(member.getTurn(), member.getUser())
+                    && turn.getAccessTurnType() == AccessTurnEnum.FOR_ALLOWED_ELEMENTS
+            ){
                 memberService.deleteMemberFrom(member.getId());
+            } else if (
+                    !positionRepository.existsAllByTurnAndUser(member.getTurn(), member.getUser())
+                            && turn.getAccessTurnType() == AccessTurnEnum.FOR_LINK
+            ) {
+                member = memberService.changeMemberStatus(id, "MEMBER_LINK", user);
             }
         }
         if (type.equals("BLOCKED")) {
-            positionRepository.deletePositionsByUserAndTurn(user, member.getTurn());
+            positionRepository.deleteAllByTurnAndUser(member.getTurn(), member.getUser());
         }
     }
 
@@ -396,7 +405,7 @@ public class PositionServiceImpl implements PositionService {
     public Member addTurnToUser(User user, Turn turn) {
         AccessTurnEnum turnEnum = turn.getAccessTurnType();
         if (turnEnum == AccessTurnEnum.FOR_LINK) {
-            return memberService.createMember(user, turn, "MEMBER_LINK");
+            return memberService.createMember(user, turn, "MEMBER");
         } else {
             Set<Group> groups = turn.getAllowedGroups();
             Set<Faculty> faculties = turn.getAllowedFaculties();

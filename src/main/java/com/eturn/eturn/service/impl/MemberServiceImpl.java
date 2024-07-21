@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 
@@ -118,10 +119,10 @@ public class MemberServiceImpl implements MemberService {
                 if (memberUser.get().getAccessMemberEnum()==AccessMemberEnum.MODERATOR ||
                         memberUser.get().getAccessMemberEnum()==AccessMemberEnum.CREATOR ){
                         if (memberGet.getAccessMemberEnum()!=AccessMemberEnum.CREATOR){
-                            if (type != "MEMBER" && type != "MODERATOR" && type != "BLOCKED"){
+                            if (!Objects.equals(type, "MEMBER") && !Objects.equals(type, "MODERATOR") && !Objects.equals(type, "BLOCKED")){
                                 throw new NoAccessMemberException("no access");
                             }
-                            if (memberGet.getAccessMemberEnum() != AccessMemberEnum.CREATOR && type == "MODERATOR"){
+                            if (memberUser.get().getAccessMemberEnum()!=AccessMemberEnum.CREATOR && type.equals("MODERATOR")){
                                 throw new NoAccessMemberException("no access");
                             }
                             AccessMemberEnum accessMemberEnum = AccessMemberEnum.valueOf(type);
