@@ -21,6 +21,8 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
     Optional<Position> findFirstByUserAndTurn(User user,Turn turn);
     Page<Position> findAllByTurnOrderByIdAsc(Turn turn,Pageable pageable);
 
+    boolean existsAllByTurnAndUser(Turn turn, User user);
+
     @Modifying
     @Query("delete from Position p where p.turn=:turn and p.number<=:number")
     void tryToDelete(@Param("turn") Turn turn, @Param("number") int number);

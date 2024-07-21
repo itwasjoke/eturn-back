@@ -35,4 +35,6 @@ public interface MemberService {
 
     void deleteMemberFrom(Turn turn, User user);
 
+    void deleteMemberFrom(Long id);
+
 }

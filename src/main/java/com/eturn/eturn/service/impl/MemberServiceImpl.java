@@ -118,6 +118,12 @@ public class MemberServiceImpl implements MemberService {
                 if (memberUser.get().getAccessMemberEnum()==AccessMemberEnum.MODERATOR ||
                         memberUser.get().getAccessMemberEnum()==AccessMemberEnum.CREATOR ){
                         if (memberGet.getAccessMemberEnum()!=AccessMemberEnum.CREATOR){
+                            if (type != "MEMBER" && type != "MODERATOR" && type != "BLOCKED"){
+                                throw new NoAccessMemberException("no access");
+                            }
+                            if (memberGet.getAccessMemberEnum() != AccessMemberEnum.CREATOR && type == "MODERATOR"){
+                                throw new NoAccessMemberException("no access");
+                            }
                             AccessMemberEnum accessMemberEnum = AccessMemberEnum.valueOf(type);
                             memberGet.setAccessMemberEnum(accessMemberEnum);
                             return memberRepository.save(memberGet);
@@ -186,5 +192,10 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void deleteMemberFrom(Turn turn, User user) {
         memberRepository.deleteByTurnAndUser(turn, user);
+    }
+
+    @Override
+    public void deleteMemberFrom(Long id) {
+        memberRepository.deleteById(id);
     }
 }

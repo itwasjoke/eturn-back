@@ -331,6 +331,11 @@ public class PositionServiceImpl implements PositionService {
         UserDTO userDTO = userService.getUser(username);
         User user = userService.getUserFrom(userDTO.id());
         Member member = memberService.changeMemberStatus(id, type, user);
+        if (member.getAccessMemberEnum() == AccessMemberEnum.MEMBER){
+            if (positionRepository.existsAllByTurnAndUser(member.getTurn(), user)){
+                memberService.deleteMemberFrom(member.getId());
+            }
+        }
         if (type.equals("BLOCKED")) {
             positionRepository.deletePositionsByUserAndTurn(user, member.getTurn());
         }
