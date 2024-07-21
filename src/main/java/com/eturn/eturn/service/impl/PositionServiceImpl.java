@@ -2,7 +2,6 @@ package com.eturn.eturn.service.impl;
 
 import com.eturn.eturn.dto.*;
 import com.eturn.eturn.dto.mapper.PositionListMapper;
-import com.eturn.eturn.dto.mapper.PositionMapper;
 import com.eturn.eturn.dto.mapper.PositionMoreInfoMapper;
 import com.eturn.eturn.entity.*;
 import com.eturn.eturn.enums.AccessMemberEnum;
@@ -86,6 +85,9 @@ public class PositionServiceImpl implements PositionService {
         Turn turn = turnService.getTurnFrom(idTurn);
         UserDTO userDTO = userService.getUser(login);
         User user = userService.getUserFrom(userDTO.id());
+        if (!memberService.memberExist(user, turn)) {
+            addTurnToUser(user, turn);
+        }
         MemberDTO memberDTO = memberService.getMember(user, turn);
         if (!memberDTO.access().equals("BLOCKED")){
             deleteOverdueElements(turn);
@@ -223,6 +225,7 @@ public class PositionServiceImpl implements PositionService {
                             turn.setAverageTime((int)time);
                             turn.setTotalTime(time);
                             turn.setSmoothedValue((double)time);
+                            turnService.saveTurn(turn);
                         }
                         else {
                             countPositions++;

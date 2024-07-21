@@ -18,6 +18,8 @@ public interface MemberService {
 
     MemberDTO getMember(User user, Turn turn);
 
+    Boolean memberExist(User user, Turn turn);
+
     long getCountMembers(Turn turn);
 
     List<MemberDTO> getMemberList(Turn turn, String type);
