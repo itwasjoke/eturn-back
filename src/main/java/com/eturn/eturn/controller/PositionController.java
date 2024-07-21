@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -22,12 +23,6 @@ public class PositionController {
     public PositionController(PositionService positionService) {
         this.positionService = positionService;
     }
-    // TODO Надо ли сохранять?
-
-    //    @GetMapping("{id}")
-    //    public PositionDTO getPosition(@PathVariable Long id){
-    //        return positionService.getPositionById(id);
-    //    }
 
     @GetMapping(value = "/first")
     @Operation(
@@ -106,5 +101,13 @@ public class PositionController {
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
         positionService.delete(id, userDetails.getUsername());
+    }
+    @GetMapping("/turn/{id}")
+    @Operation(
+            summary = "Получение текущей очереди",
+            description = "Получает подробную информацию об очереди"
+    )
+    public void getTurn(HttpServletRequest request, @PathVariable @Parameter(description = "Идентификатор очереди") Long id){
+
     }
 }

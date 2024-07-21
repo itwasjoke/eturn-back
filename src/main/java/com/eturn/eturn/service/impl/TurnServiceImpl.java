@@ -24,8 +24,6 @@ import java.util.*;
 public class TurnServiceImpl implements TurnService {
     private final TurnRepository turnRepository;
     private final UserService userService;
-    private final GroupService groupService;
-    private final FacultyService facultyService;
     private final MemberService memberService;
     final private  TurnMapper turnMapper;
 
@@ -36,15 +34,13 @@ public class TurnServiceImpl implements TurnService {
     public TurnServiceImpl(
             TurnRepository turnRepository,
             UserService userService,
-            GroupService groupService,
-            FacultyService facultyService,
             MemberService memberService,
             TurnMapper turnMapper,
-            TurnCreatingMapper turnCreatingMapper, TurnForListMapper turnForListMapper) {
+            TurnCreatingMapper turnCreatingMapper,
+            TurnForListMapper turnForListMapper
+    ) {
         this.turnRepository = turnRepository;
         this.userService = userService;
-        this.groupService = groupService;
-        this.facultyService = facultyService;
         this.memberService = memberService;
         this.turnMapper = turnMapper;
         this.turnCreatingMapper = turnCreatingMapper;
@@ -80,16 +76,6 @@ public class TurnServiceImpl implements TurnService {
     @Override
     public List<TurnForListDTO> getUserTurns(String login, Map<String, String> params) {
         User user = userService.findByLogin(login);
-
-//        List<Turn> allTurns = new ArrayList<>();
-//        List<String> allAccessMemberTypes = new ArrayList<>();
-//        turnRepository.results(user.getId(), user.getIdGroup(), user.getIdFaculty()).forEach((record) -> {
-//            Turn turn = (Turn)record[0];
-//            String accessMemberType = (String)record[1];
-//            assert false;
-//            allTurns.add(turn);
-//            allAccessMemberTypes.add(accessMemberType);
-//        });
         String access = params.get("Access");
         List<Object[]> allTurns = new ArrayList<>();
         Date now = new Date();
@@ -146,6 +132,7 @@ public class TurnServiceImpl implements TurnService {
             }
             String tags = turn.getName() + " " + turn.getDescription() + allowedElements + userCreator.getName();
             turn.setTags(tags);
+            turn.setCountUsers(0);
             Turn turnNew = turnRepository.save(turn);
             memberService.createMember(userCreator, turnNew, "CREATOR");
             return turnNew.getId();
@@ -156,7 +143,7 @@ public class TurnServiceImpl implements TurnService {
 
     @Override
     @Transactional
-    public void     deleteTurn(String username, Long idTurn) {
+    public void deleteTurn(String username, Long idTurn) {
         Optional<Turn> turn = turnRepository.findById(idTurn);
         UserDTO userDTO = userService.getUser(username);
         User user = userService.getUserFrom(userDTO.id());

@@ -26,8 +26,4 @@ public interface TurnService {
 
     List<MemberDTO> getMemberList(String username, String type, Long turnId);
 
-
-
-
-
 }
