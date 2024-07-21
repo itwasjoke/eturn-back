@@ -10,20 +10,14 @@ import java.util.List;
 import java.util.Map;
 public interface TurnService {
 
-    TurnDTO getTurn(Long id);
-
-    Turn getTurnFrom(Long id);
+    Turn getTurnFrom(String hash);
 
     List<TurnForListDTO> getUserTurns(String login, Map<String,String> params);
 
-    Long createTurn(TurnCreatingDTO turn, String Login);
-
-
-    void deleteTurn(String username, Long idTurn);
-
+    String createTurn(TurnCreatingDTO turn, String Login);
+    void deleteTurn(String username, String hash);
     void saveTurn(Turn turn);
-    MemberDTO getMember(String username, Long idTurn);
 
-    List<MemberDTO> getMemberList(String username, String type, Long turnId);
+    List<MemberDTO> getMemberList(String username, String type, String hash);
 
 }

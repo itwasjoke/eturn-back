@@ -33,7 +33,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Transactional
     @Override
-    public void createMember(User user, Turn turn, String access) {
+    public Member createMember(User user, Turn turn, String access) {
         try {
             Optional<Member> memberOptional = memberRepository.findMemberByUserAndTurn(user,turn);
             if (memberOptional.isPresent()){
@@ -44,7 +44,7 @@ public class MemberServiceImpl implements MemberService {
             member.setAccessMemberEnum(accessMemberEnum);
             member.setTurn(turn);
             member.setUser(user);
-            memberRepository.save(member);
+            return memberRepository.save(member);
         }
         catch(Exception e){
             throw new UnknownMemberException("Cannot create member on createMember method MemberServiceImpl.java");
@@ -52,19 +52,23 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public Member getMemberFrom(long id) {
-        Optional<Member> member = memberRepository.findById(id);
-        if (member.isPresent()){
-            return member.get();
-        }
-        else{
-            throw new NotFoundMemberException("member by id not found");
-        }
+    public Optional<Member> getMemberFrom(long id) {
+        return memberRepository.findById(id);
+    }
+
+    @Override
+    public Optional<Member> getOptionalMember(User user, Turn turn) {
+        return memberRepository.findMemberByUserAndTurn(user, turn);
     }
 
     @Override
     public AccessMemberEnum getAccess(User user, Turn turn) {
-        return memberRepository.getByUserAndTurn(user, turn).getAccessMemberEnum();
+        Optional<Member> m = memberRepository.findMemberByUserAndTurn(user, turn);
+        if (m.isPresent()){
+            return m.get().getAccessMemberEnum();
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -105,7 +109,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public void changeMemberStatus(long id, String type, User user) {
+    public Member changeMemberStatus(long id, String type, User user) {
         Optional<Member> member = memberRepository.findById(id);
         if (member.isPresent()){
             Member memberGet = member.get();
@@ -116,7 +120,10 @@ public class MemberServiceImpl implements MemberService {
                         if (memberGet.getAccessMemberEnum()!=AccessMemberEnum.CREATOR){
                             AccessMemberEnum accessMemberEnum = AccessMemberEnum.valueOf(type);
                             memberGet.setAccessMemberEnum(accessMemberEnum);
-                            memberRepository.save(memberGet);
+                            return memberRepository.save(memberGet);
+                        }
+                        else {
+                            throw new NoAccessMemberException("you are creator");
                         }
                 }
                 else{
@@ -134,7 +141,21 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public void deleteMember(long id, User user) {
+    public void changeMemberStatusFrom(long id, String type) {
+        Optional<Member> member = memberRepository.findById(id);
+        if (member.isPresent()) {
+            Member memberGet = member.get();
+            AccessMemberEnum accessMemberEnum = AccessMemberEnum.valueOf(type);
+            memberGet.setAccessMemberEnum(accessMemberEnum);
+            memberRepository.save(memberGet);
+        }
+        else{
+            throw new NotFoundMemberException("no member what you want to update");
+        }
+    }
+
+    @Override
+    public Member deleteMember(long id, User user) {
         Optional<Member> member = memberRepository.findById(id);
         if (member.isPresent()){
             Member memberGet = member.get();
@@ -145,7 +166,9 @@ public class MemberServiceImpl implements MemberService {
             if (memberUser.isPresent()){
                 if (memberUser.get().getAccessMemberEnum()==AccessMemberEnum.MODERATOR ||
                         memberUser.get().getAccessMemberEnum()==AccessMemberEnum.CREATOR || memberGet.getUser()==user){
+                    Member memberDeleted = member.get();
                     memberRepository.deleteById(id);
+                    return memberDeleted;
                 }
                 else{
                     throw new NoAccessMemberException("you don't have root for this operation");

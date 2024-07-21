@@ -2,6 +2,7 @@ package com.eturn.eturn.controller;
 
 import com.eturn.eturn.dto.PositionDTO;
 import com.eturn.eturn.dto.PositionMoreInfoDTO;
+import com.eturn.eturn.dto.TurnDTO;
 import com.eturn.eturn.service.PositionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -31,11 +32,11 @@ public class PositionController {
     )
     public PositionMoreInfoDTO getUserFirstPosition(
             HttpServletRequest request,
-            @RequestParam @Parameter(description = "Идентификатор очереди")Long turnId){
+            @RequestParam @Parameter(description = "Идентификатор очереди")String hash){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
 
-        return positionService.getFirstUserPosition(turnId, userDetails.getUsername());
+        return positionService.getFirstUserPosition(hash, userDetails.getUsername());
     }
 
     @GetMapping(value = "/first/in")
@@ -45,11 +46,11 @@ public class PositionController {
     )
     public PositionMoreInfoDTO getFirstPosition(
             HttpServletRequest request,
-            @RequestParam @Parameter(description = "Идентификатор очереди")Long turnId
+            @RequestParam @Parameter(description = "Идентификатор очереди") String hash
     ){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
-        return positionService.getFirstPosition(turnId, userDetails.getUsername());
+        return positionService.getFirstPosition(hash, userDetails.getUsername());
     }
 
     @GetMapping ("/all/{idTurn}")
@@ -58,10 +59,10 @@ public class PositionController {
             description = "Отправляет список позиций, которые принадлежат определенной очереди"
     )
     public List<PositionDTO> getTurnPositions(
-            @PathVariable @Parameter(description = "Идентификатор очереди") Long idTurn,
+            @PathVariable @Parameter(description = "Идентификатор очереди") String hash,
             @RequestParam(defaultValue = "0") @Parameter(description = "Страница позиций") int page
     ){
-        return positionService.getPositionList(idTurn, page);
+        return positionService.getPositionList(hash, page);
     }
     @PostMapping
     @Operation(
@@ -70,11 +71,11 @@ public class PositionController {
     )
     public PositionMoreInfoDTO createPosition(
             HttpServletRequest request,
-            @RequestParam @Parameter(description = "Идентификатор очереди") Long idTurn
+            @RequestParam @Parameter(description = "Идентификатор очереди") String hash
     ){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
-        return positionService.createPositionAndSave(userDetails.getUsername(),idTurn);
+        return positionService.createPositionAndSave(userDetails.getUsername(), hash);
     }
 
     @PutMapping()
@@ -102,12 +103,14 @@ public class PositionController {
         var userDetails = (UserDetails) authentication.getPrincipal();
         positionService.delete(id, userDetails.getUsername());
     }
-    @GetMapping("/turn/{id}")
+    @GetMapping("/turn/{hash}")
     @Operation(
             summary = "Получение текущей очереди",
             description = "Получает подробную информацию об очереди"
     )
-    public void getTurn(HttpServletRequest request, @PathVariable @Parameter(description = "Идентификатор очереди") Long id){
-
+    public TurnDTO getTurn(HttpServletRequest request, @PathVariable @Parameter(description = "Идентификатор очереди") String hash){
+        var authentication = (Authentication) request.getUserPrincipal();
+        var userDetails = (UserDetails) authentication.getPrincipal();
+        return positionService.getTurn(hash, userDetails.getUsername());
     }
 }

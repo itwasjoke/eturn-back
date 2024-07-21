@@ -18,5 +18,6 @@ import java.util.List;
 public interface TurnMapper {
     @Mapping(target = "creator",source = "turn.creator.name")
     @Mapping(target = "userId", source = "turn.creator.id")
-    TurnDTO turnToTurnDTO(Turn turn);
+    @Mapping(target = "access", source = "access")
+    TurnDTO turnToTurnDTO(Turn turn, String access);
 }

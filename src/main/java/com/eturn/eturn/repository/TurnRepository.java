@@ -15,10 +15,10 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 @Repository
 public interface TurnRepository extends JpaRepository<Turn, Long> {
-    boolean existsTurnById(Long id);
     @Modifying
     @Query("delete from Turn t where t.dateEnd < :current ")
     void deleteOldTurns(@Param("current") Date current);
@@ -29,4 +29,6 @@ public interface TurnRepository extends JpaRepository<Turn, Long> {
     @Query(name = "getMemberInTurns")
     List<Object[]> resultsMemberIn(@Param("userId") Long userId, @Param("turnType") String turnType);
     void deleteTurnById(Long id);
+
+    Optional<Turn> findTurnByHash(String hash);
 }

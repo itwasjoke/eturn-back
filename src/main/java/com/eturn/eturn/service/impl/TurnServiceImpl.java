@@ -8,8 +8,11 @@ import com.eturn.eturn.entity.*;
 import com.eturn.eturn.enums.AccessMemberEnum;
 import com.eturn.eturn.enums.AccessTurnEnum;
 import com.eturn.eturn.enums.RoleEnum;
+import com.eturn.eturn.exception.member.NoAccessMemberException;
+import com.eturn.eturn.exception.member.NotFoundMemberException;
 import com.eturn.eturn.exception.turn.*;
 import com.eturn.eturn.repository.TurnRepository;
+import com.eturn.eturn.security.HashGenerator;
 import com.eturn.eturn.service.FacultyService;
 import com.eturn.eturn.service.GroupService;
 import com.eturn.eturn.service.MemberService;
@@ -25,7 +28,6 @@ public class TurnServiceImpl implements TurnService {
     private final TurnRepository turnRepository;
     private final UserService userService;
     private final MemberService memberService;
-    final private  TurnMapper turnMapper;
 
     final private TurnCreatingMapper turnCreatingMapper;
     final private TurnForListMapper turnForListMapper;
@@ -35,36 +37,18 @@ public class TurnServiceImpl implements TurnService {
             TurnRepository turnRepository,
             UserService userService,
             MemberService memberService,
-            TurnMapper turnMapper,
             TurnCreatingMapper turnCreatingMapper,
             TurnForListMapper turnForListMapper
     ) {
         this.turnRepository = turnRepository;
         this.userService = userService;
         this.memberService = memberService;
-        this.turnMapper = turnMapper;
         this.turnCreatingMapper = turnCreatingMapper;
         this.turnForListMapper = turnForListMapper;
     }
-
     @Override
-    @Transactional
-    public TurnDTO getTurn(Long id) {
-        Optional<Turn> turn = turnRepository.findById(id);
-        if (turn.isPresent()){
-            Turn turnIn = turn.get();
-            long members = memberService.getCountMembers(turnIn);
-            turnIn.setCountUsers((int)members);
-            turnRepository.save(turnIn);
-            return turnMapper.turnToTurnDTO(turnIn);
-        }
-        else{
-            throw new NotFoundTurnException("No turn in database on getTurn method (TurnServiceImpl.java)");
-        }
-    }
-    @Override
-    public Turn getTurnFrom(Long id) {
-        Optional<Turn> turn = turnRepository.findById(id);
+    public Turn getTurnFrom(String hash) {
+        Optional<Turn> turn = turnRepository.findTurnByHash(hash);
         if(turn.isPresent()){
             return turn.get();
         }
@@ -80,7 +64,6 @@ public class TurnServiceImpl implements TurnService {
         List<Object[]> allTurns = new ArrayList<>();
         Date now = new Date();
         turnRepository.deleteByDateEndIsLessThan(now);
-        turnRepository.deleteOldTurns(now);
         if (Objects.equals(access, "memberOut")) {
             allTurns = turnRepository.resultsMemberOut(user.getId(), user.getGroup().getId(), user.getGroup().getFaculty().getId(), params.get("Type"));
         } else if (Objects.equals(access, "memberIn")){
@@ -98,7 +81,7 @@ public class TurnServiceImpl implements TurnService {
 
     @Override
     @Transactional
-    public Long createTurn(TurnCreatingDTO turnDTO, String login) {
+    public String createTurn(TurnCreatingDTO turnDTO, String login) {
         if (turnDTO.dateEnd().getTime() > turnDTO.dateStart().getTime()) {
             UserDTO userDTO = userService.getUser(login);
             User user = userService.getUserFrom(userDTO.id());
@@ -115,18 +98,17 @@ public class TurnServiceImpl implements TurnService {
             if (user.getRoleEnum() == RoleEnum.EMPLOYEE && ((turnDTO.dateStart().getTime() - now.getTime() > month * 3) || (turnDTO.dateStart().getTime() - now.getTime() < 0)))
                 throw new InvalidLengthTurnException("The turn is too long (or short)");
             User userCreator = userService.getUserFrom(userDTO.id());
-            //Set<Group> groups = groupService.getSetGroups(turn.allowedGroups());
             Turn turn = turnCreatingMapper.turnMoreDTOToTurn(turnDTO, userCreator);
-            String allowedElements = " ";
+            StringBuilder allowedElements = new StringBuilder(" ");
             if (turn.getAccessTurnType() == AccessTurnEnum.FOR_ALLOWED_ELEMENTS) {
                 if (turn.getAllowedGroups() != null) {
                     for (Group group : turn.getAllowedGroups()) {
-                        allowedElements = allowedElements + group.getNumber() + " ";
+                        allowedElements.append(group.getNumber()).append(" ");
                     }
                 }
                 if (turn.getAllowedFaculties() != null) {
                     for (Faculty faculty : turn.getAllowedFaculties()) {
-                        allowedElements = allowedElements + faculty.getName() + " ";
+                        allowedElements.append(faculty.getName()).append(" ");
                     }
                 }
             }
@@ -134,8 +116,10 @@ public class TurnServiceImpl implements TurnService {
             turn.setTags(tags);
             turn.setCountUsers(0);
             Turn turnNew = turnRepository.save(turn);
-            memberService.createMember(userCreator, turnNew, "CREATOR");
-            return turnNew.getId();
+            turnNew.setHash(HashGenerator.generateSHA256Hash(turnNew.getId()));
+            Turn turnWithHash = turnRepository.save(turnNew);
+            memberService.createMember(userCreator, turnWithHash, "CREATOR");
+            return turnWithHash.getHash();
         } else
             throw new InvalidDataTurnException("The dateEnd cannot be earlier than the dateStart on createTurn method (TurnServiceImpl.java)");
 
@@ -143,8 +127,8 @@ public class TurnServiceImpl implements TurnService {
 
     @Override
     @Transactional
-    public void deleteTurn(String username, Long idTurn) {
-        Optional<Turn> turn = turnRepository.findById(idTurn);
+    public void deleteTurn(String username, String hash) {
+        Optional<Turn> turn = turnRepository.findTurnByHash(hash);
         UserDTO userDTO = userService.getUser(username);
         User user = userService.getUserFrom(userDTO.id());
         if (turn.isEmpty()){
@@ -152,42 +136,37 @@ public class TurnServiceImpl implements TurnService {
         }
         AccessMemberEnum access = memberService.getAccess(user, turn.get());
         if (access == AccessMemberEnum.CREATOR) {
-            //memberService.deleteTurnMembers(turn.get());
-            turnRepository.deleteTurnById(idTurn);
+            turnRepository.deleteTurnById(turn.get().getId());
         } else {
             throw new NoAccessDeleteTurnException("Only creator can delete turn information on deleteTurn method (TurnServiceImpl.java)");
         }
     }
-
     @Override
     public void saveTurn(Turn turn) {
         turnRepository.save(turn);
     }
 
-
-
-
-
     @Override
-    public MemberDTO getMember(String username, Long idTurn) {
-
+    public List<MemberDTO> getMemberList(String username, String type, String hash) {
         UserDTO userDTO = userService.getUser(username);
         User user = userService.getUserFrom(userDTO.id());
-        Optional<Turn> turn = turnRepository.findById(idTurn);
+        Optional<Turn> turn = turnRepository.findTurnByHash(hash);
         if (turn.isEmpty()){
             throw new NotFoundTurnException("turn not found in getMember function");
         }
-        return memberService.getMember(user,turn.get());
-
-    }
-
-    @Override
-    public List<MemberDTO> getMemberList(String username, String type, Long turnId) {
-        Optional<Turn> turn = turnRepository.findById(turnId);
-        if (turn.isEmpty()){
-            throw new NotFoundTurnException("turn not found in getMember function");
+        Optional<Member> member = memberService.getOptionalMember(user, turn.get());
+        if (member.isPresent()){
+            AccessMemberEnum access = member.get().getAccessMemberEnum();
+            if (access == AccessMemberEnum.CREATOR || access == AccessMemberEnum.MODERATOR){
+                return memberService.getMemberList(turn.get(), type);
+            }
+            else{
+                throw new NoAccessMemberException("No access");
+            }
         }
-        return memberService.getMemberList(turn.get(), type);
+        else {
+            throw new NotFoundMemberException("no member");
+        }
     }
 
 }

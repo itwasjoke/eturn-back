@@ -3,6 +3,7 @@ package com.eturn.eturn.service;
 import com.eturn.eturn.dto.PositionDTO;
 import com.eturn.eturn.dto.PositionMoreInfoDTO;
 import com.eturn.eturn.dto.TurnDTO;
+import com.eturn.eturn.entity.Member;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
 
@@ -15,9 +16,9 @@ public interface PositionService {
     // TODO int pageSize, int pageNumber
 //    Optional<Position> getLastPosition(Long idUser, Long idTurn);
 
-    PositionMoreInfoDTO createPositionAndSave(String login, Long idTurn);
+    PositionMoreInfoDTO createPositionAndSave(String login, String hash);
 
-    List<PositionDTO> getPositionList(Long idTurn, int page);
+    List<PositionDTO> getPositionList(String hash, int page);
 
     void update(Long id, String username);
 
@@ -26,11 +27,11 @@ public interface PositionService {
     void deleteMember(long id, String username);
     void changeMemberStatus(long id, String type, String username);
 
-    PositionMoreInfoDTO getFirstUserPosition(Long turnId, String username);
+    PositionMoreInfoDTO getFirstUserPosition(String hash, String username);
 
-    PositionMoreInfoDTO getFirstPosition(Long turnId, String username);
+    PositionMoreInfoDTO getFirstPosition(String hash, String username);
 
-    void addTurnToUser(User user, Turn turn);
+    Member addTurnToUser(User user, Turn turn);
 
-    TurnDTO getTurn(Long id);
+    TurnDTO getTurn(String hash, String login);
 }

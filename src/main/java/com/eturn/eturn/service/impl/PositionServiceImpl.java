@@ -3,8 +3,12 @@ package com.eturn.eturn.service.impl;
 import com.eturn.eturn.dto.*;
 import com.eturn.eturn.dto.mapper.PositionListMapper;
 import com.eturn.eturn.dto.mapper.PositionMoreInfoMapper;
+import com.eturn.eturn.dto.mapper.TurnMapper;
 import com.eturn.eturn.entity.*;
 import com.eturn.eturn.enums.AccessMemberEnum;
+import com.eturn.eturn.enums.AccessTurnEnum;
+import com.eturn.eturn.exception.member.NoAccessMemberException;
+import com.eturn.eturn.exception.member.NotFoundMemberException;
 import com.eturn.eturn.exception.position.DateNotArrivedPosException;
 import com.eturn.eturn.exception.position.NoAccessPosException;
 import com.eturn.eturn.exception.position.NoCreatePosException;
@@ -27,16 +31,19 @@ public class PositionServiceImpl implements PositionService {
     private final UserService userService;
     private final PositionListMapper positionListMapper;
     private final TurnService turnService;
+
+    final private TurnMapper turnMapper;
     private final PositionMoreInfoMapper positionMoreInfoMapper;
     private final MemberService memberService;
 
 
     public PositionServiceImpl(PositionRepository positionRepository, UserService userService,
-                               PositionListMapper positionListMapper, TurnService turnService, PositionMoreInfoMapper positionMoreInfoMapper, MemberService memberService) {
+                               PositionListMapper positionListMapper, TurnService turnService, TurnMapper turnMapper, PositionMoreInfoMapper positionMoreInfoMapper, MemberService memberService) {
         this.positionRepository = positionRepository;
         this.userService = userService;
         this.positionListMapper = positionListMapper;
         this.turnService = turnService;
+        this.turnMapper = turnMapper;
         this.positionMoreInfoMapper = positionMoreInfoMapper;
         this.memberService = memberService;
     }
@@ -79,17 +86,25 @@ public class PositionServiceImpl implements PositionService {
 
     @Override
     @Transactional
-    public PositionMoreInfoDTO createPositionAndSave(String login, Long idTurn) {
+    public PositionMoreInfoDTO createPositionAndSave(String login, String hash) {
 
         // получение основной информации
-        Turn turn = turnService.getTurnFrom(idTurn);
+        Turn turn = turnService.getTurnFrom(hash);
         UserDTO userDTO = userService.getUser(login);
         User user = userService.getUserFrom(userDTO.id());
-        if (!memberService.memberExist(user, turn)) {
-            addTurnToUser(user, turn);
+        Optional<Member> member = memberService.getOptionalMember(user, turn);
+        Member currentMember;
+        if (member.isEmpty()) {
+            currentMember = addTurnToUser(user, turn);
         }
-        MemberDTO memberDTO = memberService.getMember(user, turn);
-        if (!memberDTO.access().equals("BLOCKED")){
+        else {
+            currentMember = member.get();
+            if (currentMember.getAccessMemberEnum() == AccessMemberEnum.MEMBER_LINK && turn.getAccessTurnType() == AccessTurnEnum.FOR_LINK){
+                memberService.changeMemberStatusFrom(currentMember.getId(), "MEMBER");
+            }
+        }
+        AccessMemberEnum access = currentMember.getAccessMemberEnum();
+        if (access != AccessMemberEnum.BLOCKED && access != AccessMemberEnum.REFUSED){
             deleteOverdueElements(turn);
             // рассчет участников
             long members = memberService.getCountMembers(turn);
@@ -170,8 +185,8 @@ public class PositionServiceImpl implements PositionService {
 
     @Override
     @Transactional
-    public List<PositionDTO> getPositionList(Long idTurn, int page) {
-        Turn turn = turnService.getTurnFrom(idTurn);
+    public List<PositionDTO> getPositionList(String hash, int page) {
+        Turn turn = turnService.getTurnFrom(hash);
         deleteOverdueElements(turn);
         long sizePositions = positionRepository.countByTurn(turn);
         int size;
@@ -265,12 +280,13 @@ public class PositionServiceImpl implements PositionService {
         Optional<Position> position = positionRepository.findById(id);
         if (position.isPresent()) {
             Position pos = position.get();
-            MemberDTO memberDTO = memberService.getMember(user, pos.getTurn());
-            String access = memberDTO.access();
-            if ((pos.getUser()==user && access.equals(AccessMemberEnum.MEMBER.toString()))
-                    || access.equals(AccessMemberEnum.CREATOR.toString())
-                    || access.equals(AccessMemberEnum.MODERATOR.toString()))
-            {
+            Optional<Member> oMember= memberService.getOptionalMember(user, pos.getTurn());
+            if (oMember.isEmpty()){
+                throw new NoAccessMemberException("you are not member");
+            }
+            Member member = oMember.get();
+            AccessMemberEnum access = member.getAccessMemberEnum();
+            if ((access == AccessMemberEnum.MEMBER || access == AccessMemberEnum.MEMBER_LINK) && pos.getUser()==user || access == AccessMemberEnum.CREATOR || access == AccessMemberEnum.MODERATOR) {
                 positionRepository.delete(pos);
                 Optional<Position> p = positionRepository.findFirstByTurnOrderByIdAsc(pos.getTurn());
                 if (p.isPresent()){
@@ -283,7 +299,10 @@ public class PositionServiceImpl implements PositionService {
                     positionRepository.save(changePosition);
                 }
                 Optional<Position> pUser = positionRepository.findFirstByUserAndTurn(pos.getUser(), pos.getTurn());
-                if (pUser.isEmpty() && access.equals(AccessMemberEnum.MEMBER.toString())) {
+                if (pUser.isEmpty() && access == AccessMemberEnum.MEMBER && pos.getTurn().getAccessTurnType()==AccessTurnEnum.FOR_LINK){
+                    memberService.changeMemberStatusFrom(member.getId(), "MEMBER_LINK");
+                }
+                else if (pUser.isEmpty() && access == AccessMemberEnum.MEMBER) {
                     memberService.deleteMemberFrom(pos.getTurn(), user);
                 }
             }
@@ -302,11 +321,8 @@ public class PositionServiceImpl implements PositionService {
     public void deleteMember(long id, String username) {
         UserDTO userDTO = userService.getUser(username);
         User user = userService.getUserFrom(userDTO.id());
-        Member member = memberService.getMemberFrom(id);
-        User userMember = member.getUser();
-        Turn turn = member.getTurn();
-        memberService.deleteMember(id, user);
-        positionRepository.deletePositionsByUserAndTurn(userMember,turn);
+        Member member = memberService.deleteMember(id, user);
+        positionRepository.deletePositionsByUserAndTurn(user,member.getTurn());
     }
 
     @Override
@@ -314,24 +330,19 @@ public class PositionServiceImpl implements PositionService {
     public void changeMemberStatus(long id, String type, String username) {
         UserDTO userDTO = userService.getUser(username);
         User user = userService.getUserFrom(userDTO.id());
-        Member member = memberService.getMemberFrom(id);
-        User userMember = member.getUser();
-        Turn turn = member.getTurn();
-        memberService.changeMemberStatus(id, type, user);
-        if (type.equals("BLOCKED")){
-            positionRepository.deletePositionsByUserAndTurn(userMember,turn);
+        Member member = memberService.changeMemberStatus(id, type, user);
+        if (type.equals("BLOCKED")) {
+            positionRepository.deletePositionsByUserAndTurn(user, member.getTurn());
         }
-
-
     }
 
     @Override
     @Transactional
-    public PositionMoreInfoDTO getFirstUserPosition(Long turnId, String username) {
+    public PositionMoreInfoDTO getFirstUserPosition(String hash, String username) {
 
         UserDTO userDTO = userService.getUser(username);
         User user = userService.getUserFrom(userDTO.id());
-        Turn turn = turnService.getTurnFrom(turnId);
+        Turn turn = turnService.getTurnFrom(hash);
 
         deleteOverdueElements(turn);
 
@@ -353,10 +364,10 @@ public class PositionServiceImpl implements PositionService {
     }
 
     @Override
-    public PositionMoreInfoDTO getFirstPosition(Long turnId, String username) {
+    public PositionMoreInfoDTO getFirstPosition(String hash, String username) {
         UserDTO userDTO = userService.getUser(username);
         User user = userService.getUserFrom(userDTO.id());
-        Turn turn = turnService.getTurnFrom(turnId);
+        Turn turn = turnService.getTurnFrom(hash);
 
         deleteOverdueElements(turn);
         Optional<Position> pInTurn = positionRepository.findFirstByTurnOrderByIdAsc(turn);
@@ -377,8 +388,38 @@ public class PositionServiceImpl implements PositionService {
     }
 
     @Override
-    public void addTurnToUser(User user, Turn turn) {
-        memberService.createMember(user, turn, "MEMBER");
+    public Member addTurnToUser(User user, Turn turn) {
+        AccessTurnEnum turnEnum = turn.getAccessTurnType();
+        if (turnEnum == AccessTurnEnum.FOR_LINK) {
+            return memberService.createMember(user, turn, "MEMBER_LINK");
+        } else {
+            Set<Group> groups = turn.getAllowedGroups();
+            Set<Faculty> faculties = turn.getAllowedFaculties();
+            if (groups.contains(user.getGroup()) || faculties.contains(user.getGroup().getFaculty())) {
+                return memberService.createMember(user, turn, "MEMBER");
+            }
+            else {
+                throw new NoAccessMemberException("You are not this user!");
+            }
+        }
+
+    }
+
+    @Override
+    @Transactional
+    public TurnDTO getTurn(String hash, String login) {
+        UserDTO userDTO = userService.getUser(login);
+        User user = userService.getUserFrom(userDTO.id());
+        Turn turn = turnService.getTurnFrom(hash);
+        AccessMemberEnum accessMember = memberService.getAccess(user, turn);
+        String access = null;
+        if (accessMember!=null){
+            access = accessMember.name();
+        }
+        long count = positionRepository.countByTurn(turn);
+        turn.setCountUsers((int)count);
+        turnService.saveTurn(turn);
+        return turnMapper.turnToTurnDTO(turn, access);
     }
 
 }

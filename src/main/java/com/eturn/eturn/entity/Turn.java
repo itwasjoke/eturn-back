@@ -14,7 +14,7 @@ import java.util.Set;
 @Getter
 @Setter
 @Entity
-@NamedNativeQuery(name = "getMemberOutTurns", query = "SELECT m.access_member_enum, t.id, t.name, t.description, t.user_id, t.date_start, t.date_end, t.count_users, t.tags " +
+@NamedNativeQuery(name = "getMemberOutTurns", query = "SELECT m.access_member_enum, t.hash, t.id, t.name, t.description, t.user_id, t.date_start, t.date_end, t.count_users, t.tags " +
         "FROM turn AS t " +
         "INNER JOIN turn_faculty AS tf ON t.id = tf.turn_id " +
         "LEFT JOIN member AS m ON (t.id = m.turn_id AND m.user_id = :userId) " +
@@ -22,9 +22,9 @@ import java.util.Set;
         "t.access_turn_type != 'FOR_LINK' " +
         "AND tf.faculty_id = :facultyId " +
         "AND m.access_member_enum IS NULL " +
-        "OR (m.user_id = :userId AND m.access_member_enum = 'INVITED') " +
+        "OR (m.user_id = :userId AND ((m.access_member_enum = 'INVITED') OR (m.access_member_enum = 'MEMBER_LINK')) " +
         "UNION " +
-        "SELECT m.access_member_enum, t.id, t.name, t.description, t.user_id, t.date_start, t.date_end, t.count_users, t.tags " +
+        "SELECT m.access_member_enum, t.hash, t.id, t.name, t.description, t.user_id, t.date_start, t.date_end, t.count_users, t.tags " +
         "FROM turn AS t " +
         "INNER JOIN turn_group AS tg ON t.id = tg.turn_id " +
         "LEFT JOIN member AS m ON (t.id = m.turn_id AND m.user_id = :userId)" +
@@ -33,13 +33,13 @@ import java.util.Set;
         "AND t.turn_type = :turnType " +
         "AND tg.group_id = :groupId " +
         "AND m.access_member_enum IS NULL " +
-        "OR (m.user_id = :userId AND m.access_member_enum = 'INVITED') ", resultSetMapping = "TurnMapping")
-@NamedNativeQuery(name = "getMemberInTurns", query = "SELECT m.access_member_enum, t.id, t.name, t.description, t.user_id, t.date_start, t.date_end, t.count_users, t.tags " +
+        "OR (m.user_id = :userId AND ((m.access_member_enum = 'INVITED') OR (m.access_member_enum = 'MEMBER_LINK'))) ", resultSetMapping = "TurnMapping")
+@NamedNativeQuery(name = "getMemberInTurns", query = "SELECT m.access_member_enum, t.hash, t.id, t.name, t.description, t.user_id, t.date_start, t.date_end, t.count_users, t.tags " +
         "FROM turn AS t " +
         "LEFT JOIN member AS m ON (t.id = m.turn_id AND m.user_id = :userId) " +
         "WHERE m.user_id = :userId AND t.turn_type = :turnType AND m.access_member_enum != 'INVITED'" +
         "AND m.access_member_enum != 'BLOCKED' " +
-        "AND m.access_member_enum != 'UNCONFIRMED' " +
+        "AND m.access_member_enum != 'MEMBER_LINK' " +
         "AND m.access_member_enum != 'REFUSED' ", resultSetMapping = "TurnMapping")
 @SqlResultSetMapping(
         name = "TurnMapping",
@@ -47,7 +47,7 @@ import java.util.Set;
         @EntityResult(
                 entityClass = Turn.class,
                 fields = {
-                        @FieldResult(name = "id", column = "id"),
+                        @FieldResult(name = "hash", column = "hash"),
                         @FieldResult(name = "name", column = "name"),
                         @FieldResult(name = "description", column = "description"),
                         @FieldResult(name = "creator", column = "user_id"),
@@ -55,8 +55,6 @@ import java.util.Set;
                         @FieldResult(name = "dateEnd", column = "date_end"),
                         @FieldResult(name = "countUsers", column = "count_users"),
                         @FieldResult(name = "tags", column = "tags"),
-                        //@FieldResult(name = "timer", column = "timer"),
-                        //@FieldResult(name = "positionCount", column = "position_count")
                 }
         ),
         columns = @ColumnResult(name = "access_member_enum", type = String.class)
@@ -66,6 +64,8 @@ public class Turn {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    private String hash;
 
     private String name;
 

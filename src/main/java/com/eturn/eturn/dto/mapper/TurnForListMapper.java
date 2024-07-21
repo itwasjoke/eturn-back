@@ -14,7 +14,7 @@ import org.mapstruct.ReportingPolicy;
         injectionStrategy = InjectionStrategy.CONSTRUCTOR
 )
 public interface TurnForListMapper {
-    @Mapping(target = "id",source = "turn.id")
+    @Mapping(target = "hash",source = "turn.hash")
     @Mapping(target = "name", source = "turn.name")
     @Mapping(target = "description",source = "turn.description")
     @Mapping(target = "userId", source = "turn.creator.id")

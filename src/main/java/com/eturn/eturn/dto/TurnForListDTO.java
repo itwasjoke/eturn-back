@@ -9,7 +9,7 @@ import java.util.Date;
 
 public record TurnForListDTO(
         @Schema(description = "Идентификатор очереди", example="1")
-        Long id,
+        String hash,
         @Size(min = 1, max = 255)
         @NotNull
         @Schema(description = "Имя очереди", example="Очередь за булочкой")

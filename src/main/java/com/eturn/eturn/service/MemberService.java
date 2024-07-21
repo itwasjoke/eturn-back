@@ -7,13 +7,16 @@ import com.eturn.eturn.entity.User;
 import com.eturn.eturn.enums.AccessMemberEnum;
 
 import java.util.List;
+import java.util.Optional;
 
 
 public interface MemberService {
 
-    void createMember(User user, Turn turn, String access);
+    Member createMember(User user, Turn turn, String access);
 
-    Member getMemberFrom(long id);
+    Optional<Member> getMemberFrom(long id);
+
+    Optional<Member> getOptionalMember(User user, Turn turn);
     AccessMemberEnum getAccess(User user, Turn turn);
 
     MemberDTO getMember(User user, Turn turn);
@@ -24,9 +27,11 @@ public interface MemberService {
 
     List<MemberDTO> getMemberList(Turn turn, String type);
 
-    void changeMemberStatus(long id, String type, User user);
+    Member changeMemberStatus(long id, String type, User user);
 
-    void deleteMember(long id, User user);
+    void changeMemberStatusFrom(long id, String type);
+
+    Member deleteMember(long id, User user);
 
     void deleteMemberFrom(Turn turn, User user);
 

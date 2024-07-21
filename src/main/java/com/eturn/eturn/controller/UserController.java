@@ -38,14 +38,4 @@ public class UserController {
         var userDetails = (UserDetails) authentication.getPrincipal();
         return userService.getUser(userDetails.getUsername());
     }
-
-    //    @PostMapping
-//    public Long create(@RequestBody UserCreateDTO user){
-//        return userService.createUser(user);
-//    }
-
-//    @DeleteMapping("/{id}")
-//    public void delete(@PathVariable("id") User user){
-//
-//    }
 }

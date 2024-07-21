@@ -48,15 +48,6 @@ public class TurnController {
         this.positionService = positionService;
     }
 
-    @GetMapping("{idTurn}")
-    @Operation(
-            summary = "Получение очереди",
-            description = "Основная информация об очереди без указания позиций"
-    )
-    public TurnDTO getTurn(@PathVariable long idTurn) {
-        return turnService.getTurn(idTurn);
-    }
-
     @GetMapping
     @Operation(
             summary = "Получение списка очередей",
@@ -65,10 +56,7 @@ public class TurnController {
     public List<TurnForListDTO> getUserTurns(
         HttpServletRequest request,
         @RequestParam @Parameter(description = "Тип очереди turn/edu") String type,
-        @RequestParam @Parameter(description = "Тип доступа memberIn/memberOut") String access,
-        @RequestParam(required = false) @Parameter(description = "Номер группы для фильтрации (необязательно)") String numberGroup,
-        @RequestParam(required = false) @Parameter(description = "Идентификатор курса для фильтрации (необязательно)") String courseId,
-        @RequestParam(required = false) @Parameter(description = "Идентификатор факультета для фильтрации (необязательно)") String facultyId
+        @RequestParam @Parameter(description = "Тип доступа memberIn/memberOut") String access
     ) {
 
         var authentication = (Authentication) request.getUserPrincipal();
@@ -76,16 +64,6 @@ public class TurnController {
         Map<String, String> params = new HashMap<>();
         params.put("Type", type);
         params.put("Access", access);
-
-        if (numberGroup != null) {
-            params.put("Group", numberGroup);
-        }
-        if (courseId != null) {
-            params.put("Course", courseId);
-        }
-        if (facultyId != null) {
-            params.put("Faculty", facultyId);
-        }
         return turnService.getUserTurns(userDetails.getUsername(), params);
     }
 
@@ -95,7 +73,7 @@ public class TurnController {
             summary = "Создание очереди",
             description = "Получает объект и создает очередь"
     )
-    public Long create(HttpServletRequest request,@Valid @RequestBody TurnCreatingDTO turn, BindingResult bindingResult) {
+    public String create(HttpServletRequest request,@Valid @RequestBody TurnCreatingDTO turn, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             List<FieldError> errors = bindingResult.getFieldErrors();
             throw new ValidationException("Ошибка валидации:", (Throwable) errors);
@@ -104,23 +82,14 @@ public class TurnController {
         var userDetails = (UserDetails) authentication.getPrincipal();
         return turnService.createTurn(turn, userDetails.getUsername());
     }
-    @GetMapping("/member")
-    public MemberDTO getCurrentMember(
-            HttpServletRequest request,
-            @RequestParam Long turnId
-    ){
-        var authentication = (Authentication) request.getUserPrincipal();
-        var userDetails = (UserDetails) authentication.getPrincipal();
-        return turnService.getMember(userDetails.getUsername(), turnId);
-    }
     @GetMapping("/members")
     public List<MemberDTO> getMemberList(
             HttpServletRequest request,
-            @RequestParam String type, @RequestParam Long turnId
+            @RequestParam String type, @RequestParam String hash
     ){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
-        return turnService.getMemberList(userDetails.getUsername(), type, turnId);
+        return turnService.getMemberList(userDetails.getUsername(), type, hash);
     }
     @DeleteMapping("/member/{id}")
     public void deleteMember(HttpServletRequest request, @PathVariable String id){
@@ -128,20 +97,20 @@ public class TurnController {
         var userDetails = (UserDetails) authentication.getPrincipal();
         positionService.deleteMember(Long.parseLong(id), userDetails.getUsername());
     }
-    @PutMapping("/member/access")
+    @PutMapping("/member")
     public void changeMemberAccess(HttpServletRequest request, @RequestParam Long id, @RequestParam String type){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
         positionService.changeMemberStatus(id, type, userDetails.getUsername());
     }
 
-    @DeleteMapping("/{idTurn}")
+    @DeleteMapping("/{hash}")
     public void delete(
             HttpServletRequest request,
-            @PathVariable long idTurn
+            @PathVariable String hash
     ) {
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
-        turnService.deleteTurn(userDetails.getUsername(),idTurn);
+        turnService.deleteTurn(userDetails.getUsername(), hash);
     }
 }

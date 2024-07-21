@@ -11,7 +11,7 @@ import java.util.Date;
 @Schema(description = "Очередь")
 public record TurnDTO(
         @Schema(description = "Идентификатор очереди", example="1")
-        Long id,
+        String hash,
         @Size(min = 1, max = 255)
         @NotNull
         @Schema(description = "Имя очереди", example="Очередь за булочкой")
@@ -27,7 +27,9 @@ public record TurnDTO(
         Date dateStart,
         Date dateEnd,
         @Schema(description = "Среднее время", example="10000")
-        Integer averageTime
+        Integer averageTime,
+        @Schema(description = "Права участника", example="10000")
+        String access
 ) {
 
 }
