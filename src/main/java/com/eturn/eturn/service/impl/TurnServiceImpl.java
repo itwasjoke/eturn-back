@@ -112,6 +112,7 @@ public class TurnServiceImpl implements TurnService {
                     }
                 }
             }
+            turn.setAccessTags(allowedElements.toString().trim());
             String tags = turn.getName() + " " + turn.getDescription() + allowedElements + userCreator.getName();
             turn.setTags(tags);
             turn.setCountUsers(0);
