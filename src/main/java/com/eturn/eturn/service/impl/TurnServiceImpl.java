@@ -165,6 +165,49 @@ public class TurnServiceImpl implements TurnService {
     }
 
     @Override
+    public List<TurnForListDTO> getLinkedTurn(String hash, String username) {
+        Optional<Turn> t = turnRepository.findTurnByHash(hash);
+        if (t.isEmpty()){
+            throw new NotFoundAllTurnsException("no found");
+        }
+        Turn turn = t.get();
+        UserDTO userDTO = userService.getUser(username);
+        User user = userService.getUserFrom(userDTO.id());
+        Optional<Member> member = memberService.getOptionalMember(user, turn);
+        String access;
+        if (member.isPresent()){
+            access = member.get().getAccessMemberEnum().toString();
+        }
+        else {
+            access = null;
+        }
+        List<TurnForListDTO> turnList = new ArrayList<>();
+        if (turn.getAccessTurnType() == AccessTurnEnum.FOR_LINK) {
+            turnList.add(turnForListMapper.turnToTurnForListDTO(turn, access));
+        }
+        else if (turn.getAccessTurnType() == AccessTurnEnum.FOR_ALLOWED_ELEMENTS){
+            if (
+                    turn.getAllowedGroups().contains(user.getGroup()) ||
+                    turn.getAllowedFaculties().contains(user.getGroup().getFaculty())
+            ){
+                turnList.add(turnForListMapper.turnToTurnForListDTO(turn, access));
+            } else if (access!=null) {
+                if (access.equals("CREATOR") || access.equals("MODERATOR") || access.equals("MEMBER")){
+                    turnList.add(turnForListMapper.turnToTurnForListDTO(turn, access));
+                } else {
+                    // TODO сделать нормальное исключение
+                    throw new NoAccessMemberException("no access");
+                }
+            }
+        }
+        else {
+            // TODO сделать нормальное исключение
+            throw new NoAccessMemberException("no access");
+        }
+        return turnList;
+    }
+
+    @Override
     public List<MemberDTO> getMemberList(String username, String type, String hash) {
         UserDTO userDTO = userService.getUser(username);
         User user = userService.getUserFrom(userDTO.id());

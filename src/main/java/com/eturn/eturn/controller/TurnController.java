@@ -66,6 +66,12 @@ public class TurnController {
         params.put("Access", access);
         return turnService.getUserTurns(userDetails.getUsername(), params);
     }
+    @GetMapping("/linked")
+    public List<TurnForListDTO> getLinkedTurn(HttpServletRequest request, @RequestParam String hash){
+        var authentication = (Authentication) request.getUserPrincipal();
+        var userDetails = (UserDetails) authentication.getPrincipal();
+        return turnService.getLinkedTurn(hash, userDetails.getUsername());
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
