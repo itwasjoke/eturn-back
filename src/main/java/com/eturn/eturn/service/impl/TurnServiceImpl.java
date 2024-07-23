@@ -1,8 +1,9 @@
 package com.eturn.eturn.service.impl;
 
 import com.eturn.eturn.dto.*;
+import com.eturn.eturn.dto.mapper.FacultyMapper;
+import com.eturn.eturn.dto.mapper.GroupMapper;
 import com.eturn.eturn.dto.mapper.TurnForListMapper;
-import com.eturn.eturn.dto.mapper.TurnMapper;
 import com.eturn.eturn.dto.mapper.TurnCreatingMapper;
 import com.eturn.eturn.entity.*;
 import com.eturn.eturn.enums.AccessMemberEnum;
@@ -13,8 +14,6 @@ import com.eturn.eturn.exception.member.NotFoundMemberException;
 import com.eturn.eturn.exception.turn.*;
 import com.eturn.eturn.repository.TurnRepository;
 import com.eturn.eturn.security.HashGenerator;
-import com.eturn.eturn.service.FacultyService;
-import com.eturn.eturn.service.GroupService;
 import com.eturn.eturn.service.MemberService;
 import com.eturn.eturn.service.TurnService;
 import com.eturn.eturn.service.UserService;
@@ -32,19 +31,24 @@ public class TurnServiceImpl implements TurnService {
     final private TurnCreatingMapper turnCreatingMapper;
     final private TurnForListMapper turnForListMapper;
 
+    final private GroupMapper groupMapper;
+    final private FacultyMapper facultyMapper;
+
 
     public TurnServiceImpl(
             TurnRepository turnRepository,
             UserService userService,
             MemberService memberService,
             TurnCreatingMapper turnCreatingMapper,
-            TurnForListMapper turnForListMapper
-    ) {
+            TurnForListMapper turnForListMapper,
+            GroupMapper groupMapper, FacultyMapper facultyMapper) {
         this.turnRepository = turnRepository;
         this.userService = userService;
         this.memberService = memberService;
         this.turnCreatingMapper = turnCreatingMapper;
         this.turnForListMapper = turnForListMapper;
+        this.groupMapper = groupMapper;
+        this.facultyMapper = facultyMapper;
     }
     @Override
     public Turn getTurnFrom(String hash) {
@@ -166,6 +170,71 @@ public class TurnServiceImpl implements TurnService {
         }
         else {
             throw new NotFoundMemberException("no member");
+        }
+    }
+
+    @Override
+    public void changeTurn(TurnEditDTO turn, String username) {
+        Optional<Turn> currentTurn = turnRepository.findTurnByHash(turn.hash());
+        UserDTO userDTO = userService.getUser(username);
+        User user = userService.getUserFrom(userDTO.id());
+        if (currentTurn.isPresent()) {
+            Turn newTurn = currentTurn.get();
+            if (newTurn.getCreator() == user) {
+                if (turn.name() != null) {
+                    newTurn.setName(turn.name());
+                }
+                if (turn.description() != null) {
+                    newTurn.setDescription(turn.description());
+                }
+                if (turn.allowedGroups() != null && newTurn.getAllowedGroups() != null) {
+                    if (!turn.allowedGroups().isEmpty() && !newTurn.getAllowedGroups().isEmpty()) {
+                        Set<Group> groups = newTurn.getAllowedGroups();
+                        for (GroupDTO groupDTO : turn.allowedGroups()) {
+                            groups.add(groupMapper.DTOtoGroup(groupDTO));
+                        }
+                        newTurn.setAllowedGroups(groups);
+                    }
+                }
+                if (turn.allowedFaculties() != null && newTurn.getAllowedFaculties() != null) {
+                    if (!turn.allowedFaculties().isEmpty() && !newTurn.getAllowedFaculties().isEmpty()) {
+                        Set<Faculty> faculties = newTurn.getAllowedFaculties();
+                        for (FacultyDTO facultyDTO : turn.allowedFaculties()) {
+                            faculties.add(facultyMapper.DTOtoFaculty(facultyDTO));
+                        }
+                        newTurn.setAllowedFaculties(faculties);
+                    }
+                }
+                if (turn.timer() != null) {
+                    newTurn.setTimer(turn.timer());
+                }
+                if (turn.positionCount() != null) {
+                    newTurn.setPositionCount(turn.positionCount());
+                }
+                Set<String> groupsName = new HashSet<>();
+                Set<String> facultiesName = new HashSet<>();
+                if (newTurn.getAccessTurnType() == AccessTurnEnum.FOR_ALLOWED_ELEMENTS) {
+                    if (newTurn.getAllowedGroups() != null) {
+                        for (Group group : newTurn.getAllowedGroups()) {
+                            groupsName.add(group.getNumber());
+                        }
+                    }
+                    if (newTurn.getAllowedFaculties() != null) {
+                        for (Faculty faculty : newTurn.getAllowedFaculties()) {
+                            facultiesName.add(faculty.getName());
+                        }
+                    }
+                }
+                String group = String.join(" ", groupsName);
+                String faculties = String.join(" ", facultiesName);
+                String tags = newTurn.getName() + " " + newTurn.getDescription() + " " + group + faculties + " " + newTurn.getCreator().getName();
+                newTurn.setTags(tags);
+                saveTurn(newTurn);
+            } else {
+                throw new NoAccessMemberException("No access");
+            }
+        } else {
+            throw new NotFoundTurnException("Turn not found");
         }
     }
 

@@ -413,6 +413,7 @@ public class PositionServiceImpl implements PositionService {
                 return memberService.createMember(user, turn, "MEMBER");
             }
             else {
+                // TODO переделать эксепшон!
                 throw new NoAccessMemberException("You are not this user!");
             }
         }

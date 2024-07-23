@@ -1,9 +1,6 @@
 package com.eturn.eturn.controller;
 
-import com.eturn.eturn.dto.MemberDTO;
-import com.eturn.eturn.dto.TurnDTO;
-import com.eturn.eturn.dto.TurnForListDTO;
-import com.eturn.eturn.dto.TurnCreatingDTO;
+import com.eturn.eturn.dto.*;
 import com.eturn.eturn.service.PositionService;
 import com.eturn.eturn.service.TurnService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -112,5 +109,16 @@ public class TurnController {
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
         turnService.deleteTurn(userDetails.getUsername(), hash);
+    }
+
+    @PutMapping("/edit")
+    public void changeTurn(HttpServletRequest request, @Valid @RequestBody TurnEditDTO turn, BindingResult bindingResult){
+        if (bindingResult.hasErrors()) {
+            List<FieldError> errors = bindingResult.getFieldErrors();
+            throw new ValidationException("Ошибка валидации:", (Throwable) errors);
+        }
+        var authentication = (Authentication) request.getUserPrincipal();
+        var userDetails = (UserDetails) authentication.getPrincipal();
+        turnService.changeTurn(turn, userDetails.getUsername());
     }
 }

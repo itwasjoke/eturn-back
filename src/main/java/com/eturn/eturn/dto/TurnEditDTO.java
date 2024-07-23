@@ -1,35 +1,20 @@
 package com.eturn.eturn.dto;
 
-import com.eturn.eturn.entity.*;
-import com.eturn.eturn.enums.AccessTurnEnum;
-import com.eturn.eturn.enums.TurnEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.*;
-import org.apache.catalina.util.Introspection;
 import org.hibernate.validator.constraints.Range;
 
-import java.util.Date;
 import java.util.Set;
 
-@Schema(description = "Очередь с подробной информацией")
-public record TurnCreatingDTO(
+public record TurnEditDTO(
         @Schema(description = "Идентификатор очереди", example="1")
-        Long id,
+        String hash,
         @Schema(description = "Имя очереди", example="Очередь за булочкой")
-        @NotBlank
         @Size(min = 1, max = 30)
         String name,
         @Schema(description = "Описание очереди", example="Готовим банковские карты. Всем приятного аппетита!")
         @Size(min = 1, max = 200)
         String description,
-        @Schema(description = "Тип очереди", example="EDU / ORG")
-        @Enumerated()
-        @NotNull TurnEnum turnType,
-        @Schema(description = "Доступ к очереди", example="FOR_ALLOWED_GROUPS")
-        @Enumerated()
-        @NotNull AccessTurnEnum turnAccess,
         @Schema(description = "Допустимые группы")
         Set<GroupDTO> allowedGroups,
         @Schema(description = "Допустимые факультеты")
@@ -41,16 +26,7 @@ public record TurnCreatingDTO(
         @Schema(description = "Количество позиций, через которое можно вставать в очередь", example="1")
         @PositiveOrZero
         @Range(min = 0, max = 40)
-        Integer positionCount,
-
-        @Schema(description = "Дата начала")
-        @FutureOrPresent
-        @NotNull
-        Date dateStart,
-        @Schema(description = "Дата конца")
-        @FutureOrPresent
-        @NotNull
-        Date dateEnd
+        Integer positionCount
 ) {
 
 }

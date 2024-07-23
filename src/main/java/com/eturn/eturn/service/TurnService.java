@@ -1,9 +1,6 @@
 package com.eturn.eturn.service;
 
-import com.eturn.eturn.dto.MemberDTO;
-import com.eturn.eturn.dto.TurnDTO;
-import com.eturn.eturn.dto.TurnForListDTO;
-import com.eturn.eturn.dto.TurnCreatingDTO;
+import com.eturn.eturn.dto.*;
 import com.eturn.eturn.entity.Turn;
 
 import java.util.List;
@@ -20,4 +17,5 @@ public interface TurnService {
 
     List<MemberDTO> getMemberList(String username, String type, String hash);
 
+    void changeTurn(TurnEditDTO turn, String username);
 }
