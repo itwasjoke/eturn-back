@@ -265,6 +265,16 @@ public class TurnServiceImpl implements TurnService {
                 }
                 String group = String.join(" ", groupsName);
                 String faculties = String.join(" ", facultiesName);
+                if (turn.allowedGroups() != null) {
+                    if (!turn.allowedGroups().isEmpty()) {
+                        newTurn.setAccessTags(group);
+                    }
+                }
+                if (turn.allowedFaculties() != null) {
+                    if (!turn.allowedFaculties().isEmpty()) {
+                        newTurn.setAccessTags(faculties);
+                    }
+                }
                 String tags = newTurn.getName() + " " + newTurn.getDescription() + " " + group + faculties + " " + newTurn.getCreator().getName();
                 newTurn.setTags(tags);
                 saveTurn(newTurn);
