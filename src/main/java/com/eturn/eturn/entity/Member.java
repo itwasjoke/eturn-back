@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Set;
+
 @Getter
 @Setter
 @Entity
@@ -23,7 +25,12 @@ public class Member {
     @JoinColumn(name = "turn_id")
     private Turn turn;
 
+    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Position> positionsMember;
+
 
     @Enumerated(EnumType.STRING)
     private AccessMemberEnum accessMemberEnum;
+
+    private boolean invited = false;
 }

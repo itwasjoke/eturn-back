@@ -104,7 +104,7 @@ public class PositionServiceImpl implements PositionService {
             }
         }
         AccessMemberEnum access = currentMember.getAccessMemberEnum();
-        if (access != AccessMemberEnum.BLOCKED && access != AccessMemberEnum.REFUSED){
+        if (access != AccessMemberEnum.BLOCKED){
             deleteOverdueElements(turn);
             // рассчет участников
             long members = memberService.getCountMembers(turn);
@@ -166,6 +166,7 @@ public class PositionServiceImpl implements PositionService {
                 newPosition.setUser(user);
                 newPosition.setTurn(turn);
                 newPosition.setDateEnd(null);
+                newPosition.setMember(currentMember);
                 newPosition.setGroupName(userDTO.group());
                 newPosition.setNumber(lastNumberPosition);
                 Position p = positionRepository.save(newPosition);
@@ -211,6 +212,7 @@ public class PositionServiceImpl implements PositionService {
     }
 
     @Override
+    @Transactional
     public void update(Long id, String username) {
         UserDTO userDTO = userService.getUser(username);
         User user = userService.getUserFrom(userDTO.id());
@@ -232,6 +234,10 @@ public class PositionServiceImpl implements PositionService {
                     Position pos = positionO.get();
                     if (pos.isStart()){
                         delete(id, user.getUsername());
+                        Optional<Position> pForUser = positionRepository.findFirstByUserAndTurn(pos.getUser(), pos.getTurn());
+                        if (pForUser.isEmpty() && access.equals("MEMBER") && pos.getTurn().getAccessTurnType()==AccessTurnEnum.FOR_LINK){
+                            memberService.createMember(pos.getUser(), pos.getTurn(),"MEMBER_LINK");
+                        }
                         long time = new Date().getTime() - pos.getDateStart().getTime();
                         int countPositions = turn.getCountPositionsLeft();
                         if (countPositions == 0) {
@@ -286,7 +292,7 @@ public class PositionServiceImpl implements PositionService {
             }
             Member member = oMember.get();
             AccessMemberEnum access = member.getAccessMemberEnum();
-            if ((access == AccessMemberEnum.MEMBER || access == AccessMemberEnum.MEMBER_LINK) && pos.getUser()==user || access == AccessMemberEnum.CREATOR || access == AccessMemberEnum.MODERATOR) {
+            if (access == AccessMemberEnum.MEMBER && pos.getUser()==user || access == AccessMemberEnum.CREATOR || access == AccessMemberEnum.MODERATOR) {
                 positionRepository.delete(pos);
                 Optional<Position> p = positionRepository.findFirstByTurnOrderByIdAsc(pos.getTurn());
                 if (p.isPresent()){
@@ -403,20 +409,7 @@ public class PositionServiceImpl implements PositionService {
 
     @Override
     public Member addTurnToUser(User user, Turn turn) {
-        AccessTurnEnum turnEnum = turn.getAccessTurnType();
-        if (turnEnum == AccessTurnEnum.FOR_LINK) {
-            return memberService.createMember(user, turn, "MEMBER");
-        } else {
-            Set<Group> groups = turn.getAllowedGroups();
-            Set<Faculty> faculties = turn.getAllowedFaculties();
-            if (groups.contains(user.getGroup()) || faculties.contains(user.getGroup().getFaculty())) {
-                return memberService.createMember(user, turn, "MEMBER");
-            }
-            else {
-                throw new NoAccessMemberException("You are not this user!");
-            }
-        }
-
+        return memberService.createMember(user, turn, "MEMBER");
     }
 
     @Override

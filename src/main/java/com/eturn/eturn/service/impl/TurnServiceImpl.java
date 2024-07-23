@@ -117,20 +117,17 @@ public class TurnServiceImpl implements TurnService {
             turn.setTags(tags);
             turn.setCountUsers(0);
             Turn turnNew = turnRepository.save(turn);
-            StringBuilder textForHash = new StringBuilder("eturn" + turnNew.getId().toString() + "29" + "queue");
-            String hash = HashGenerator.generateSHA256Hash(textForHash.toString());
+            String hash = HashGenerator.generateUniqueCode();
             Random random = new Random();
             int count = 0;
             while (turnRepository.existsAllByHash(hash)) {
-                int randomNumber = random.nextInt(10);
-                textForHash.append(randomNumber);
-                hash = HashGenerator.generateSHA256Hash(textForHash.toString());
+                hash = HashGenerator.generateUniqueCode();
                 count++;
-                if (count>10) {
+                if (count>50) {
                     break;
                 }
             }
-            if (count>10) {
+            if (count>50) {
                 // TODO Создать нормальное исключение
                 throw new InvalidDataTurnException("error");
             }
@@ -182,28 +179,8 @@ public class TurnServiceImpl implements TurnService {
             access = null;
         }
         List<TurnForListDTO> turnList = new ArrayList<>();
-        if (turn.getAccessTurnType() == AccessTurnEnum.FOR_LINK) {
-            turnList.add(turnForListMapper.turnToTurnForListDTO(turn, access));
-        }
-        else if (turn.getAccessTurnType() == AccessTurnEnum.FOR_ALLOWED_ELEMENTS){
-            if (
-                    turn.getAllowedGroups().contains(user.getGroup()) ||
-                    turn.getAllowedFaculties().contains(user.getGroup().getFaculty())
-            ){
-                turnList.add(turnForListMapper.turnToTurnForListDTO(turn, access));
-            } else if (access!=null) {
-                if (access.equals("CREATOR") || access.equals("MODERATOR") || access.equals("MEMBER")){
-                    turnList.add(turnForListMapper.turnToTurnForListDTO(turn, access));
-                } else {
-                    // TODO сделать нормальное исключение
-                    throw new NoAccessMemberException("no access");
-                }
-            }
-        }
-        else {
-            // TODO сделать нормальное исключение
-            throw new NoAccessMemberException("no access");
-        }
+        turnList.add(turnForListMapper.turnToTurnForListDTO(turn, access));
+
         return turnList;
     }
 
