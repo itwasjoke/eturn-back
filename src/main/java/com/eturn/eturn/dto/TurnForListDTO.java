@@ -16,11 +16,8 @@ public record TurnForListDTO(
         String name,
         @Schema(description = "Описание очереди", example="Всем приятного аппетита!")
         String description,
-        @Schema(description = "Количество участников", example="1")
-        int countUsers,
-        @Schema(description = "Идентификатор пользователя", example="1")
-        long userId,
         String tags,
+        String accessTags,
         Date dateStart,
         Date dateEnd,
         String accessMember

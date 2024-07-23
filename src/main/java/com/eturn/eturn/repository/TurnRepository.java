@@ -30,5 +30,6 @@ public interface TurnRepository extends JpaRepository<Turn, Long> {
     List<Object[]> resultsMemberIn(@Param("userId") Long userId, @Param("turnType") String turnType);
     void deleteTurnById(Long id);
 
+    boolean existsAllByHash(String hash);
     Optional<Turn> findTurnByHash(String hash);
 }

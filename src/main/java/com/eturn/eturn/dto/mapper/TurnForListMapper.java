@@ -17,8 +17,6 @@ public interface TurnForListMapper {
     @Mapping(target = "hash",source = "turn.hash")
     @Mapping(target = "name", source = "turn.name")
     @Mapping(target = "description",source = "turn.description")
-    @Mapping(target = "userId", source = "turn.creator.id")
-    @Mapping(target = "countUsers",source = "turn.countUsers")
     //@Mapping(target = "timer", source = "turn.timer")
     @Mapping(target = "dateStart",source = "turn.dateStart")
     @Mapping(target = "dateEnd", source = "turn.dateEnd")

@@ -116,11 +116,26 @@ public class TurnServiceImpl implements TurnService {
                     }
                 }
             }
+            turn.setAccessTags(allowedElements.toString().trim());
             String tags = turn.getName() + " " + turn.getDescription() + allowedElements + userCreator.getName();
             turn.setTags(tags);
             turn.setCountUsers(0);
             Turn turnNew = turnRepository.save(turn);
-            turnNew.setHash(HashGenerator.generateSHA256Hash(turnNew.getId()));
+            String hash = HashGenerator.generateUniqueCode();
+            Random random = new Random();
+            int count = 0;
+            while (turnRepository.existsAllByHash(hash)) {
+                hash = HashGenerator.generateUniqueCode();
+                count++;
+                if (count>50) {
+                    break;
+                }
+            }
+            if (count>50) {
+                // TODO Создать нормальное исключение
+                throw new InvalidDataTurnException("error");
+            }
+            turnNew.setHash(hash);
             Turn turnWithHash = turnRepository.save(turnNew);
             memberService.createMember(userCreator, turnWithHash, "CREATOR");
             return turnWithHash.getHash();
@@ -148,6 +163,29 @@ public class TurnServiceImpl implements TurnService {
     @Override
     public void saveTurn(Turn turn) {
         turnRepository.save(turn);
+    }
+
+    @Override
+    public List<TurnForListDTO> getLinkedTurn(String hash, String username) {
+        Optional<Turn> t = turnRepository.findTurnByHash(hash);
+        if (t.isEmpty()){
+            throw new NotFoundAllTurnsException("no found");
+        }
+        Turn turn = t.get();
+        UserDTO userDTO = userService.getUser(username);
+        User user = userService.getUserFrom(userDTO.id());
+        Optional<Member> member = memberService.getOptionalMember(user, turn);
+        String access;
+        if (member.isPresent()){
+            access = member.get().getAccessMemberEnum().toString();
+        }
+        else {
+            access = null;
+        }
+        List<TurnForListDTO> turnList = new ArrayList<>();
+        turnList.add(turnForListMapper.turnToTurnForListDTO(turn, access));
+
+        return turnList;
     }
 
     @Override
