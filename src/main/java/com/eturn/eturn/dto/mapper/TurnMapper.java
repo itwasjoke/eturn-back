@@ -19,5 +19,6 @@ public interface TurnMapper {
     @Mapping(target = "creator",source = "turn.creator.name")
     @Mapping(target = "userId", source = "turn.creator.id")
     @Mapping(target = "access", source = "access")
-    TurnDTO turnToTurnDTO(Turn turn, String access);
+    @Mapping(target = "accessType", source = "accessType")
+    TurnDTO turnToTurnDTO(Turn turn, String access, String accessType);
 }

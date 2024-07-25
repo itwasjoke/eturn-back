@@ -29,7 +29,8 @@ public record TurnDTO(
         @Schema(description = "Среднее время", example="10000")
         Integer averageTime,
         @Schema(description = "Права участника", example="10000")
-        String access
+        String access,
+        String accessType
 ) {
 
 }

@@ -432,7 +432,7 @@ public class PositionServiceImpl implements PositionService {
         long count = positionRepository.countByTurn(turn);
         turn.setCountUsers((int)count);
         turnService.saveTurn(turn);
-        return turnMapper.turnToTurnDTO(turn, access);
+        return turnMapper.turnToTurnDTO(turn, access, turn.getAccessTurnType().toString());
     }
 
     @Override
