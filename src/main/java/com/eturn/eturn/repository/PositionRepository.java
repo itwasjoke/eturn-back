@@ -26,6 +26,8 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
     @Modifying
     @Query("delete from Position p where p.turn=:turn and p.number<=:number")
     void tryToDelete(@Param("turn") Turn turn, @Param("number") int number);
+//    @Query(nativeQuery = true, name = "deletePositionSQL")
+//    void tryToDelete(@Param("turnId") Long turnId, @Param("number") int number);
     Page<Position> findByTurnOrderByIdDesc(Turn turn, Pageable page);
 
     Optional<Position> findFirstByTurnOrderByIdAsc(Turn turn);
@@ -39,6 +41,10 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
     @Query(value = "select count(*) from Position p where p.turn = :t and p.number < :num")
     long countNumbersLeft(@Param("num") int num, @Param("t") Turn t);
 
+    void deleteByNumberAndTurn(int number, Turn turn);
+
+    int countAllByTurn(Turn turn);
+    void deleteByTurnAndNumberLessThanEqual(Turn turn, int number);
 
     // TODO Сделать, чтобы он считал количество позиций по 2 минутам и удалял нужное количество позиций. Изменить запрос и добавить id до.
 

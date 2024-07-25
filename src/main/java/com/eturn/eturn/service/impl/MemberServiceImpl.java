@@ -199,4 +199,9 @@ public class MemberServiceImpl implements MemberService {
     public void deleteMemberFrom(Long id) {
         memberRepository.deleteById(id);
     }
+
+    @Override
+    public void deleteMembersWithoutPositions(Turn turn) {
+        memberRepository.deleteMembersWithoutPositions(turn);
+    }
 }

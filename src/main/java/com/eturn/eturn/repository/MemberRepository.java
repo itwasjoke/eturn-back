@@ -6,6 +6,9 @@ import com.eturn.eturn.entity.User;
 import com.eturn.eturn.enums.AccessMemberEnum;
 import com.eturn.eturn.enums.AccessTurnEnum;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -21,4 +24,7 @@ public interface MemberRepository extends JpaRepository<Member,Long> {
 
     void deleteByTurnAndUser(Turn turn, User user);
     void deleteById(long id);
+    @Modifying
+    @Query("DELETE FROM Member m WHERE SIZE(m.positionsMember) = 0 AND m.turn = :turn AND m.accessMemberEnum = 'MEMBER'")
+    void deleteMembersWithoutPositions(@Param("turn") Turn turn);
 }

@@ -34,4 +34,5 @@ public interface PositionService {
     Member addTurnToUser(User user, Turn turn);
 
     TurnDTO getTurn(String hash, String login);
+    int count(String hash);
 }

@@ -49,7 +49,7 @@ public class PositionServiceImpl implements PositionService {
     }
 
     @Transactional
-    public void deleteOverdueElements(Turn turn){
+        public void deleteOverdueElements(Turn turn){
         if (turn.getTimer() == 0) {
             return;
         }
@@ -64,11 +64,16 @@ public class PositionServiceImpl implements PositionService {
                     timeBetween = timeBetween / 60;
                     timeBetween = timeBetween / turn.getTimer();
                     timeBetween++;
+                    //TODO оптимизировать
                     Pageable  paging = PageRequest.of(0, (int)timeBetween);
                     Page<Position> positionsPage = positionRepository.findAllByTurnOrderByIdAsc(turn,paging);
                     List<Position> positionList = positionsPage.stream().toList();
                     Position p = positionList.get(positionList.size()-1);
-                    positionRepository.tryToDelete(turn, p.getNumber());
+                    int number = p.getNumber();
+                    positionRepository.deleteByTurnAndNumberLessThanEqual(turn, number);
+                    //positionRepository.tryToDelete(turn, number);
+                    //positionRepository.deleteByNumberAndTurn(number, turn);
+                    memberService.deleteMembersWithoutPositions(turn);
                     Optional<Position> positionFirstO2 = positionRepository.findFirstByTurnOrderByIdAsc(turn);
                     if (positionFirstO2.isPresent()){
                         Position positionF = positionFirstO2.get();
@@ -183,13 +188,12 @@ public class PositionServiceImpl implements PositionService {
             throw new NoAccessPosException("You are blocked");
         }
     }
-
     @Override
     @Transactional
     public List<PositionDTO> getPositionList(String hash, int page) {
         Turn turn = turnService.getTurnFrom(hash);
         deleteOverdueElements(turn);
-        long sizePositions = positionRepository.countByTurn(turn);
+        long sizePositions = positionRepository.countAllByTurn(turn);
         int size;
         if (sizePositions>20){
             size = 20;
@@ -198,13 +202,13 @@ public class PositionServiceImpl implements PositionService {
             size = (int) sizePositions;
         }
         if (size==0){
-            throw new NotFoundPosException("No positions found");
+            return null;
         }
         else{
             Pageable paging = PageRequest.of(page, size);
             Page<Position> positions = positionRepository.findAllByTurnOrderByIdAsc(turn, paging);
             if (positions.isEmpty()){
-                throw new NotFoundPosException("No positions found");
+                return null;
             }
             else return positionListMapper.map(positions);
         }
@@ -413,11 +417,13 @@ public class PositionServiceImpl implements PositionService {
     }
 
     @Override
-    @Transactional
     public TurnDTO getTurn(String hash, String login) {
         UserDTO userDTO = userService.getUser(login);
         User user = userService.getUserFrom(userDTO.id());
         Turn turn = turnService.getTurnFrom(hash);
+        if (turn.getDateEnd().getTime() < new Date().getTime()) {
+            turnService.deleteTurn(login, hash);
+        }
         AccessMemberEnum accessMember = memberService.getAccess(user, turn);
         String access = null;
         if (accessMember!=null){
@@ -427,6 +433,12 @@ public class PositionServiceImpl implements PositionService {
         turn.setCountUsers((int)count);
         turnService.saveTurn(turn);
         return turnMapper.turnToTurnDTO(turn, access);
+    }
+
+    @Override
+    public int count(String hash) {
+        Turn turn = turnService.getTurnFrom(hash);
+        return positionRepository.countAllByTurn(turn);
     }
 
 }

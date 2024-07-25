@@ -9,6 +9,7 @@ import java.util.Date;
 @Getter
 @Setter
 @Entity
+@NamedNativeQuery(name = "deletePositionSQL", query = "delete from positions where turn_id = :turnId and number <= :number ", resultClass = Void.class)
 @Table(name = "positions")
 public class Position {
 

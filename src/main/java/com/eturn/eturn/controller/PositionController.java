@@ -113,4 +113,8 @@ public class PositionController {
         var userDetails = (UserDetails) authentication.getPrincipal();
         return positionService.getTurn(hash, userDetails.getUsername());
     }
+    @GetMapping("/count/{hash}")
+    public int getCountPosition(@PathVariable String hash) {
+        return positionService.count(hash);
+    }
 }
