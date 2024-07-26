@@ -204,4 +204,16 @@ public class MemberServiceImpl implements MemberService {
     public void deleteMembersWithoutPositions(Turn turn) {
         memberRepository.deleteMembersWithoutPositions(turn);
     }
+
+    @Override
+    public void changeMemberInvite(Long id, boolean status) {
+        Optional<Member> memberPresent = memberRepository.findById(id);
+        if (memberPresent.isPresent()) {
+            Member member = memberPresent.get();
+            member.setInvited(status);
+            memberRepository.save(member);
+        } else {
+            throw new NotFoundMemberException("Not found member");
+        }
+    }
 }

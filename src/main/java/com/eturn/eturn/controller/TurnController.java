@@ -127,4 +127,16 @@ public class TurnController {
         var userDetails = (UserDetails) authentication.getPrincipal();
         turnService.changeTurn(turn, userDetails.getUsername());
     }
+
+    @PutMapping("/invite")
+    public void inviteUser(HttpServletRequest request, @RequestParam String hash) {
+        var authentication = (Authentication) request.getUserPrincipal();
+        var userDetails = (UserDetails) authentication.getPrincipal();
+        positionService.inviteUser(hash, userDetails.getUsername());
+    }
+    @PutMapping("/accept")
+    public void acceptInvite(@RequestParam Long id, @RequestParam boolean status) {
+        positionService.changeMemberInvite(id, status);
+    }
+
 }

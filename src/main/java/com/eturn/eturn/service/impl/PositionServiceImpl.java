@@ -1,6 +1,7 @@
 package com.eturn.eturn.service.impl;
 
 import com.eturn.eturn.dto.*;
+import com.eturn.eturn.dto.mapper.MemberMapper;
 import com.eturn.eturn.dto.mapper.PositionListMapper;
 import com.eturn.eturn.dto.mapper.PositionMoreInfoMapper;
 import com.eturn.eturn.dto.mapper.TurnMapper;
@@ -33,17 +34,19 @@ public class PositionServiceImpl implements PositionService {
     private final TurnService turnService;
 
     final private TurnMapper turnMapper;
+    final private MemberMapper memberMapper;
     private final PositionMoreInfoMapper positionMoreInfoMapper;
     private final MemberService memberService;
 
 
     public PositionServiceImpl(PositionRepository positionRepository, UserService userService,
-                               PositionListMapper positionListMapper, TurnService turnService, TurnMapper turnMapper, PositionMoreInfoMapper positionMoreInfoMapper, MemberService memberService) {
+                               PositionListMapper positionListMapper, TurnService turnService, TurnMapper turnMapper, MemberMapper memberMapper, PositionMoreInfoMapper positionMoreInfoMapper, MemberService memberService) {
         this.positionRepository = positionRepository;
         this.userService = userService;
         this.positionListMapper = positionListMapper;
         this.turnService = turnService;
         this.turnMapper = turnMapper;
+        this.memberMapper = memberMapper;
         this.positionMoreInfoMapper = positionMoreInfoMapper;
         this.memberService = memberService;
     }
@@ -439,6 +442,40 @@ public class PositionServiceImpl implements PositionService {
     public int count(String hash) {
         Turn turn = turnService.getTurnFrom(hash);
         return positionRepository.countAllByTurn(turn);
+    }
+    @Override
+    @Transactional
+    public void inviteUser(String hash, String username) {
+        UserDTO userDTO = userService.getUser(username);
+        User user = userService.getUserFrom(userDTO.id());
+        Turn turn = turnService.getTurnFrom(hash);
+        if (turn.getCreator() == user) {
+            throw new NoAccessMemberException("You are creator");
+        }
+        Optional<Member> memberPresent = memberService.getOptionalMember(user, turn);
+        if (memberPresent.isPresent()) {
+            if (memberPresent.get().getAccessMemberEnum() == AccessMemberEnum.BLOCKED) {
+                throw new NoAccessMemberException("You are blocked");
+            }
+            memberService.changeMemberInvite(memberPresent.get().getId(), true);
+        } else {
+            Member member = memberService.createMember(user, turn, "MEMBER_LINK");
+            memberService.changeMemberInvite(member.getId(), true);
+        }
+    }
+
+    @Override
+    public void changeMemberInvite(Long id, boolean status) {
+        Optional<Member> memberPresent = memberService.getMemberFrom(id);
+        if (memberPresent.isPresent()) {
+            Member member = memberPresent.get();
+            if (member.isInvited() && status) {
+                memberService.changeMemberStatusFrom(id, "MODERATOR");
+            }
+            memberService.changeMemberInvite(id, false);
+        } else {
+            throw new NotFoundMemberException("Member not found");
+        }
     }
 
 }
