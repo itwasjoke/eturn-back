@@ -28,6 +28,8 @@ public interface PositionService {
     void deleteMember(long id, String username);
     void changeMemberStatus(long id, String type, String username);
 
+    void skipPosition(long id, String username);
+
     PositionMoreInfoDTO getFirstUserPosition(String hash, String username);
 
     PositionMoreInfoDTO getFirstPosition(String hash, String username);

@@ -11,15 +11,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface PositionRepository extends JpaRepository<Position, Long> {
 
-    Optional<Position> findFirstByUserAndTurn(User user,Turn turn);
-    Page<Position> findAllByTurnOrderByIdAsc(Turn turn,Pageable pageable);
+    Optional<Position> findFirstByUserAndTurnOrderByNumberAsc(User user, Turn turn);
+    Page<Position> findAllByTurnOrderByNumberAsc(Turn turn, Pageable pageable);
 
     boolean existsAllByTurnAndUser(Turn turn, User user);
 
@@ -30,9 +29,9 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
 //    void tryToDelete(@Param("turnId") Long turnId, @Param("number") int number);
     Page<Position> findByTurnOrderByIdDesc(Turn turn, Pageable page);
 
-    Optional<Position> findFirstByTurnOrderByIdAsc(Turn turn);
+    Optional<Position> findFirstByTurnOrderByNumberAsc(Turn turn);
 
-    Optional<Position> findTopByTurnAndUserOrderByIdAsc(Turn turn, User user);
+    Optional<Position> findTopByTurnAndUserOrderByNumberAsc(Turn turn, User user);
 
     long countByTurn(Turn turn);
 
@@ -45,6 +44,8 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
 
     int countAllByTurn(Turn turn);
     void deleteByTurnAndNumberLessThanEqual(Turn turn, int number);
+
+    List<Position> findTop2ByTurnOrderByNumberAsc(Turn turn);
 
     // TODO Сделать, чтобы он считал количество позиций по 2 минутам и удалял нужное количество позиций. Изменить запрос и добавить id до.
 

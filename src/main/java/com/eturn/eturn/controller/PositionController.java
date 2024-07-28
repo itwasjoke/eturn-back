@@ -54,19 +54,34 @@ public class PositionController {
         return positionService.createPositionAndSave(userDetails.getUsername(), hash);
     }
 
-    @PutMapping()
+    @PutMapping("/{id}")
     @Operation(
             summary = "Изменение статуса позиции",
             description = "Находит позицию и изменяет ее статус из 'вход' на 'выход' и с 'выход' на удаление позиции"
     )
     public void updateStatus(
             HttpServletRequest request,
-            @RequestParam @Parameter(description = "Идентификатор позиции") Long id
+            @PathVariable @Parameter(description = "Идентификатор позиции") Long id
     ){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
         positionService.update(id, userDetails.getUsername());
     }
+
+    @PutMapping("/skip/{id}")
+    @Operation(
+            summary = "Изменение статуса позиции",
+            description = "Находит позицию и изменяет ее статус из 'вход' на 'выход' и с 'выход' на удаление позиции"
+    )
+    public void skipPosition(
+            HttpServletRequest request,
+            @PathVariable @Parameter(description = "Идентификатор позиции") Long id
+    ){
+        var authentication = (Authentication) request.getUserPrincipal();
+        var userDetails = (UserDetails) authentication.getPrincipal();
+        positionService.skipPosition(id, userDetails.getUsername());
+    }
+
     @DeleteMapping("/{id}")
     @Operation(
             summary = "Удаление позиции",

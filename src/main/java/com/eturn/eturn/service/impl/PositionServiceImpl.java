@@ -56,7 +56,7 @@ public class PositionServiceImpl implements PositionService {
         if (turn.getTimer() == 0) {
             return;
         }
-        Optional<Position> positionFirstO = positionRepository.findFirstByTurnOrderByIdAsc(turn);
+        Optional<Position> positionFirstO = positionRepository.findFirstByTurnOrderByNumberAsc(turn);
         if (positionFirstO.isPresent()){
             Position positionFirst = positionFirstO.get();
             if (positionFirst.getDateEnd()!=null && !positionFirst.isStart()){
@@ -69,15 +69,13 @@ public class PositionServiceImpl implements PositionService {
                     timeBetween++;
                     //TODO оптимизировать
                     Pageable  paging = PageRequest.of(0, (int)timeBetween);
-                    Page<Position> positionsPage = positionRepository.findAllByTurnOrderByIdAsc(turn,paging);
+                    Page<Position> positionsPage = positionRepository.findAllByTurnOrderByNumberAsc(turn,paging);
                     List<Position> positionList = positionsPage.stream().toList();
                     Position p = positionList.get(positionList.size()-1);
                     int number = p.getNumber();
                     positionRepository.deleteByTurnAndNumberLessThanEqual(turn, number);
-                    //positionRepository.tryToDelete(turn, number);
-                    //positionRepository.deleteByNumberAndTurn(number, turn);
                     memberService.deleteMembersWithoutPositions(turn);
-                    Optional<Position> positionFirstO2 = positionRepository.findFirstByTurnOrderByIdAsc(turn);
+                    Optional<Position> positionFirstO2 = positionRepository.findFirstByTurnOrderByNumberAsc(turn);
                     if (positionFirstO2.isPresent()){
                         Position positionF = positionFirstO2.get();
                         Date date = new Date();
@@ -127,7 +125,7 @@ public class PositionServiceImpl implements PositionService {
                 PERMITTED_COUNT_PEOPLE = (int) members;
             }
             // получение своей первой позиции
-            Optional<Position> ourPosition = positionRepository.findFirstByUserAndTurn(user, turn);
+            Optional<Position> ourPosition = positionRepository.findFirstByUserAndTurnOrderByNumberAsc(user, turn);
             // Optional<Position> lastPositionInTurn = positionRepository.findTopByTurnOrderByNumberDesc(turn);
 
             // получение списка из PERMITTED_COUNT_PEOPLE позиций для поиска нашей позиции
@@ -202,7 +200,7 @@ public class PositionServiceImpl implements PositionService {
 
         if (size > 0) {
             Pageable paging = PageRequest.of(page, size);
-            Page<Position> positions = positionRepository.findAllByTurnOrderByIdAsc(turn, paging);
+            Page<Position> positions = positionRepository.findAllByTurnOrderByNumberAsc(turn, paging);
             allPositions = positions.isEmpty() ? null : positionListMapper.map(positions);
         } else {
             allPositions = null;
@@ -236,7 +234,7 @@ public class PositionServiceImpl implements PositionService {
                     Position pos = positionO.get();
                     if (pos.isStart()){
                         delete(id, user.getUsername());
-                        Optional<Position> pForUser = positionRepository.findFirstByUserAndTurn(pos.getUser(), pos.getTurn());
+                        Optional<Position> pForUser = positionRepository.findFirstByUserAndTurnOrderByNumberAsc(pos.getUser(), pos.getTurn());
                         if (pForUser.isEmpty() && access.equals("MEMBER") && pos.getTurn().getAccessTurnType()==AccessTurnEnum.FOR_LINK){
                             memberService.createMember(pos.getUser(), pos.getTurn(),"MEMBER_LINK");
                         }
@@ -296,7 +294,7 @@ public class PositionServiceImpl implements PositionService {
             AccessMemberEnum access = member.getAccessMemberEnum();
             if (access == AccessMemberEnum.MEMBER && pos.getUser()==user || access == AccessMemberEnum.CREATOR || access == AccessMemberEnum.MODERATOR) {
                 positionRepository.delete(pos);
-                Optional<Position> p = positionRepository.findFirstByTurnOrderByIdAsc(pos.getTurn());
+                Optional<Position> p = positionRepository.findFirstByTurnOrderByNumberAsc(pos.getTurn());
                 if (p.isPresent()){
                     Position changePosition = p.get();
                     Date date = new Date();
@@ -306,7 +304,7 @@ public class PositionServiceImpl implements PositionService {
                     changePosition.setDateEnd(c.getTime());
                     positionRepository.save(changePosition);
                 }
-                Optional<Position> pUser = positionRepository.findFirstByUserAndTurn(pos.getUser(), pos.getTurn());
+                Optional<Position> pUser = positionRepository.findFirstByUserAndTurnOrderByNumberAsc(pos.getUser(), pos.getTurn());
                 if (pUser.isEmpty() && access == AccessMemberEnum.MEMBER && pos.getTurn().getAccessTurnType()==AccessTurnEnum.FOR_LINK){
                     memberService.changeMemberStatusFrom(member.getId(), "MEMBER_LINK");
                 }
@@ -360,6 +358,36 @@ public class PositionServiceImpl implements PositionService {
 
     @Override
     @Transactional
+    public void skipPosition(long id, String username) {
+        UserDTO userDTO = userService.getUser(username);
+        User user = userService.getUserFrom(userDTO.id());
+        Optional<Position> position = positionRepository.findById(id);
+        if (position.isPresent()){
+            Position p = position.get();
+            deleteOverdueElements(p.getTurn());
+            List<Position> positions = positionRepository.findTop2ByTurnOrderByNumberAsc(p.getTurn());
+            if (!positions.isEmpty()) {
+                if (positions.size() > 1 && positions.get(0).getUser() == user) {
+                    Position p1 = positions.get(0);
+                    Position p2 = positions.get(1);
+                    int number1 = p1.getNumber();
+                    int number2 = p2.getNumber();
+                    p1.setNumber(number2);
+                    p2.setNumber(number1);
+                    Date date = new Date();
+                    Calendar c = Calendar.getInstance();
+                    c.setTime(date);
+                    c.add(Calendar.MINUTE, p2.getTurn().getTimer());
+                    p2.setDateEnd(c.getTime());
+                    positionRepository.save(p1);
+                    positionRepository.save(p2);
+                }
+            }
+        }
+    }
+
+    @Override
+    @Transactional
     public PositionMoreInfoDTO getFirstUserPosition(String hash, String username) {
 
         UserDTO userDTO = userService.getUser(username);
@@ -368,8 +396,8 @@ public class PositionServiceImpl implements PositionService {
 
         deleteOverdueElements(turn);
 
-        Optional<Position> p = positionRepository.findTopByTurnAndUserOrderByIdAsc(turn, user);
-        Optional<Position> pInTurn = positionRepository.findFirstByTurnOrderByIdAsc(turn);
+        Optional<Position> p = positionRepository.findTopByTurnAndUserOrderByNumberAsc(turn, user);
+        Optional<Position> pInTurn = positionRepository.findFirstByTurnOrderByNumberAsc(turn);
         if (p.isPresent() && pInTurn.isPresent()){
             if (pInTurn.get().getId().equals(p.get().getId())){
                 int difference = 0;
@@ -392,7 +420,7 @@ public class PositionServiceImpl implements PositionService {
         Turn turn = turnService.getTurnFrom(hash);
 
         deleteOverdueElements(turn);
-        Optional<Position> pInTurn = positionRepository.findFirstByTurnOrderByIdAsc(turn);
+        Optional<Position> pInTurn = positionRepository.findFirstByTurnOrderByNumberAsc(turn);
         if (pInTurn.isPresent()){
             Position pos = pInTurn.get();
             MemberDTO memberDTO = memberService.getMember(user, pos.getTurn());
