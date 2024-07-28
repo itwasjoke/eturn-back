@@ -45,6 +45,17 @@ public class TurnController {
         this.positionService = positionService;
     }
 
+    @GetMapping("/{hash}")
+    @Operation(
+            summary = "Получение текущей очереди",
+            description = "Получает подробную информацию об очереди"
+    )
+    public TurnDTO getTurn(HttpServletRequest request, @PathVariable @Parameter(description = "Идентификатор очереди") String hash){
+        var authentication = (Authentication) request.getUserPrincipal();
+        var userDetails = (UserDetails) authentication.getPrincipal();
+        return positionService.getTurn(hash, userDetails.getUsername());
+    }
+
     @GetMapping
     @Operation(
             summary = "Получение списка очередей",
@@ -94,18 +105,6 @@ public class TurnController {
         var userDetails = (UserDetails) authentication.getPrincipal();
         return turnService.getMemberList(userDetails.getUsername(), type, hash);
     }
-    @DeleteMapping("/member/{id}")
-    public void deleteMember(HttpServletRequest request, @PathVariable String id){
-        var authentication = (Authentication) request.getUserPrincipal();
-        var userDetails = (UserDetails) authentication.getPrincipal();
-        positionService.deleteMember(Long.parseLong(id), userDetails.getUsername());
-    }
-    @PutMapping("/member")
-    public void changeMemberAccess(HttpServletRequest request, @RequestParam Long id, @RequestParam String type){
-        var authentication = (Authentication) request.getUserPrincipal();
-        var userDetails = (UserDetails) authentication.getPrincipal();
-        positionService.changeMemberStatus(id, type, userDetails.getUsername());
-    }
 
     @DeleteMapping("/{hash}")
     public void delete(
@@ -117,7 +116,7 @@ public class TurnController {
         turnService.deleteTurn(userDetails.getUsername(), hash);
     }
 
-    @PutMapping("/edit")
+    @PutMapping()
     public void changeTurn(HttpServletRequest request, @Valid @RequestBody TurnEditDTO turn, BindingResult bindingResult){
         if (bindingResult.hasErrors()) {
             List<FieldError> errors = bindingResult.getFieldErrors();
@@ -126,17 +125,6 @@ public class TurnController {
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
         turnService.changeTurn(turn, userDetails.getUsername());
-    }
-
-    @PutMapping("/invite")
-    public void inviteUser(HttpServletRequest request, @RequestParam String hash) {
-        var authentication = (Authentication) request.getUserPrincipal();
-        var userDetails = (UserDetails) authentication.getPrincipal();
-        positionService.inviteUser(hash, userDetails.getUsername());
-    }
-    @PutMapping("/accept")
-    public void acceptInvite(@RequestParam Long id, @RequestParam boolean status) {
-        positionService.changeMemberInvite(id, status);
     }
 
 }

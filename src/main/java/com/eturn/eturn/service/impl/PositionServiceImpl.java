@@ -193,28 +193,23 @@ public class PositionServiceImpl implements PositionService {
     }
     @Override
     @Transactional
-    public List<PositionDTO> getPositionList(String hash, int page) {
+    public PositionsTurnDTO getPositionList(String hash, String username, int page) {
         Turn turn = turnService.getTurnFrom(hash);
         deleteOverdueElements(turn);
         long sizePositions = positionRepository.countAllByTurn(turn);
-        int size;
-        if (sizePositions>20){
-            size = 20;
-        }
-        else{
-            size = (int) sizePositions;
-        }
-        if (size==0){
-            return null;
-        }
-        else{
+        List<PositionDTO> allPositions;
+        int size = (int) Math.min(sizePositions, 20);
+
+        if (size > 0) {
             Pageable paging = PageRequest.of(page, size);
             Page<Position> positions = positionRepository.findAllByTurnOrderByIdAsc(turn, paging);
-            if (positions.isEmpty()){
-                return null;
-            }
-            else return positionListMapper.map(positions);
+            allPositions = positions.isEmpty() ? null : positionListMapper.map(positions);
+        } else {
+            allPositions = null;
         }
+        PositionMoreInfoDTO userPosition = getFirstUserPosition(hash, username);
+        PositionMoreInfoDTO turnPosition = getFirstPosition(hash, username);
+        return new PositionsTurnDTO(userPosition, turnPosition, allPositions);
 
     }
 
@@ -386,7 +381,7 @@ public class PositionServiceImpl implements PositionService {
             }
         }
         else{
-            throw new NotFoundPosException("No positions found");
+            return null;
         }
     }
 
@@ -406,11 +401,11 @@ public class PositionServiceImpl implements PositionService {
                 return positionMoreInfoMapper.positionMoreInfoToPositionDTO(pos, difference);
             }
             else{
-                throw new NoAccessPosException("No access");
+                return null;
             }
         }
         else{
-            throw new NotFoundPosException("No positions found");
+            return null;
         }
     }
 
