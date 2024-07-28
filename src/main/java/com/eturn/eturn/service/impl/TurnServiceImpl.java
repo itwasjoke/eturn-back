@@ -73,10 +73,10 @@ public class TurnServiceImpl implements TurnService {
         } else if (Objects.equals(access, "memberIn")){
             allTurns = turnRepository.resultsMemberIn(user.getId(), params.get("Type"));
         }
-        if (allTurns.isEmpty()){
-            throw new NotFoundAllTurnsException("No turn in database on getUserTurns method (TurnServiceImpl.java)");
-        }
         List<TurnForListDTO> turnForList = new ArrayList<>();
+        if (allTurns.isEmpty()){
+            return turnForList;
+        }
         for ( Object[] obj : allTurns ) {
             turnForList.add ( turnForListMapper.turnToTurnForListDTO( (Turn) obj[0], (String) obj[1] ));
         }
@@ -122,7 +122,6 @@ public class TurnServiceImpl implements TurnService {
             turn.setCountUsers(0);
             Turn turnNew = turnRepository.save(turn);
             String hash = HashGenerator.generateUniqueCode();
-            Random random = new Random();
             int count = 0;
             while (turnRepository.existsAllByHash(hash)) {
                 hash = HashGenerator.generateUniqueCode();

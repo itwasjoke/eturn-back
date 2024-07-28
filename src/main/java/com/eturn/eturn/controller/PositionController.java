@@ -40,14 +40,14 @@ public class PositionController {
         var userDetails = (UserDetails) authentication.getPrincipal();
         return positionService.getPositionList(hash, userDetails.getUsername(), page);
     }
-    @PostMapping
+    @PostMapping("/{hash}")
     @Operation(
             summary = "Создание позиции",
             description = "Берет текущего авторизированного пользователя и создает позицию для него"
     )
     public PositionMoreInfoDTO createPosition(
             HttpServletRequest request,
-            @RequestParam @Parameter(description = "Идентификатор очереди") String hash
+            @PathVariable @Parameter(description = "Идентификатор очереди") String hash
     ){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
