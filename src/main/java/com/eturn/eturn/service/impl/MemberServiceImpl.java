@@ -216,4 +216,16 @@ public class MemberServiceImpl implements MemberService {
             throw new NotFoundMemberException("Not found member");
         }
     }
+
+    @Override
+    public void changeMemberStatus(Long id, boolean status) {
+        Optional<Member> memberPresent = memberRepository.findById(id);
+        if (memberPresent.isPresent()) {
+            Member member = memberPresent.get();
+            member.setInvitedMember(status);
+            memberRepository.save(member);
+        } else {
+            throw new NotFoundMemberException("Not found member");
+        }
+    }
 }

@@ -34,25 +34,27 @@ public class PositionServiceImpl implements PositionService {
     private final TurnService turnService;
 
     final private TurnMapper turnMapper;
-    final private MemberMapper memberMapper;
     private final PositionMoreInfoMapper positionMoreInfoMapper;
     private final MemberService memberService;
 
 
     public PositionServiceImpl(PositionRepository positionRepository, UserService userService,
-                               PositionListMapper positionListMapper, TurnService turnService, TurnMapper turnMapper, MemberMapper memberMapper, PositionMoreInfoMapper positionMoreInfoMapper, MemberService memberService) {
+                               PositionListMapper positionListMapper, TurnService turnService, TurnMapper turnMapper, PositionMoreInfoMapper positionMoreInfoMapper, MemberService memberService) {
         this.positionRepository = positionRepository;
         this.userService = userService;
         this.positionListMapper = positionListMapper;
         this.turnService = turnService;
         this.turnMapper = turnMapper;
-        this.memberMapper = memberMapper;
         this.positionMoreInfoMapper = positionMoreInfoMapper;
         this.memberService = memberService;
     }
 
     @Transactional
         public void deleteOverdueElements(Turn turn){
+        Optional<Position> positionFirstTrue = positionRepository.findFirstByTurnAndVisibleOrderByNumberAsc(turn, true);
+        if (positionFirstTrue.isPresent()) {
+            positionRepository.deleteByTurnAndNumberLessThanEqual(turn, positionFirstTrue.get().getNumber()-1);
+        }
         if (turn.getTimer() == 0) {
             return;
         }
@@ -67,7 +69,6 @@ public class PositionServiceImpl implements PositionService {
                     timeBetween = timeBetween / 60;
                     timeBetween = timeBetween / turn.getTimer();
                     timeBetween++;
-                    //TODO оптимизировать
                     Pageable  paging = PageRequest.of(0, (int)timeBetween);
                     Page<Position> positionsPage = positionRepository.findAllByTurnOrderByNumberAsc(turn,paging);
                     List<Position> positionList = positionsPage.stream().toList();
@@ -105,7 +106,11 @@ public class PositionServiceImpl implements PositionService {
         }
         else {
             currentMember = member.get();
-            if (currentMember.getAccessMemberEnum() == AccessMemberEnum.MEMBER_LINK && turn.getAccessTurnType() == AccessTurnEnum.FOR_LINK){
+            if (
+                    currentMember.getAccessMemberEnum() == AccessMemberEnum.MEMBER_LINK
+                            && turn.getAccessTurnType() == AccessTurnEnum.FOR_LINK
+                    && !member.get().isInvitedMember()
+            ){
                 memberService.changeMemberStatusFrom(currentMember.getId(), "MEMBER");
             }
         }
@@ -200,7 +205,7 @@ public class PositionServiceImpl implements PositionService {
 
         if (size > 0) {
             Pageable paging = PageRequest.of(page, size);
-            Page<Position> positions = positionRepository.findAllByTurnOrderByNumberAsc(turn, paging);
+            Page<Position> positions = positionRepository.findAllByTurnAndVisibleOrderByNumberAsc(turn, true, paging);
             allPositions = positions.isEmpty() ? null : positionListMapper.map(positions);
         } else {
             allPositions = null;
@@ -440,8 +445,12 @@ public class PositionServiceImpl implements PositionService {
     @Override
     public Member addTurnToUser(User user, Turn turn) {
         AccessTurnEnum turnEnum = turn.getAccessTurnType();
+        Member member;
         if (turnEnum == AccessTurnEnum.FOR_LINK) {
-            return memberService.createMember(user, turn, "MEMBER");
+            member = memberService.createMember(user, turn, "MEMBER_LINK");
+            memberService.changeMemberStatus(member.getId(), true);
+            member.setInvitedMember(true);
+            return member;
         } else {
             Set<Group> groups = turn.getAllowedGroups();
             Set<Faculty> faculties = turn.getAllowedFaculties();
@@ -449,7 +458,10 @@ public class PositionServiceImpl implements PositionService {
                 return memberService.createMember(user, turn, "MEMBER");
             }
             else {
-                throw new NoAccessMemberException("You are not this user!");
+                member = memberService.createMember(user, turn, "MEMBER_LINK");
+                memberService.changeMemberStatus(member.getId(), true);
+                member.setInvitedMember(true);
+                return member;
             }
         }
     }
