@@ -439,7 +439,19 @@ public class PositionServiceImpl implements PositionService {
 
     @Override
     public Member addTurnToUser(User user, Turn turn) {
-        return memberService.createMember(user, turn, "MEMBER");
+        AccessTurnEnum turnEnum = turn.getAccessTurnType();
+        if (turnEnum == AccessTurnEnum.FOR_LINK) {
+            return memberService.createMember(user, turn, "MEMBER");
+        } else {
+            Set<Group> groups = turn.getAllowedGroups();
+            Set<Faculty> faculties = turn.getAllowedFaculties();
+            if (groups.contains(user.getGroup()) || faculties.contains(user.getGroup().getFaculty())) {
+                return memberService.createMember(user, turn, "MEMBER");
+            }
+            else {
+                throw new NoAccessMemberException("You are not this user!");
+            }
+        }
     }
 
     @Override

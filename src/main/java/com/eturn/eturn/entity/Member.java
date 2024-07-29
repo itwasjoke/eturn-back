@@ -33,4 +33,6 @@ public class Member {
     private AccessMemberEnum accessMemberEnum;
 
     private boolean invited = false;
+
+    private boolean invitedMember = false;
 }
