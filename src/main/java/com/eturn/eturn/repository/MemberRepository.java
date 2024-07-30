@@ -20,7 +20,7 @@ public interface MemberRepository extends JpaRepository<Member,Long> {
     Member getByUserAndTurn(User user, Turn turn);
     Optional<Member> findMemberByUserAndTurn(User user, Turn turn);
     List<Member> getMemberByTurnAndAccessMemberEnum(Turn turn, AccessMemberEnum accessMemberEnum);
-    long countByTurn(Turn turn);
+    long countByTurnAndAccessMemberEnum(Turn turn, AccessMemberEnum accessMemberEnum);
 
     void deleteByTurnAndUser(Turn turn, User user);
     void deleteById(long id);

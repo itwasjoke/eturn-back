@@ -12,7 +12,6 @@ import java.util.Set;
 @Entity
 @Table(name = "member")
 public class Member {
-    // mapstruct
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -34,5 +33,5 @@ public class Member {
 
     private boolean invited = false;
 
-    private boolean invitedMember = false;
+    private boolean invitedForTurn = false;
 }

@@ -98,7 +98,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public long getCountMembers(Turn turn) {
-        return memberRepository.countByTurn(turn);
+        return memberRepository.countByTurnAndAccessMemberEnum(turn, AccessMemberEnum.MEMBER);
     }
 
 
@@ -211,6 +211,18 @@ public class MemberServiceImpl implements MemberService {
         if (memberPresent.isPresent()) {
             Member member = memberPresent.get();
             member.setInvited(status);
+            memberRepository.save(member);
+        } else {
+            throw new NotFoundMemberException("Not found member");
+        }
+    }
+
+    @Override
+    public void changeMemberInviteForTurn(Long id, boolean status) {
+        Optional<Member> memberPresent = memberRepository.findById(id);
+        if (memberPresent.isPresent()) {
+            Member member = memberPresent.get();
+            member.setInvitedForTurn(status);
             memberRepository.save(member);
         } else {
             throw new NotFoundMemberException("Not found member");
