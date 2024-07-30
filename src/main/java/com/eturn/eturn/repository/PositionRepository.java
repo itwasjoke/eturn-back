@@ -46,6 +46,7 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
     void deleteByTurnAndNumberLessThanEqual(Turn turn, int number);
 
     List<Position> findTop2ByTurnOrderByNumberAsc(Turn turn);
+    Optional<Position> findFirstByTurnAndNumberGreaterThan(Turn turn, int number);
 
     // TODO Сделать, чтобы он считал количество позиций по 2 минутам и удалял нужное количество позиций. Изменить запрос и добавить id до.
 

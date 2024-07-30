@@ -9,10 +9,7 @@ import com.eturn.eturn.exception.group.NotFoundGroupException;
 import com.eturn.eturn.exception.member.NoAccessMemberException;
 import com.eturn.eturn.exception.member.NotFoundMemberException;
 import com.eturn.eturn.exception.member.UnknownMemberException;
-import com.eturn.eturn.exception.position.DateNotArrivedPosException;
-import com.eturn.eturn.exception.position.NoAccessPosException;
-import com.eturn.eturn.exception.position.NoCreatePosException;
-import com.eturn.eturn.exception.position.NotFoundPosException;
+import com.eturn.eturn.exception.position.*;
 import com.eturn.eturn.exception.turn.*;
 import com.eturn.eturn.exception.user.AuthPasswordException;
 import com.eturn.eturn.exception.user.LocalNotFoundUserException;
@@ -22,16 +19,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @ControllerAdvice
@@ -126,6 +117,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         String body = "Пароль введен неверно.";
         return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
     }
+    @ExceptionHandler(NoCreateTurnException.class)
+    public ResponseEntity<Object> handleInvalidCreateTurn(NoCreateTurnException e, WebRequest request) {
+        log.error("Error with this message: " + e.getMessage());
+        String body = "Вы не можете создать так много очередей";
+        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
 
     //
     // POSITIONS
@@ -155,6 +152,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
+    @ExceptionHandler(NoSkipPositionException.class)
+    public ResponseEntity<Object> handleNoSkipPositionException(NoSkipPositionException e, WebRequest request) {
+        String body = "Вы не можете пропустить позицию";
+        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
     //
     // MEMBER
     //

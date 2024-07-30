@@ -10,10 +10,7 @@ import com.eturn.eturn.enums.AccessMemberEnum;
 import com.eturn.eturn.enums.AccessTurnEnum;
 import com.eturn.eturn.exception.member.NoAccessMemberException;
 import com.eturn.eturn.exception.member.NotFoundMemberException;
-import com.eturn.eturn.exception.position.DateNotArrivedPosException;
-import com.eturn.eturn.exception.position.NoAccessPosException;
-import com.eturn.eturn.exception.position.NoCreatePosException;
-import com.eturn.eturn.exception.position.NotFoundPosException;
+import com.eturn.eturn.exception.position.*;
 import com.eturn.eturn.repository.PositionRepository;
 import com.eturn.eturn.service.*;
 import org.springframework.data.domain.Page;
@@ -67,7 +64,6 @@ public class PositionServiceImpl implements PositionService {
                     timeBetween = timeBetween / 60;
                     timeBetween = timeBetween / turn.getTimer();
                     timeBetween++;
-                    //TODO оптимизировать
                     Pageable  paging = PageRequest.of(0, (int)timeBetween);
                     Page<Position> positionsPage = positionRepository.findAllByTurnOrderByNumberAsc(turn,paging);
                     List<Position> positionList = positionsPage.stream().toList();
@@ -121,8 +117,10 @@ public class PositionServiceImpl implements PositionService {
                 PERMITTED_COUNT_PEOPLE_SYSTEM = 20;
             }
             int PERMITTED_COUNT_PEOPLE = PERMITTED_COUNT_PEOPLE_SYSTEM;
-            if (members < PERMITTED_COUNT_PEOPLE_SYSTEM){
+            if (members < PERMITTED_COUNT_PEOPLE_SYSTEM && members == 1){
                 PERMITTED_COUNT_PEOPLE = (int) members;
+            } else if (members < PERMITTED_COUNT_PEOPLE_SYSTEM) {
+                PERMITTED_COUNT_PEOPLE = (int) members - 1;
             }
             // получение своей первой позиции
             Optional<Position> ourPosition = positionRepository.findFirstByUserAndTurnOrderByNumberAsc(user, turn);
@@ -168,6 +166,11 @@ public class PositionServiceImpl implements PositionService {
 
                 // создаем новую позицию
                 Position newPosition = new Position();
+                if (turn.getPositionCount() != 0) {
+                    newPosition.setSkipCount(turn.getPositionCount() / 5);
+                } else {
+                    newPosition.setSkipCount((int)(memberService.getCountMembers(turn) / 10));
+                }
                 newPosition.setStart(false);
                 newPosition.setUser(user);
                 newPosition.setTurn(turn);
@@ -363,25 +366,35 @@ public class PositionServiceImpl implements PositionService {
         User user = userService.getUserFrom(userDTO.id());
         Optional<Position> position = positionRepository.findById(id);
         if (position.isPresent()){
-            Position p = position.get();
-            deleteOverdueElements(p.getTurn());
-            List<Position> positions = positionRepository.findTop2ByTurnOrderByNumberAsc(p.getTurn());
-            if (!positions.isEmpty()) {
-                if (positions.size() > 1 && positions.get(0).getUser() == user) {
-                    Position p1 = positions.get(0);
-                    Position p2 = positions.get(1);
-                    int number1 = p1.getNumber();
-                    int number2 = p2.getNumber();
-                    p1.setNumber(number2);
-                    p2.setNumber(number1);
-                    Date date = new Date();
-                    Calendar c = Calendar.getInstance();
-                    c.setTime(date);
-                    c.add(Calendar.MINUTE, p2.getTurn().getTimer());
-                    p2.setDateEnd(c.getTime());
-                    positionRepository.save(p1);
-                    positionRepository.save(p2);
+            Position p1 = position.get();
+            deleteOverdueElements(p1.getTurn());
+            //List<Position> positions = positionRepository.findTop2ByTurnOrderByNumberAsc(p.getTurn());
+            //Optional<Position> p1 = positionRepository.findByNumber(position.get().getNumber() + 1);
+            Optional<Position> pNew = positionRepository.findFirstByTurnAndNumberGreaterThan(p1.getTurn(), position.get().getNumber());
+            if (pNew.isPresent() && p1.getUser() == user && p1.getSkipCount() != 0) {
+                Position p2 = pNew.get();
+                int number1 = p1.getNumber();
+                int number2 = p2.getNumber();
+                Optional<Position> p3New = positionRepository.findFirstByTurnAndNumberGreaterThan(p2.getTurn(), p2.getNumber());
+                if (p3New.isPresent()) {
+                    Position p3 = p3New.get();
+                    if (p1.getUser() == p3.getUser()) {
+                        positionRepository.delete(p1);
+                        return;
+                    }
                 }
+                p1.setNumber(number2);
+                p2.setNumber(number1);
+                Date date = new Date();
+                Calendar c = Calendar.getInstance();
+                c.setTime(date);
+                c.add(Calendar.MINUTE, p2.getTurn().getTimer());
+                p2.setDateEnd(c.getTime());
+                p1.setSkipCount(p1.getSkipCount() - 1);
+                positionRepository.save(p1);
+                positionRepository.save(p2);
+            } else {
+                throw new NoSkipPositionException("You cant skip position");
             }
         }
     }

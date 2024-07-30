@@ -89,55 +89,62 @@ public class TurnServiceImpl implements TurnService {
         if (turnDTO.dateEnd().getTime() > turnDTO.dateStart().getTime()) {
             UserDTO userDTO = userService.getUser(login);
             User user = userService.getUserFrom(userDTO.id());
-            Date now = new Date();
-            long timeDiff = turnDTO.dateEnd().getTime() - turnDTO.dateStart().getTime();
-            long year = 1000*60*60*24*365L;
-            long month = 1000*60*60*24*31L;
-            if (user.getRoleEnum() == RoleEnum.STUDENT && (timeDiff > 1000*60*60*24*3 || timeDiff < 0))
-                throw new InvalidTimeToCreateTurnException("Invalid turn duration");
-            if (user.getRoleEnum() == RoleEnum.EMPLOYEE && (timeDiff > year || timeDiff < 0))
-                throw new InvalidTimeToCreateTurnException("Invalid turn duration");
-            if (user.getRoleEnum() == RoleEnum.STUDENT && ((turnDTO.dateStart().getTime() - now.getTime() > month) || (turnDTO.dateStart().getTime() - now.getTime() < 0)))
-                throw new InvalidLengthTurnException("The turn is too long (or short)");
-            if (user.getRoleEnum() == RoleEnum.EMPLOYEE && ((turnDTO.dateStart().getTime() - now.getTime() > month * 3) || (turnDTO.dateStart().getTime() - now.getTime() < 0)))
-                throw new InvalidLengthTurnException("The turn is too long (or short)");
-            User userCreator = userService.getUserFrom(userDTO.id());
-            Turn turn = turnCreatingMapper.turnMoreDTOToTurn(turnDTO, userCreator);
-            StringBuilder allowedElements = new StringBuilder(" ");
-            if (turn.getAccessTurnType() == AccessTurnEnum.FOR_ALLOWED_ELEMENTS) {
-                if (turn.getAllowedGroups() != null) {
-                    for (Group group : turn.getAllowedGroups()) {
-                        allowedElements.append(group.getNumber()).append(" ");
+            if (
+                    (user.getCreatedTurns().size() < 10 && user.getRoleEnum() == RoleEnum.STUDENT) ||
+                            (user.getCreatedTurns().size() < 50 && user.getRoleEnum() == RoleEnum.EMPLOYEE)
+            ) {
+                Date now = new Date();
+                long timeDiff = turnDTO.dateEnd().getTime() - turnDTO.dateStart().getTime();
+                long year = 1000 * 60 * 60 * 24 * 365L;
+                long month = 1000 * 60 * 60 * 24 * 31L;
+                if (user.getRoleEnum() == RoleEnum.STUDENT && (timeDiff > 1000 * 60 * 60 * 24 * 3 || timeDiff < 0))
+                    throw new InvalidTimeToCreateTurnException("Invalid turn duration");
+                if (user.getRoleEnum() == RoleEnum.EMPLOYEE && (timeDiff > year || timeDiff < 0))
+                    throw new InvalidTimeToCreateTurnException("Invalid turn duration");
+                if (user.getRoleEnum() == RoleEnum.STUDENT && ((turnDTO.dateStart().getTime() - now.getTime() > month) || (turnDTO.dateStart().getTime() - now.getTime() < 0)))
+                    throw new InvalidLengthTurnException("The turn is too long (or short)");
+                if (user.getRoleEnum() == RoleEnum.EMPLOYEE && ((turnDTO.dateStart().getTime() - now.getTime() > month * 3) || (turnDTO.dateStart().getTime() - now.getTime() < 0)))
+                    throw new InvalidLengthTurnException("The turn is too long (or short)");
+                User userCreator = userService.getUserFrom(userDTO.id());
+                Turn turn = turnCreatingMapper.turnMoreDTOToTurn(turnDTO, userCreator);
+                StringBuilder allowedElements = new StringBuilder(" ");
+                if (turn.getAccessTurnType() == AccessTurnEnum.FOR_ALLOWED_ELEMENTS) {
+                    if (turn.getAllowedGroups() != null) {
+                        for (Group group : turn.getAllowedGroups()) {
+                            allowedElements.append(group.getNumber()).append(" ");
+                        }
+                    }
+                    if (turn.getAllowedFaculties() != null) {
+                        for (Faculty faculty : turn.getAllowedFaculties()) {
+                            allowedElements.append(faculty.getName()).append(" ");
+                        }
                     }
                 }
-                if (turn.getAllowedFaculties() != null) {
-                    for (Faculty faculty : turn.getAllowedFaculties()) {
-                        allowedElements.append(faculty.getName()).append(" ");
+                turn.setAccessTags(allowedElements.toString().trim());
+                String tags = turn.getName() + " " + turn.getDescription() + allowedElements + userCreator.getName();
+                turn.setTags(tags);
+                turn.setCountUsers(0);
+                Turn turnNew = turnRepository.save(turn);
+                String hash = HashGenerator.generateUniqueCode();
+                int count = 0;
+                while (turnRepository.existsAllByHash(hash)) {
+                    hash = HashGenerator.generateUniqueCode();
+                    count++;
+                    if (count > 50) {
+                        break;
                     }
                 }
-            }
-            turn.setAccessTags(allowedElements.toString().trim());
-            String tags = turn.getName() + " " + turn.getDescription() + allowedElements + userCreator.getName();
-            turn.setTags(tags);
-            turn.setCountUsers(0);
-            Turn turnNew = turnRepository.save(turn);
-            String hash = HashGenerator.generateUniqueCode();
-            int count = 0;
-            while (turnRepository.existsAllByHash(hash)) {
-                hash = HashGenerator.generateUniqueCode();
-                count++;
-                if (count>50) {
-                    break;
+                if (count > 50) {
+                    // TODO Создать нормальное исключение
+                    throw new InvalidDataTurnException("error");
                 }
+                turnNew.setHash(hash);
+                Turn turnWithHash = turnRepository.save(turnNew);
+                memberService.createMember(userCreator, turnWithHash, "CREATOR");
+                return turnWithHash.getHash();
+            } else {
+                throw new NoCreateTurnException("You cant create more 10 turns");
             }
-            if (count>50) {
-                // TODO Создать нормальное исключение
-                throw new InvalidDataTurnException("error");
-            }
-            turnNew.setHash(hash);
-            Turn turnWithHash = turnRepository.save(turnNew);
-            memberService.createMember(userCreator, turnWithHash, "CREATOR");
-            return turnWithHash.getHash();
         } else
             throw new InvalidDataTurnException("The dateEnd cannot be earlier than the dateStart on createTurn method (TurnServiceImpl.java)");
 
