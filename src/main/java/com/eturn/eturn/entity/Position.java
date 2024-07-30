@@ -38,6 +38,4 @@ public class Position {
     private Date dateEnd;
 
     private Date dateStart;
-
-    private boolean visible = true;
 }
