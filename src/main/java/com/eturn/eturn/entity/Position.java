@@ -9,7 +9,17 @@ import java.util.Date;
 @Getter
 @Setter
 @Entity
-@NamedNativeQuery(name = "deletePositionSQL", query = "delete from positions where turn_id = :turnId and number <= :number ", resultClass = Void.class)
+@NamedNativeQuery(name = "getPositionForDelete", query = "SELECT p.number FROM positions AS p WHERE p.turn_id = :turn ORDER BY p.id DESC OFFSET :count LIMIT 1", resultSetMapping = "PositionMapping")
+@SqlResultSetMapping(
+        name = "PositionMapping",
+        entities =
+        @EntityResult(
+                entityClass = Position.class,
+                fields = {
+                        @FieldResult(name = "number", column = "number")
+                }
+        )
+)
 @Table(name = "positions")
 public class Position {
 
