@@ -87,8 +87,7 @@ public class TurnServiceImpl implements TurnService {
     @Transactional
     public String createTurn(TurnCreatingDTO turnDTO, String login) {
         if (turnDTO.dateEnd().getTime() > turnDTO.dateStart().getTime()) {
-            UserDTO userDTO = userService.getUser(login);
-            User user = userService.getUserFrom(userDTO.id());
+            User user = userService.findByLogin(login);
             Date now = new Date();
             long timeDiff = turnDTO.dateEnd().getTime() - turnDTO.dateStart().getTime();
             long year = 1000*60*60*24*365L;
@@ -97,12 +96,11 @@ public class TurnServiceImpl implements TurnService {
                 throw new InvalidTimeToCreateTurnException("Invalid turn duration");
             if (user.getRoleEnum() == RoleEnum.EMPLOYEE && (timeDiff > year || timeDiff < 0))
                 throw new InvalidTimeToCreateTurnException("Invalid turn duration");
-            if (user.getRoleEnum() == RoleEnum.STUDENT && ((turnDTO.dateStart().getTime() - now.getTime() > month) || (turnDTO.dateStart().getTime() - now.getTime() < 0)))
+            if (user.getRoleEnum() == RoleEnum.STUDENT && ((turnDTO.dateStart().getTime() - now.getTime() > month) || (turnDTO.dateStart().getTime() - now.getTime() < -1000*60*2)))
                 throw new InvalidLengthTurnException("The turn is too long (or short)");
-            if (user.getRoleEnum() == RoleEnum.EMPLOYEE && ((turnDTO.dateStart().getTime() - now.getTime() > month * 3) || (turnDTO.dateStart().getTime() - now.getTime() < 0)))
+            if (user.getRoleEnum() == RoleEnum.EMPLOYEE && ((turnDTO.dateStart().getTime() - now.getTime() > month * 3) || (turnDTO.dateStart().getTime() - now.getTime() < -1000*60*2)))
                 throw new InvalidLengthTurnException("The turn is too long (or short)");
-            User userCreator = userService.getUserFrom(userDTO.id());
-            Turn turn = turnCreatingMapper.turnMoreDTOToTurn(turnDTO, userCreator);
+            Turn turn = turnCreatingMapper.turnMoreDTOToTurn(turnDTO, user);
             StringBuilder allowedElements = new StringBuilder(" ");
             if (turn.getAccessTurnType() == AccessTurnEnum.FOR_ALLOWED_ELEMENTS) {
                 if (turn.getAllowedGroups() != null) {
@@ -117,7 +115,7 @@ public class TurnServiceImpl implements TurnService {
                 }
             }
             turn.setAccessTags(allowedElements.toString().trim());
-            String tags = turn.getName() + " " + turn.getDescription() + allowedElements + userCreator.getName();
+            String tags = turn.getName() + " " + turn.getDescription() + allowedElements + user.getName();
             turn.setTags(tags);
             turn.setCountUsers(0);
             Turn turnNew = turnRepository.save(turn);
@@ -136,7 +134,7 @@ public class TurnServiceImpl implements TurnService {
             }
             turnNew.setHash(hash);
             Turn turnWithHash = turnRepository.save(turnNew);
-            memberService.createMember(userCreator, turnWithHash, "CREATOR");
+            memberService.createMember(user, turnWithHash, "CREATOR", false);
             return turnWithHash.getHash();
         } else
             throw new InvalidDataTurnException("The dateEnd cannot be earlier than the dateStart on createTurn method (TurnServiceImpl.java)");
@@ -147,8 +145,7 @@ public class TurnServiceImpl implements TurnService {
     @Transactional
     public void deleteTurn(String username, String hash) {
         Optional<Turn> turn = turnRepository.findTurnByHash(hash);
-        UserDTO userDTO = userService.getUser(username);
-        User user = userService.getUserFrom(userDTO.id());
+        User user = userService.findByLogin(username);
         if (turn.isEmpty()){
             throw new NotFoundTurnException("No turn in database on deleteTurn method (TurnServiceImpl.java)");
         }
@@ -171,8 +168,7 @@ public class TurnServiceImpl implements TurnService {
             throw new NotFoundAllTurnsException("no found");
         }
         Turn turn = t.get();
-        UserDTO userDTO = userService.getUser(username);
-        User user = userService.getUserFrom(userDTO.id());
+        User user = userService.findByLogin(username);
         Optional<Member> member = memberService.getOptionalMember(user, turn);
         String access;
         if (member.isPresent()){
@@ -189,8 +185,7 @@ public class TurnServiceImpl implements TurnService {
 
     @Override
     public List<MemberDTO> getMemberList(String username, String type, String hash) {
-        UserDTO userDTO = userService.getUser(username);
-        User user = userService.getUserFrom(userDTO.id());
+        User user = userService.findByLogin(username);
         Optional<Turn> turn = turnRepository.findTurnByHash(hash);
         if (turn.isEmpty()){
             throw new NotFoundTurnException("turn not found in getMember function");
@@ -213,8 +208,7 @@ public class TurnServiceImpl implements TurnService {
     @Override
     public void changeTurn(TurnEditDTO turn, String username) {
         Optional<Turn> currentTurn = turnRepository.findTurnByHash(turn.hash());
-        UserDTO userDTO = userService.getUser(username);
-        User user = userService.getUserFrom(userDTO.id());
+        User user = userService.findByLogin(username);
         if (currentTurn.isPresent()) {
             Turn newTurn = currentTurn.get();
             if (newTurn.getCreator() == user) {

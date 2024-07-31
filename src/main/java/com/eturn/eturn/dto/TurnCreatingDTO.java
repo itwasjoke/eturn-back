@@ -39,12 +39,10 @@ public record TurnCreatingDTO(
         @Range(min = 0, max = 20)
         Integer timer,
         @Schema(description = "Количество позиций, через которое можно вставать в очередь", example="1")
-        @PositiveOrZero
-        @Range(min = 0, max = 40)
+        @Range(min = -1, max = 40)
         Integer positionCount,
 
         @Schema(description = "Дата начала")
-        @FutureOrPresent
         @NotNull
         Date dateStart,
         @Schema(description = "Дата конца")
