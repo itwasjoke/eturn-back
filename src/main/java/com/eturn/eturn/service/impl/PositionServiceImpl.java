@@ -116,6 +116,34 @@ public class PositionServiceImpl implements PositionService {
                 int PERMITTED_COUNT_PEOPLE_SYSTEM = turn.getPositionCount();
                 if (PERMITTED_COUNT_PEOPLE_SYSTEM == -1 && ourPosition.isPresent()) {
                     throw new NoCreatePosException(String.valueOf(-1));
+                } else if (PERMITTED_COUNT_PEOPLE_SYSTEM == -1 && !ourPosition.isPresent()) {
+                    Optional<Position> lastPos = positionRepository.findFirstByTurnOrderByIdDesc(turn);
+                    // вычисляем номер позиции
+                    int lastNumberPosition = 1;
+                    if (lastPos.isPresent()) {
+                        Position lastPosition = lastPos.get();
+                        lastNumberPosition = lastPosition.getNumber() + 1;
+                    }
+
+                    // создаем новую позицию
+                    Position newPosition = new Position();
+                    newPosition.setStart(false);
+                    newPosition.setUser(user);
+                    newPosition.setTurn(turn);
+                    newPosition.setDateEnd(null);
+                    newPosition.setMember(currentMember);
+                    newPosition.setGroupName(user.getGroup().getNumber());
+                    newPosition.setNumber(lastNumberPosition);
+                    if (turn.getPositionCount() != 0) {
+                        newPosition.setSkipCount(turn.getPositionCount() / 5);
+                    } else {
+                        newPosition.setSkipCount((int)(memberService.getCountMembers(turn) / 10));
+                    }
+                    Position p = positionRepository.save(newPosition);
+
+                    int differenceForUser = (int) positionRepository.countNumbersLeft(p.getNumber(), turn);
+
+                    return positionMoreInfoMapper.positionMoreInfoToPositionDTO(p, differenceForUser);
                 }
                 int PERMITTED_COUNT_PEOPLE = PERMITTED_COUNT_PEOPLE_SYSTEM;
                 if (PERMITTED_COUNT_PEOPLE_SYSTEM == 0) {
