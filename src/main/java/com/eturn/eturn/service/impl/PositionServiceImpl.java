@@ -50,7 +50,7 @@ public class PositionServiceImpl implements PositionService {
 
     @Transactional
         public void deleteOverdueElements(Turn turn){
-        if (turn.getTimer() == 0) {
+        if (turn.getTimer() == 0 || turn.getDateStart().getTime() > new Date().getTime()) {
             return;
         }
         Optional<Position> positionFirstO = positionRepository.findFirstByTurnOrderByNumberAsc(turn);
@@ -129,20 +129,23 @@ public class PositionServiceImpl implements PositionService {
                     }
                 }
 
+                if (countPositions < PERMITTED_COUNT_PEOPLE && ourPosition.isPresent()) {
+                    throw new NoCreatePosException(String.valueOf(-1));
+                }
+
                 boolean isUserPosExist = false;
                 int differenceForException = 0;
                 Optional<Position> lastPos = positionRepository.findFirstByTurnOrderByIdDesc(turn);
                 if (isBig) {
                     // получение списка из PERMITTED_COUNT_PEOPLE позиций для поиска нашей позиции
-                    List<Object[]> positionDelete = positionRepository.resultsPositionDelete(turn.getId(), PERMITTED_COUNT_PEOPLE);
+                    Position positionDelete = positionRepository.resultsPositionDelete(turn.getId(), PERMITTED_COUNT_PEOPLE);
                     if (positionDelete != null) {
-                        Position positionCurrent = (Position) positionDelete.get(0)[0];
-                        Optional<Position> positionOfUser = positionRepository.findFirstByTurnAndUserAndNumberGreaterThanEqualOrOrderByNumberDesc(turn, user, positionCurrent.getNumber());
+                        Optional<Position> positionOfUser = positionRepository.findFirstByTurnAndUserAndNumberGreaterThanOrderByNumberDesc(turn, user, positionDelete.getNumber());
                         if (positionOfUser.isPresent()) {
                             isUserPosExist = true;
                             if (lastPos.isPresent()){
                                 int counts = positionRepository.countAllByNumberBetween(positionOfUser.get().getNumber(), lastPos.get().getNumber());
-                                differenceForException = PERMITTED_COUNT_PEOPLE - counts;
+                                differenceForException = PERMITTED_COUNT_PEOPLE - counts + 1;
                             }
 
                         }
@@ -193,6 +196,11 @@ public class PositionServiceImpl implements PositionService {
                 newPosition.setMember(currentMember);
                 newPosition.setGroupName(userDTO.group());
                 newPosition.setNumber(1);
+                if (turn.getPositionCount() != 0) {
+                    newPosition.setSkipCount(turn.getPositionCount() / 5);
+                } else {
+                    newPosition.setSkipCount((int)(memberService.getCountMembers(turn) / 10));
+                }
                 Position p = positionRepository.save(newPosition);
                 return positionMoreInfoMapper.positionMoreInfoToPositionDTO(p, 0);
             }
@@ -377,6 +385,12 @@ public class PositionServiceImpl implements PositionService {
         if (position.isPresent()){
             Position p1 = position.get();
             deleteOverdueElements(p1.getTurn());
+            Optional<Position> nowPos = positionRepository.findFirstByTurnOrderByNumberAsc(p1.getTurn());
+            Position currPos;
+            if (nowPos.isEmpty()) {
+                return;
+            }
+            currPos = nowPos.get();
             //List<Position> positions = positionRepository.findTop2ByTurnOrderByNumberAsc(p.getTurn());
             //Optional<Position> p1 = positionRepository.findByNumber(position.get().getNumber() + 1);
             Optional<Position> pNew = positionRepository.findFirstByTurnAndNumberGreaterThan(p1.getTurn(), position.get().getNumber());
@@ -392,13 +406,24 @@ public class PositionServiceImpl implements PositionService {
                         return;
                     }
                 }
+                Optional<Position> pOld = positionRepository.findFirstByTurnAndNumberLessThanOrderByNumberDesc(p1.getTurn(), p1.getNumber());
+                if (pOld.isPresent()) {
+                    Position p0 = pOld.get();
+                    if (p0.getUser() == p2.getUser()) {
+                        positionRepository.delete(p0);
+                    }
+                }
+
+                if (p1.getTurn().getDateStart().getTime() <= new Date().getTime() && Objects.equals(p1.getId(), currPos.getId())) {
+                    p1.setDateEnd(null);
+                    Date date = new Date();
+                    Calendar c = Calendar.getInstance();
+                    c.setTime(date);
+                    c.add(Calendar.MINUTE, p2.getTurn().getTimer());
+                    p2.setDateEnd(c.getTime());
+                }
                 p1.setNumber(number2);
                 p2.setNumber(number1);
-                Date date = new Date();
-                Calendar c = Calendar.getInstance();
-                c.setTime(date);
-                c.add(Calendar.MINUTE, p2.getTurn().getTimer());
-                p2.setDateEnd(c.getTime());
                 p1.setSkipCount(p1.getSkipCount() - 1);
                 positionRepository.save(p1);
                 positionRepository.save(p2);

@@ -17,7 +17,7 @@ public record PositionMoreInfoDTO(
         @Schema(description = "Номер группы", example="2000")
         String group,
         @Schema(description = "Статус (вход/выход)", example="true")
-        boolean start,
+        Boolean start,
         @Schema(description = "Номер в очереди", example="23")
         int number,
         @Schema(description = "Идентификатор пользователя", example="1")
@@ -27,7 +27,7 @@ public record PositionMoreInfoDTO(
         @Schema(description = "Дата начала отсчета", example="01.01.01 10:00")
         Date dateEnd,
         @Schema(description = "Количество возможностей пропустить следующего", example="5")
-        int skipCount
+        Integer skipCount
 ) {
 
 }

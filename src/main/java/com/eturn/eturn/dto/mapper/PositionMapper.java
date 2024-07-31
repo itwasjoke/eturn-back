@@ -28,5 +28,5 @@ public interface PositionMapper {
     @Mapping(target="start", source="startedTmp")
     @Mapping(target="number", source="numberTmp")
     Position positionDTOToPosition(PositionDTO position, Turn turnTemp, User userTemp,
-                                   boolean startedTmp, int numberTmp);
+                                   Boolean startedTmp, int numberTmp);
 }

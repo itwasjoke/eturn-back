@@ -14,7 +14,7 @@ public record PositionDTO(
         @Schema(description = "Номер группы", example="2000")
         String group,
         @Schema(description = "Статус(вход/выход)", example="false")
-        boolean start,
+        Boolean start,
         @Schema(description = "Номер в очереди", example="35")
         int number,
         @Schema(description = "Идентификатор пользователя", example="1")

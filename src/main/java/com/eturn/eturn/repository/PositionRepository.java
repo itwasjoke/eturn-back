@@ -25,7 +25,7 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
     boolean existsAllByTurnAndUser(Turn turn, User user);
 
     @Query(name = "getPositionForDelete")
-    List<Object[]> resultsPositionDelete(@Param("turn") Long turn, @Param("count") int count);
+    Position resultsPositionDelete(@Param("turn") Long turn, @Param("count") int count);
 
     @Modifying
     @Query("delete from Position p where p.turn=:turn and p.number<=:number")
@@ -49,9 +49,10 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
     int countAllByTurn(Turn turn);
     int countAllByNumberBetween(int number1, int number2);
     void deleteByTurnAndNumberLessThanEqual(Turn turn, int number);
-    Optional<Position> findFirstByTurnAndUserAndNumberGreaterThanEqualOrOrderByNumberDesc(Turn turn, User user, int number);
+    Optional<Position> findFirstByTurnAndUserAndNumberGreaterThanOrderByNumberDesc(Turn turn, User user, int number);
     List<Position> findTop2ByTurnOrderByNumberAsc(Turn turn);
     Optional<Position> findFirstByTurnAndNumberGreaterThan(Turn turn, int number);
+    Optional<Position> findFirstByTurnAndNumberLessThanOrderByNumberDesc(Turn turn, int number);
 
     // TODO Сделать, чтобы он считал количество позиций по 2 минутам и удалял нужное количество позиций. Изменить запрос и добавить id до.
 
