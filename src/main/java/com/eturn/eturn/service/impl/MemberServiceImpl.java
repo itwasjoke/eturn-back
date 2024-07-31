@@ -34,7 +34,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Transactional
     @Override
-    public Member createMember(User user, Turn turn, String access) {
+    public Member createMember(User user, Turn turn, String access, boolean invitedForTurn) {
         try {
             Optional<Member> memberOptional = memberRepository.findMemberByUserAndTurn(user,turn);
             if (memberOptional.isPresent()){
@@ -82,7 +82,10 @@ public class MemberServiceImpl implements MemberService {
                     memberToDTO.getUser().getId(),
                     memberToDTO.getTurn().getId(),
                     memberToDTO.getUser().getName(),
-                    memberToDTO.getAccessMemberEnum().toString()
+                    memberToDTO.getUser().getGroup().getNumber(),
+                    memberToDTO.getAccessMemberEnum().toString(),
+                    memberToDTO.isInvited(),
+                    memberToDTO.isInvitedForTurn()
                     );
         }
         else{
@@ -148,10 +151,18 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public void changeMemberStatusFrom(long id, String type) {
+    public void changeMemberStatusFrom(long id, String type, int invitedModerator, int invitedTurn) {
         Optional<Member> member = memberRepository.findById(id);
         if (member.isPresent()) {
             Member memberGet = member.get();
+            if (invitedModerator != -1) {
+                if (invitedModerator == 0) memberGet.setInvited(false);
+                if (invitedModerator == 1) memberGet.setInvited(true);
+            }
+            if (invitedTurn != -1) {
+                if (invitedModerator == 0) memberGet.setInvitedForTurn(false);
+                if (invitedModerator == 1) memberGet.setInvitedForTurn(true);
+            }
             AccessMemberEnum accessMemberEnum = AccessMemberEnum.valueOf(type);
             memberGet.setAccessMemberEnum(accessMemberEnum);
             memberRepository.save(memberGet);

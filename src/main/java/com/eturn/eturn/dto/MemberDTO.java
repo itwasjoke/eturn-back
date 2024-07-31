@@ -5,6 +5,9 @@ public record MemberDTO(
         Long userId,
         Long turnId,
         String userName,
-        String access
+        String group,
+        String access,
+        boolean invited,
+        boolean invitedForTurn
 ) {
 }

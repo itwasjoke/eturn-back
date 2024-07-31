@@ -92,8 +92,7 @@ public class PositionServiceImpl implements PositionService {
 
         // получение основной информации
         Turn turn = turnService.getTurnFrom(hash);
-        UserDTO userDTO = userService.getUser(login);
-        User user = userService.getUserFrom(userDTO.id());
+        User user = userService.findByLogin(login);
         Optional<Member> member = memberService.getOptionalMember(user, turn);
         Member currentMember;
         if (member.isEmpty()) {
@@ -102,7 +101,7 @@ public class PositionServiceImpl implements PositionService {
         else {
             currentMember = member.get();
             if (currentMember.getAccessMemberEnum() == AccessMemberEnum.MEMBER_LINK && turn.getAccessTurnType() == AccessTurnEnum.FOR_LINK){
-                memberService.changeMemberStatusFrom(currentMember.getId(), "MEMBER");
+                memberService.changeMemberStatusFrom(currentMember.getId(), "MEMBER", -1, -1);
             }
         }
         AccessMemberEnum access = currentMember.getAccessMemberEnum();
@@ -170,7 +169,7 @@ public class PositionServiceImpl implements PositionService {
                     newPosition.setTurn(turn);
                     newPosition.setDateEnd(null);
                     newPosition.setMember(currentMember);
-                    newPosition.setGroupName(userDTO.group());
+                    newPosition.setGroupName(user.getGroup().getNumber());
                     newPosition.setNumber(lastNumberPosition);
                     if (turn.getPositionCount() != 0) {
                         newPosition.setSkipCount(turn.getPositionCount() / 5);
@@ -194,7 +193,7 @@ public class PositionServiceImpl implements PositionService {
                 newPosition.setTurn(turn);
                 newPosition.setDateEnd(null);
                 newPosition.setMember(currentMember);
-                newPosition.setGroupName(userDTO.group());
+                newPosition.setGroupName(user.getGroup().getNumber());
                 newPosition.setNumber(1);
                 if (turn.getPositionCount() != 0) {
                     newPosition.setSkipCount(turn.getPositionCount() / 5);
@@ -234,8 +233,7 @@ public class PositionServiceImpl implements PositionService {
     @Override
     @Transactional
     public void update(Long id, String username) {
-        UserDTO userDTO = userService.getUser(username);
-        User user = userService.getUserFrom(userDTO.id());
+        User user = userService.findByLogin(username);
         Optional<Position> position = positionRepository.findById(id);
         if (position.isPresent()){
             Position posI = position.get();
@@ -256,7 +254,7 @@ public class PositionServiceImpl implements PositionService {
                         delete(id, user.getUsername());
                         Optional<Position> pForUser = positionRepository.findFirstByUserAndTurnOrderByNumberAsc(pos.getUser(), pos.getTurn());
                         if (pForUser.isEmpty() && access.equals("MEMBER") && pos.getTurn().getAccessTurnType()==AccessTurnEnum.FOR_LINK){
-                            memberService.createMember(pos.getUser(), pos.getTurn(),"MEMBER_LINK");
+                            memberService.createMember(pos.getUser(), pos.getTurn(),"MEMBER_LINK", false);
                         }
                         long time = new Date().getTime() - pos.getDateStart().getTime();
                         int countPositions = turn.getCountPositionsLeft();
@@ -301,8 +299,7 @@ public class PositionServiceImpl implements PositionService {
     @Override
     @Transactional
     public void delete(Long id, String username) {
-        UserDTO userDTO = userService.getUser(username);
-        User user = userService.getUserFrom(userDTO.id());
+        User user = userService.findByLogin(username);
         Optional<Position> position = positionRepository.findById(id);
         if (position.isPresent()) {
             Position pos = position.get();
@@ -326,7 +323,7 @@ public class PositionServiceImpl implements PositionService {
                 }
                 Optional<Position> pUser = positionRepository.findFirstByUserAndTurnOrderByNumberAsc(pos.getUser(), pos.getTurn());
                 if (pUser.isEmpty() && access == AccessMemberEnum.MEMBER && pos.getTurn().getAccessTurnType()==AccessTurnEnum.FOR_LINK){
-                    memberService.changeMemberStatusFrom(member.getId(), "MEMBER_LINK");
+                    memberService.changeMemberStatusFrom(member.getId(), "MEMBER_LINK", -1, -1);
                 }
                 else if (pUser.isEmpty() && access == AccessMemberEnum.MEMBER) {
                     memberService.deleteMemberFrom(pos.getTurn(), user);
@@ -345,8 +342,7 @@ public class PositionServiceImpl implements PositionService {
     @Override
     @Transactional
     public void deleteMember(long id, String username) {
-        UserDTO userDTO = userService.getUser(username);
-        User user = userService.getUserFrom(userDTO.id());
+        User user = userService.findByLogin(username);
         Member member = memberService.deleteMember(id, user);
         positionRepository.deletePositionsByUserAndTurn(user,member.getTurn());
     }
@@ -354,8 +350,7 @@ public class PositionServiceImpl implements PositionService {
     @Override
     @Transactional
     public void changeMemberStatus(long id, String type, String username) {
-        UserDTO userDTO = userService.getUser(username);
-        User user = userService.getUserFrom(userDTO.id());
+        User user = userService.findByLogin(username);
         Member member = memberService.changeMemberStatus(id, type, user);
         if (member.getAccessMemberEnum() == AccessMemberEnum.MEMBER){
             Turn turn = member.getTurn();
@@ -379,8 +374,7 @@ public class PositionServiceImpl implements PositionService {
     @Override
     @Transactional
     public void skipPosition(long id, String username) {
-        UserDTO userDTO = userService.getUser(username);
-        User user = userService.getUserFrom(userDTO.id());
+        User user = userService.findByLogin(username);
         Optional<Position> position = positionRepository.findById(id);
         if (position.isPresent()){
             Position p1 = position.get();
@@ -436,9 +430,7 @@ public class PositionServiceImpl implements PositionService {
     @Override
     @Transactional
     public PositionMoreInfoDTO getFirstUserPosition(String hash, String username) {
-
-        UserDTO userDTO = userService.getUser(username);
-        User user = userService.getUserFrom(userDTO.id());
+        User user = userService.findByLogin(username);
         Turn turn = turnService.getTurnFrom(hash);
 
         deleteOverdueElements(turn);
@@ -462,8 +454,7 @@ public class PositionServiceImpl implements PositionService {
 
     @Override
     public PositionMoreInfoDTO getFirstPosition(String hash, String username) {
-        UserDTO userDTO = userService.getUser(username);
-        User user = userService.getUserFrom(userDTO.id());
+        User user = userService.findByLogin(username);
         Turn turn = turnService.getTurnFrom(hash);
 
         deleteOverdueElements(turn);
@@ -488,12 +479,12 @@ public class PositionServiceImpl implements PositionService {
     public Member addTurnToUser(User user, Turn turn) {
         AccessTurnEnum turnEnum = turn.getAccessTurnType();
         if (turnEnum == AccessTurnEnum.FOR_LINK) {
-            return memberService.createMember(user, turn, "MEMBER");
+            return memberService.createMember(user, turn, "MEMBER_LINK", true);
         } else {
             Set<Group> groups = turn.getAllowedGroups();
             Set<Faculty> faculties = turn.getAllowedFaculties();
             if (groups.contains(user.getGroup()) || faculties.contains(user.getGroup().getFaculty())) {
-                return memberService.createMember(user, turn, "MEMBER");
+                return memberService.createMember(user, turn, "MEMBER", false);
             }
             else {
                 throw new NoAccessMemberException("You are not this user!");
@@ -503,8 +494,7 @@ public class PositionServiceImpl implements PositionService {
 
     @Override
     public TurnDTO getTurn(String hash, String login) {
-        UserDTO userDTO = userService.getUser(login);
-        User user = userService.getUserFrom(userDTO.id());
+        User user = userService.findByLogin(login);
         Turn turn = turnService.getTurnFrom(hash);
         if (turn.getDateEnd().getTime() < new Date().getTime()) {
             turnService.deleteTurn(login, hash);
@@ -528,8 +518,7 @@ public class PositionServiceImpl implements PositionService {
     @Override
     @Transactional
     public void inviteUser(String hash, String username) {
-        UserDTO userDTO = userService.getUser(username);
-        User user = userService.getUserFrom(userDTO.id());
+        User user = userService.findByLogin(username);
         Turn turn = turnService.getTurnFrom(hash);
         if (turn.getCreator() == user) {
             throw new NoAccessMemberException("You are creator");
@@ -541,7 +530,7 @@ public class PositionServiceImpl implements PositionService {
             }
             memberService.changeMemberInvite(memberPresent.get().getId(), true);
         } else {
-            Member member = memberService.createMember(user, turn, "MEMBER_LINK");
+            Member member = memberService.createMember(user, turn, "MEMBER_LINK", false);
             memberService.changeMemberInvite(member.getId(), true);
         }
     }
@@ -551,10 +540,23 @@ public class PositionServiceImpl implements PositionService {
         Optional<Member> memberPresent = memberService.getMemberFrom(id);
         if (memberPresent.isPresent()) {
             Member member = memberPresent.get();
-            if (member.isInvited() && status) {
-                memberService.changeMemberStatusFrom(id, "MODERATOR");
+            boolean isInvited = member.isInvited();
+            boolean isInvitedForTurn = member.isInvitedForTurn();
+            if (status) {
+                if (isInvited) {
+                    memberService.changeMemberStatusFrom(id, "MODERATOR", 0, 0);
+                } else if (isInvitedForTurn) {
+                    memberService.changeMemberStatusFrom(id, "MEMBER", 0, 0);
+                    createPositionAndSave(member.getUser().getLogin(), member.getTurn().getHash());
+                }
+            } else {
+                if (isInvited) {
+                    memberService.changeMemberInvite(id, false);
+                } else if (isInvitedForTurn) {
+                    memberService.deleteMemberFrom(id);
+                }
             }
-            memberService.changeMemberInvite(id, false);
+
         } else {
             throw new NotFoundMemberException("Member not found");
         }

@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public interface MemberService {
 
-    Member createMember(User user, Turn turn, String access);
+    Member createMember(User user, Turn turn, String access, boolean invitedForTurn);
 
     Optional<Member> getMemberFrom(long id);
 
@@ -29,7 +29,7 @@ public interface MemberService {
 
     Member changeMemberStatus(long id, String type, User user);
 
-    void changeMemberStatusFrom(long id, String type);
+    void changeMemberStatusFrom(long id, String type, int invitedModerator, int invitedTurn);
 
     Member deleteMember(long id, User user);
 
