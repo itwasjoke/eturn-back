@@ -26,14 +26,14 @@ public class PositionController {
         this.positionService = positionService;
     }
 
-    @GetMapping ("/{hash}")
+    @GetMapping ()
     @Operation(
             summary = "Получение позиций очереди",
             description = "Отправляет список позиций, которые принадлежат определенной очереди"
     )
     public PositionsTurnDTO getTurnPositions(
             HttpServletRequest request,
-            @PathVariable @Parameter(description = "Идентификатор очереди") String hash,
+            @RequestParam @Parameter(description = "Идентификатор очереди") String hash,
             @RequestParam(defaultValue = "0") @Parameter(description = "Страница позиций") int page
     ){
         var authentication = (Authentication) request.getUserPrincipal();
