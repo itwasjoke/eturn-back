@@ -3,7 +3,7 @@ spring:
     allow-circular-references: true
     allow-bean-definition-overriding: true
   datasource:
-#    url: jdbc:postgresql://localhost:5432/eturn
+#    url: jdbc:postgresql://localhost:5433/eturn
 #    username: postgres
 #    password: postgres
 
