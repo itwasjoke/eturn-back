@@ -63,12 +63,11 @@ public class PositionServiceImpl implements PositionService {
                     timeBetween = timeBetween / 1000;
                     timeBetween = timeBetween / 60;
                     timeBetween = timeBetween / turn.getTimer();
-                    timeBetween++;
-                    Pageable  paging = PageRequest.of(0, (int)timeBetween);
-                    Page<Position> positionsPage = positionRepository.findAllByTurnOrderByNumberAsc(turn,paging);
-                    List<Position> positionList = positionsPage.stream().toList();
-                    Position p = positionList.get(positionList.size()-1);
-                    int number = p.getNumber();
+                    Position p = positionRepository.resultsPositionDeleteOverdueElements(turn.getId(), (int) timeBetween);
+                    int number = 0;
+                    if (p != null) {
+                        number = p.getNumber();
+                    }
                     positionRepository.deleteByTurnAndNumberLessThanEqual(turn, number);
                     memberService.deleteMembersWithoutPositions(turn);
                     Optional<Position> positionFirstO2 = positionRepository.findFirstByTurnOrderByNumberAsc(turn);
@@ -94,6 +93,7 @@ public class PositionServiceImpl implements PositionService {
         Turn turn = turnService.getTurnFrom(hash);
         User user = userService.findByLogin(login);
         Optional<Member> member = memberService.getOptionalMember(user, turn);
+        Optional<Position> lastPos = positionRepository.findFirstByTurnOrderByIdDesc(turn);
         Member currentMember;
         if (member.isEmpty()) {
             currentMember = addTurnToUser(user, turn);
@@ -116,30 +116,9 @@ public class PositionServiceImpl implements PositionService {
                 int PERMITTED_COUNT_PEOPLE_SYSTEM = turn.getPositionCount();
                 if (PERMITTED_COUNT_PEOPLE_SYSTEM == -1 && ourPosition.isPresent()) {
                     throw new NoCreatePosException(String.valueOf(-1));
-                } else if (PERMITTED_COUNT_PEOPLE_SYSTEM == -1 && !ourPosition.isPresent()) {
-                    Optional<Position> lastPos = positionRepository.findFirstByTurnOrderByIdDesc(turn);
-                    // вычисляем номер позиции
-                    int lastNumberPosition = 1;
-                    if (lastPos.isPresent()) {
-                        Position lastPosition = lastPos.get();
-                        lastNumberPosition = lastPosition.getNumber() + 1;
-                    }
+                } else if (PERMITTED_COUNT_PEOPLE_SYSTEM == -1) {
 
-                    // создаем новую позицию
-                    Position newPosition = new Position();
-                    newPosition.setStart(false);
-                    newPosition.setUser(user);
-                    newPosition.setTurn(turn);
-                    newPosition.setDateEnd(null);
-                    newPosition.setMember(currentMember);
-                    newPosition.setGroupName(user.getGroup().getNumber());
-                    newPosition.setNumber(lastNumberPosition);
-                    if (turn.getPositionCount() != 0) {
-                        newPosition.setSkipCount(turn.getPositionCount() / 5);
-                    } else {
-                        newPosition.setSkipCount((int)(memberService.getCountMembers(turn) / 10));
-                    }
-                    Position p = positionRepository.save(newPosition);
+                    Position p = createNewPosition(lastPos, currentMember);
 
                     int differenceForUser = (int) positionRepository.countNumbersLeft(p.getNumber(), turn);
 
@@ -162,7 +141,6 @@ public class PositionServiceImpl implements PositionService {
 
                 boolean isUserPosExist = false;
                 int differenceForException = 0;
-                Optional<Position> lastPos = positionRepository.findFirstByTurnOrderByIdDesc(turn);
                 if (isBig) {
                     // получение списка из PERMITTED_COUNT_PEOPLE позиций для поиска нашей позиции
                     Position positionDelete = positionRepository.resultsPositionDelete(turn.getId(), PERMITTED_COUNT_PEOPLE);
@@ -183,28 +161,7 @@ public class PositionServiceImpl implements PositionService {
                     // если позиция существует, то делаем исключение
                     throw new NoCreatePosException(String.valueOf(differenceForException));
                 } else {
-                    // вычисляем номер позиции
-                    int lastNumberPosition = 1;
-                    if (lastPos.isPresent()) {
-                        Position lastPosition = lastPos.get();
-                        lastNumberPosition = lastPosition.getNumber() + 1;
-                    }
-
-                    // создаем новую позицию
-                    Position newPosition = new Position();
-                    newPosition.setStart(false);
-                    newPosition.setUser(user);
-                    newPosition.setTurn(turn);
-                    newPosition.setDateEnd(null);
-                    newPosition.setMember(currentMember);
-                    newPosition.setGroupName(user.getGroup().getNumber());
-                    newPosition.setNumber(lastNumberPosition);
-                    if (turn.getPositionCount() != 0) {
-                        newPosition.setSkipCount(turn.getPositionCount() / 5);
-                    } else {
-                        newPosition.setSkipCount((int)(memberService.getCountMembers(turn) / 10));
-                    }
-                    Position p = positionRepository.save(newPosition);
+                    Position p = createNewPosition(lastPos, currentMember);
 
                     // вычисляем разницу для позиции
                     int differenceForUser = -1;
@@ -213,22 +170,8 @@ public class PositionServiceImpl implements PositionService {
                     }
                     return positionMoreInfoMapper.positionMoreInfoToPositionDTO(p, differenceForUser);
                 }
-
             } else {
-                Position newPosition = new Position();
-                newPosition.setStart(false);
-                newPosition.setUser(user);
-                newPosition.setTurn(turn);
-                newPosition.setDateEnd(null);
-                newPosition.setMember(currentMember);
-                newPosition.setGroupName(user.getGroup().getNumber());
-                newPosition.setNumber(1);
-                if (turn.getPositionCount() != 0) {
-                    newPosition.setSkipCount(turn.getPositionCount() / 5);
-                } else {
-                    newPosition.setSkipCount((int)(memberService.getCountMembers(turn) / 10));
-                }
-                Position p = positionRepository.save(newPosition);
+                Position p = createNewPosition(lastPos, currentMember);
                 return positionMoreInfoMapper.positionMoreInfoToPositionDTO(p, 0);
             }
         }
@@ -236,6 +179,33 @@ public class PositionServiceImpl implements PositionService {
             throw new NoAccessPosException("You are blocked");
         }
     }
+
+    public Position createNewPosition(Optional<Position> lastPos, Member currentMember) {
+        // вычисляем номер позиции
+        int lastNumberPosition = 1;
+        if (lastPos.isPresent()) {
+            Position lastPosition = lastPos.get();
+            lastNumberPosition = lastPosition.getNumber() + 1;
+        }
+        Turn turn = currentMember.getTurn();
+        User user = currentMember.getUser();
+        // создаем новую позицию
+        Position newPosition = new Position();
+        newPosition.setStart(false);
+        newPosition.setUser(user);
+        newPosition.setTurn(turn);
+        newPosition.setDateEnd(null);
+        newPosition.setMember(currentMember);
+        newPosition.setGroupName(user.getGroup().getNumber());
+        newPosition.setNumber(lastNumberPosition);
+        if (turn.getPositionCount() != 0) {
+            newPosition.setSkipCount(turn.getPositionCount() / 5);
+        } else {
+            newPosition.setSkipCount((int)(memberService.getCountMembers(turn) / 10));
+        }
+        return positionRepository.save(newPosition);
+    }
+
     @Override
     @Transactional
     public PositionsTurnDTO getPositionList(String hash, String username, int page) {

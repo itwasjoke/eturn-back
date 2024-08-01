@@ -10,6 +10,7 @@ import java.util.Date;
 @Setter
 @Entity
 @NamedNativeQuery(name = "getPositionForDelete", query = "SELECT p.number, p.skip_count, p.start, p.date_end, p.date_start, p.id, p.member_id, p.turn_id, p.user_id, p.group_name FROM positions AS p WHERE p.turn_id = :turn ORDER BY p.id DESC OFFSET :count LIMIT 1 ", resultSetMapping = "PositionMapping")
+@NamedNativeQuery(name = "getPositionForDeleteOverdueElements", query = "SELECT p.number, p.skip_count, p.start, p.date_end, p.date_start, p.id, p.member_id, p.turn_id, p.user_id, p.group_name FROM positions AS p WHERE p.turn_id = :turn ORDER BY p.id OFFSET :count LIMIT 1 ", resultSetMapping = "PositionMapping")
 @SqlResultSetMapping(
         name = "PositionMapping",
         entities =

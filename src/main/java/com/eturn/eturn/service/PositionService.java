@@ -1,9 +1,6 @@
 package com.eturn.eturn.service;
 
-import com.eturn.eturn.dto.PositionDTO;
-import com.eturn.eturn.dto.PositionMoreInfoDTO;
-import com.eturn.eturn.dto.PositionsTurnDTO;
-import com.eturn.eturn.dto.TurnDTO;
+import com.eturn.eturn.dto.*;
 import com.eturn.eturn.entity.Member;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
