@@ -16,10 +16,15 @@ public record TurnForListDTO(
         String name,
         @Schema(description = "Описание очереди", example="Всем приятного аппетита!")
         String description,
+        @Schema(description = "Тэги", example="Очередь за булочкой Всем приятного аппетита! 2391 ФКТИ Иванов Иван Иванович")
         String tags,
+        @Schema(description = "Тэги доступа", example="FOR_ALLOWED_ELEMENTS")
         String accessTags,
+        @Schema(description = "Дата начала очереди", example="01.01.2024")
         Date dateStart,
+        @Schema(description = "Дата конца очереди", example="31.12.2024")
         Date dateEnd,
+        @Schema(description = "Доступ участника", example="MEMBER")
         String accessMember
 ) {
 }

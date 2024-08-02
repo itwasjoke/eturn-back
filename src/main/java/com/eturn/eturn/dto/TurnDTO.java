@@ -25,13 +25,17 @@ public record TurnDTO(
         String creator,
         @Schema(description = "Идентификатор пользователя", example="1")
         long userId,
+        @Schema(description = "Дата начала очереди", example="01.01.2024")
         Date dateStart,
+        @Schema(description = "Дата конца очереди", example="31.12.2024")
         Date dateEnd,
-        @Schema(description = "Среднее время", example="10000")
+        @Schema(description = "Среднее время", example="5")
         Integer averageTime,
-        @Schema(description = "Права участника", example="10000")
+        @Schema(description = "Доступ", example="FOR_LINK")
         String access,
+        @Schema(description = "Тип доступа", example="FOR_LINK")
         String accessType,
+        @Schema(description = "Количество позиций, через которое можно вставать в очередь", example="1")
         Integer PositionCount
 ) {
 

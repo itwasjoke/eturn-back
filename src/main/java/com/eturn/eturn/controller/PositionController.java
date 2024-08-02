@@ -33,8 +33,8 @@ public class PositionController {
     )
     public PositionsTurnDTO getTurnPositions(
             HttpServletRequest request,
-            @RequestParam @Parameter(description = "Идентификатор очереди") String hash,
-            @RequestParam(defaultValue = "0") @Parameter(description = "Страница позиций") int page
+            @RequestParam @Parameter(name = "hash", description = "Хэш очереди") String hash,
+            @RequestParam(defaultValue = "0") @Parameter(name = "page", description = "Номер страницы (пагинация)") int page
     ){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
@@ -47,7 +47,7 @@ public class PositionController {
     )
     public PositionMoreInfoDTO createPosition(
             HttpServletRequest request,
-            @PathVariable @Parameter(description = "Идентификатор очереди") String hash
+            @PathVariable @Parameter(name = "hash", description = "Хэш очереди") String hash
     ){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
@@ -61,7 +61,7 @@ public class PositionController {
     )
     public void updateStatus(
             HttpServletRequest request,
-            @PathVariable @Parameter(description = "Идентификатор позиции") Long id
+            @PathVariable @Parameter(name = "id", description = "Идентификатор позиции") Long id
     ){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
@@ -70,12 +70,12 @@ public class PositionController {
 
     @PutMapping("/skip/{id}")
     @Operation(
-            summary = "Изменение статуса позиции",
-            description = "Находит позицию и изменяет ее статус из 'вход' на 'выход' и с 'выход' на удаление позиции"
+            summary = "Пропустить позицию",
+            description = "Пропускает следующего человека вперёд"
     )
     public void skipPosition(
             HttpServletRequest request,
-            @PathVariable @Parameter(description = "Идентификатор позиции") Long id
+            @PathVariable @Parameter(name = "id", description = "Идентификатор позиции") Long id
     ){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
@@ -85,11 +85,11 @@ public class PositionController {
     @DeleteMapping("/{id}")
     @Operation(
             summary = "Удаление позиции",
-            description = "Берет текущего авторизированного пользователя и создает позицию для него"
+            description = "Удаляет позицию по id"
     )
     public void deletePosition(
             HttpServletRequest request,
-            @PathVariable @Parameter(description = "Идентификатор позиции") Long id){
+            @PathVariable @Parameter(name = "id", description = "Идентификатор позиции") Long id){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
         positionService.delete(id, userDetails.getUsername());

@@ -9,6 +9,7 @@ public record GroupDTO(
         Long id,
         @Schema(description = "Номер группы", example="2000")
         String number,
+        @Schema(description = "Номер курса", example="1")
         Integer course,
         @Schema(description = "Идентификатор факультета", example="1")
         FacultyDTO faculty

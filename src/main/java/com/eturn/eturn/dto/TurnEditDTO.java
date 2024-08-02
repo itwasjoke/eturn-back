@@ -15,9 +15,9 @@ public record TurnEditDTO(
         @Schema(description = "Описание очереди", example="Готовим банковские карты. Всем приятного аппетита!")
         @Size(min = 1, max = 200)
         String description,
-        @Schema(description = "Допустимые группы")
+        @Schema(description = "Допустимые группы", example = "2391")
         Set<GroupDTO> allowedGroups,
-        @Schema(description = "Допустимые факультеты")
+        @Schema(description = "Допустимые факультеты", example = "ФКТИ")
         Set<FacultyDTO> allowedFaculties,
         @Schema(description = "Время на то, чтобы войти", example="1")
         @PositiveOrZero

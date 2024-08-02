@@ -51,7 +51,10 @@ public class TurnController {
             summary = "Получение текущей очереди",
             description = "Получает подробную информацию об очереди"
     )
-    public TurnDTO getTurn(HttpServletRequest request, @PathVariable @Parameter(description = "Идентификатор очереди") String hash){
+    public TurnDTO getTurn(
+            HttpServletRequest request,
+            @PathVariable @Parameter(name = "hash", description = "Хэш очереди") String hash
+    ){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
         return positionService.getTurn(hash, userDetails.getUsername());
@@ -64,8 +67,8 @@ public class TurnController {
     )
     public List<TurnForListDTO> getUserTurns(
         HttpServletRequest request,
-        @RequestParam @Parameter(name = "type22", description = "Тип очереди turn/edu") String type,
-        @RequestParam @Parameter(description = "Тип доступа memberIn/memberOut") String access
+        @RequestParam @Parameter(name = "type", description = "Тип очереди turn/edu") String type,
+        @RequestParam @Parameter(name = "access", description = "Тип доступа memberIn/memberOut") String access
     ) {
 
         var authentication = (Authentication) request.getUserPrincipal();
@@ -76,7 +79,14 @@ public class TurnController {
         return turnService.getUserTurns(userDetails.getUsername(), params);
     }
     @GetMapping("/linked")
-    public List<TurnForListDTO> getLinkedTurn(HttpServletRequest request, @RequestParam String hash){
+    @Operation(
+            summary = "Получение очереди по ссылке",
+            description = "Выводит очередь по коду"
+    )
+    public List<TurnForListDTO> getLinkedTurn(
+            HttpServletRequest request,
+            @RequestParam @Parameter(name = "hash", description = "Хэш очереди") String hash
+    ){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
         return turnService.getLinkedTurn(hash, userDetails.getUsername());
@@ -88,7 +98,11 @@ public class TurnController {
             summary = "Создание очереди",
             description = "Получает объект и создает очередь"
     )
-    public String create(HttpServletRequest request,@Valid @RequestBody TurnCreatingDTO turn, BindingResult bindingResult) {
+    public String create(
+            HttpServletRequest request,
+            @Valid @RequestBody @Parameter(name = "turn", description = "Объект turnCreatingDTO") TurnCreatingDTO turn,
+            BindingResult bindingResult
+    ){
         if (bindingResult.hasErrors()) {
             List<FieldError> errors = bindingResult.getFieldErrors();
             throw new ValidationException("Ошибка валидации:", (Throwable) errors);
@@ -98,9 +112,15 @@ public class TurnController {
         return turnService.createTurn(turn, userDetails.getUsername());
     }
     @GetMapping("/members")
+    @Operation(
+            summary = "Получение списка участников",
+            description = "Выводит список участников (участник/модератор/заблокированный/по ссылке) очереди"
+    )
     public List<MemberDTO> getMemberList(
             HttpServletRequest request,
-            @RequestParam String type, @RequestParam String hash, @RequestParam int page
+            @RequestParam @Parameter(name = "type", description = "Тип участника MEMBER/MODERATOR/BLOCKED/MEMBER_LINK") String type,
+            @RequestParam @Parameter(name = "hash", description = "Хэш очереди") String hash,
+            @RequestParam @Parameter(name = "page", description = "Номер страницы (пагинация)") int page
     ){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
@@ -108,9 +128,14 @@ public class TurnController {
     }
 
     @GetMapping("/unconfMembers")
+    @Operation(
+            summary = "Получение списка неподтверждённых участников",
+            description = "Выводит список тех, кто подал заявку (на модератора или в очередь по ссылке), но его пока не подтвердили"
+    )
     public List<MemberDTO> getUnconfMembers(
             HttpServletRequest request,
-            @RequestParam String type, @RequestParam String hash
+            @RequestParam @Parameter(name = "type", description = "Тип участника MEMBER/MODERATOR") String type,
+            @RequestParam @Parameter(name = "hash", description = "Хэш очереди") String hash
     ) {
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
@@ -118,9 +143,13 @@ public class TurnController {
     }
 
     @DeleteMapping("/{hash}")
+    @Operation(
+            summary = "Удаление очереди",
+            description = "Удаляет очередь по хэшу"
+    )
     public void delete(
             HttpServletRequest request,
-            @PathVariable String hash
+            @PathVariable @Parameter(name = "hash", description = "Хэш очереди") String hash
     ) {
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
@@ -128,7 +157,15 @@ public class TurnController {
     }
 
     @PutMapping()
-    public void changeTurn(HttpServletRequest request, @Valid @RequestBody TurnEditDTO turn, BindingResult bindingResult){
+    @Operation(
+            summary = "Изменение очереди",
+            description = "Изменяет очередь по хэшу"
+    )
+    public void changeTurn(
+            HttpServletRequest request,
+            @Valid @RequestBody @Parameter(name = "turn", description = "Объект turnEditDTO") TurnEditDTO turn,
+            BindingResult bindingResult
+    ){
         if (bindingResult.hasErrors()) {
             List<FieldError> errors = bindingResult.getFieldErrors();
             throw new ValidationException("Ошибка валидации:", (Throwable) errors);
