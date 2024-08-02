@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.ValidationException;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -99,11 +100,21 @@ public class TurnController {
     @GetMapping("/members")
     public List<MemberDTO> getMemberList(
             HttpServletRequest request,
-            @RequestParam String type, @RequestParam String hash
+            @RequestParam String type, @RequestParam String hash, @RequestParam int page
     ){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
-        return turnService.getMemberList(userDetails.getUsername(), type, hash);
+        return turnService.getMemberList(userDetails.getUsername(), type, hash, page);
+    }
+
+    @GetMapping("/unconfMembers")
+    public List<MemberDTO> getUnconfMembers(
+            HttpServletRequest request,
+            @RequestParam String type, @RequestParam String hash
+    ) {
+        var authentication = (Authentication) request.getUserPrincipal();
+        var userDetails = (UserDetails) authentication.getPrincipal();
+        return turnService.getUnconfMemberList(userDetails.getUsername(), type, hash);
     }
 
     @DeleteMapping("/{hash}")

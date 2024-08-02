@@ -5,6 +5,8 @@ import com.eturn.eturn.entity.Member;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
 import com.eturn.eturn.enums.AccessMemberEnum;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,7 +27,8 @@ public interface MemberService {
 
     long getCountMembers(Turn turn);
 
-    List<MemberDTO> getMemberList(Turn turn, String type);
+    List<MemberDTO> getMemberList(Turn turn, String type, Pageable pageable);
+    List<MemberDTO> getUnconfMemberList(Turn turn, String type);
 
     Member changeMemberStatus(long id, String type, User user);
 

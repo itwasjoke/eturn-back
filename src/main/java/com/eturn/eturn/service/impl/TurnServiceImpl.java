@@ -17,6 +17,9 @@ import com.eturn.eturn.security.HashGenerator;
 import com.eturn.eturn.service.MemberService;
 import com.eturn.eturn.service.TurnService;
 import com.eturn.eturn.service.UserService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -184,7 +187,7 @@ public class TurnServiceImpl implements TurnService {
     }
 
     @Override
-    public List<MemberDTO> getMemberList(String username, String type, String hash) {
+    public List<MemberDTO> getMemberList(String username, String type, String hash, int page) {
         User user = userService.findByLogin(username);
         Optional<Turn> turn = turnRepository.findTurnByHash(hash);
         if (turn.isEmpty()){
@@ -194,7 +197,30 @@ public class TurnServiceImpl implements TurnService {
         if (member.isPresent()){
             AccessMemberEnum access = member.get().getAccessMemberEnum();
             if (access == AccessMemberEnum.CREATOR || access == AccessMemberEnum.MODERATOR){
-                return memberService.getMemberList(turn.get(), type);
+                Pageable paging = PageRequest.of(page, 20);
+                return memberService.getMemberList(turn.get(), type, paging);
+            }
+            else{
+                throw new NoAccessMemberException("No access");
+            }
+        }
+        else {
+            throw new NotFoundMemberException("no member");
+        }
+    }
+
+    @Override
+    public List<MemberDTO> getUnconfMemberList(String username, String type, String hash) {
+        User user = userService.findByLogin(username);
+        Optional<Turn> turn = turnRepository.findTurnByHash(hash);
+        if (turn.isEmpty()){
+            throw new NotFoundTurnException("turn not found in getMember function");
+        }
+        Optional<Member> member = memberService.getOptionalMember(user, turn.get());
+        if (member.isPresent()){
+            AccessMemberEnum access = member.get().getAccessMemberEnum();
+            if (access == AccessMemberEnum.CREATOR || access == AccessMemberEnum.MODERATOR){
+                return memberService.getUnconfMemberList(turn.get(), type);
             }
             else{
                 throw new NoAccessMemberException("No access");

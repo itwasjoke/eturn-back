@@ -1,9 +1,7 @@
 package com.eturn.eturn.dto.mapper;
 
 import com.eturn.eturn.dto.MemberDTO;
-import com.eturn.eturn.dto.PositionDTO;
 import com.eturn.eturn.entity.Member;
-import com.eturn.eturn.entity.Position;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
@@ -18,5 +16,6 @@ import java.util.List;
         injectionStrategy = InjectionStrategy.CONSTRUCTOR
 )
 public interface MemberListMapper {
-    List<MemberDTO> map(List<Member> members);
+    List<MemberDTO> map(Page<Member> members);
+    List<MemberDTO> mapMember(List<Member> members);
 }

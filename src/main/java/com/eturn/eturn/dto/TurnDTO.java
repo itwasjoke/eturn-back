@@ -1,5 +1,6 @@
 package com.eturn.eturn.dto;
 
+import com.eturn.eturn.entity.Position;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -30,7 +31,8 @@ public record TurnDTO(
         Integer averageTime,
         @Schema(description = "Права участника", example="10000")
         String access,
-        String accessType
+        String accessType,
+        Integer PositionCount
 ) {
 
 }

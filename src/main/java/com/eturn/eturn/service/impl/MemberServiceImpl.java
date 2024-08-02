@@ -12,6 +12,8 @@ import com.eturn.eturn.exception.member.UnknownMemberException;
 import com.eturn.eturn.repository.MemberRepository;
 import com.eturn.eturn.service.MemberService;
 import com.eturn.eturn.service.UserService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +47,7 @@ public class MemberServiceImpl implements MemberService {
             member.setAccessMemberEnum(accessMemberEnum);
             member.setTurn(turn);
             member.setUser(user);
+            member.setInvitedForTurn(invitedForTurn);
             return memberRepository.save(member);
         }
         catch(Exception e){
@@ -106,10 +109,22 @@ public class MemberServiceImpl implements MemberService {
 
 
     @Override
-    public List<MemberDTO> getMemberList(Turn turn, String type) {
+    public List<MemberDTO> getMemberList(Turn turn, String type, Pageable pageable) {
         AccessMemberEnum accessMemberEnum = AccessMemberEnum.valueOf(type);
-        List<Member> members = memberRepository.getMemberByTurnAndAccessMemberEnum(turn, accessMemberEnum);
+        Page<Member> members = memberRepository.getMemberByTurnAndAccessMemberEnum(turn, accessMemberEnum, pageable);
         return memberListMapper.map(members);
+    }
+
+    @Override
+    public List<MemberDTO> getUnconfMemberList(Turn turn, String type) {
+        AccessMemberEnum accessMemberEnum = AccessMemberEnum.valueOf(type);
+        List<Member> members = null;
+        if (accessMemberEnum == AccessMemberEnum.MODERATOR) {
+            members = memberRepository.getMemberByTurnAndInvited(turn, true);
+        } else if (accessMemberEnum == AccessMemberEnum.MEMBER) {
+            members = memberRepository.getMemberByTurnAndAccessMemberEnumAndInvitedForTurn(turn, AccessMemberEnum.MEMBER_LINK, true);
+        }
+        return memberListMapper.mapMember(members);
     }
 
     @Override
@@ -122,7 +137,7 @@ public class MemberServiceImpl implements MemberService {
                 if (memberUser.get().getAccessMemberEnum()==AccessMemberEnum.MODERATOR ||
                         memberUser.get().getAccessMemberEnum()==AccessMemberEnum.CREATOR ){
                         if (memberGet.getAccessMemberEnum()!=AccessMemberEnum.CREATOR){
-                            if (!Objects.equals(type, "MEMBER") && !Objects.equals(type, "MODERATOR") && !Objects.equals(type, "BLOCKED")){
+                            if (!Objects.equals(type, "MEMBER") && !Objects.equals(type, "MODERATOR") && !Objects.equals(type, "BLOCKED") && !Objects.equals(type, "MEMBER_LINK")){
                                 throw new NoAccessMemberException("no access");
                             }
                             if (memberUser.get().getAccessMemberEnum()!=AccessMemberEnum.CREATOR && type.equals("MODERATOR")){

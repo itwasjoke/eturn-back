@@ -176,7 +176,7 @@ public class PositionServiceImpl implements PositionService {
             }
         }
         else{
-            throw new NoAccessPosException("You are blocked");
+            return null;
         }
     }
 
@@ -350,15 +350,16 @@ public class PositionServiceImpl implements PositionService {
     public void changeMemberStatus(long id, String type, String username) {
         User user = userService.findByLogin(username);
         Member member = memberService.changeMemberStatus(id, type, user);
+        boolean positionExist = positionRepository.existsAllByTurnAndUser(member.getTurn(), member.getUser());
         if (member.getAccessMemberEnum() == AccessMemberEnum.MEMBER){
             Turn turn = member.getTurn();
             if (
-                    !positionRepository.existsAllByTurnAndUser(member.getTurn(), member.getUser())
+                    !positionExist
                     && turn.getAccessTurnType() == AccessTurnEnum.FOR_ALLOWED_ELEMENTS
             ){
                 memberService.deleteMemberFrom(member.getId());
             } else if (
-                    !positionRepository.existsAllByTurnAndUser(member.getTurn(), member.getUser())
+                    !positionExist
                             && turn.getAccessTurnType() == AccessTurnEnum.FOR_LINK
             ) {
                 member = memberService.changeMemberStatus(id, "MEMBER_LINK", user);
