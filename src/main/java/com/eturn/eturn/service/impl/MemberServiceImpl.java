@@ -107,6 +107,10 @@ public class MemberServiceImpl implements MemberService {
         return memberRepository.countByTurnAndAccessMemberEnum(turn, AccessMemberEnum.MEMBER);
     }
 
+    @Override
+    public long getCountModerators(Turn turn) {
+        return memberRepository.countByTurnAndAccessMemberEnum(turn, AccessMemberEnum.MODERATOR);
+    }
 
     @Override
     public List<MemberDTO> getMemberList(Turn turn, String type, Pageable pageable) {
@@ -125,6 +129,11 @@ public class MemberServiceImpl implements MemberService {
             members = memberRepository.getMemberByTurnAndAccessMemberEnumAndInvitedForTurn(turn, AccessMemberEnum.MEMBER_LINK, true);
         }
         return memberListMapper.mapMember(members);
+    }
+
+    @Override
+    public int countInviteModerators(Turn turn) {
+        return memberRepository.countByTurnAndInvited(turn, true);
     }
 
     @Override

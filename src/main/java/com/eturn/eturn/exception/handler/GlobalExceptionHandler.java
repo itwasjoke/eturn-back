@@ -157,6 +157,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         String body = "Вы не можете пропустить позицию";
         return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
+    @ExceptionHandler(NoInviteException.class)
+    public ResponseEntity<Object> handleNoInviteException(NoInviteException e, WebRequest request) {
+        String body = "Вы не можете подать заявку";
+        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
     //
     // MEMBER
     //

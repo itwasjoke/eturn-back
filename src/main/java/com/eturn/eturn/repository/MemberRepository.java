@@ -24,8 +24,8 @@ public interface MemberRepository extends JpaRepository<Member,Long> {
     Page<Member> getMemberByTurnAndAccessMemberEnum(Turn turn, AccessMemberEnum accessMemberEnum, Pageable pageable);
     List<Member> getMemberByTurnAndInvited(Turn turn, boolean invited);
     List<Member> getMemberByTurnAndAccessMemberEnumAndInvitedForTurn(Turn turn, AccessMemberEnum accessMemberEnum, boolean invitedForTurn);
+    int countByTurnAndInvited(Turn turn, boolean invited);
     long countByTurnAndAccessMemberEnum(Turn turn, AccessMemberEnum accessMemberEnum);
-
     void deleteByTurnAndUser(Turn turn, User user);
     void deleteById(long id);
     @Modifying

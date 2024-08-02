@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.stream.Stream;
 import java.util.Date;
 
 @Service
@@ -519,6 +518,9 @@ public class PositionServiceImpl implements PositionService {
     public void inviteUser(String hash, String username) {
         User user = userService.findByLogin(username);
         Turn turn = turnService.getTurnFrom(hash);
+        if (memberService.countInviteModerators(turn) > 20 || memberService.getCountModerators(turn) > 20) {
+            throw new NoInviteException("You cant invite");
+        }
         if (turn.getCreator() == user) {
             throw new NoAccessMemberException("You are creator");
         }

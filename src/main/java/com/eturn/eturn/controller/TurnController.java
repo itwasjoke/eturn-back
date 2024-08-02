@@ -64,7 +64,7 @@ public class TurnController {
     )
     public List<TurnForListDTO> getUserTurns(
         HttpServletRequest request,
-        @RequestParam @Parameter(description = "Тип очереди turn/edu") String type,
+        @RequestParam @Parameter(name = "type22", description = "Тип очереди turn/edu") String type,
         @RequestParam @Parameter(description = "Тип доступа memberIn/memberOut") String access
     ) {
 
