@@ -43,6 +43,8 @@ public interface MemberService {
     void deleteMembersWithoutPositions(Turn turn);
     void changeMemberInvite(Long id, boolean status);
 
+    boolean invitedExists(Turn turn);
+
     void changeMemberInviteForTurn(Long id, boolean status);
 
 }

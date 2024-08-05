@@ -28,6 +28,8 @@ public interface MemberRepository extends JpaRepository<Member,Long> {
     long countByTurnAndAccessMemberEnum(Turn turn, AccessMemberEnum accessMemberEnum);
     void deleteByTurnAndUser(Turn turn, User user);
     void deleteById(long id);
+
+    boolean existsAllByTurnAndInvitedOrInvitedForTurn(Turn turn, boolean i1, boolean i2);
     @Modifying
     @Query("DELETE FROM Member m WHERE SIZE(m.positionsMember) = 0 AND m.turn = :turn AND m.accessMemberEnum = 'MEMBER'")
     void deleteMembersWithoutPositions(@Param("turn") Turn turn);

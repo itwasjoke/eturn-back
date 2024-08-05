@@ -36,7 +36,13 @@ public record TurnDTO(
         @Schema(description = "Тип доступа", example="FOR_LINK")
         String accessType,
         @Schema(description = "Количество позиций, через которое можно вставать в очередь", example="1")
-        Integer PositionCount
+        Integer positionCount,
+        @Schema(description = "Подана ли заявка на вступление в модерацию", example="false")
+        boolean invitedModerator,
+        @Schema(description = "Подана ли заявка на вступление в очередь", example="false")
+        boolean invitedForTurn,
+        @Schema(description = "Есть ли заявки для модератора", example="false")
+        boolean existsInvited
 ) {
 
 }

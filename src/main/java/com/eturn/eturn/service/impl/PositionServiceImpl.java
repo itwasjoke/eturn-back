@@ -497,15 +497,23 @@ public class PositionServiceImpl implements PositionService {
         if (turn.getDateEnd().getTime() < new Date().getTime()) {
             turnService.deleteTurn(login, hash);
         }
-        AccessMemberEnum accessMember = memberService.getAccess(user, turn);
+        Optional<Member> m = memberService.getOptionalMember(user, turn);
         String access = null;
-        if (accessMember!=null){
-            access = accessMember.name();
+        boolean invited1 = false;
+        boolean invited2 = false;
+        boolean existsInvited = false;
+        if (m.isPresent()){
+            if (m.get().getAccessMemberEnum() == AccessMemberEnum.CREATOR || m.get().getAccessMemberEnum() == AccessMemberEnum.MODERATOR) {
+                existsInvited = memberService.invitedExists(turn);
+            }
+            access = m.get().getAccessMemberEnum().name();
+            invited1 = m.get().isInvited();
+            invited2 = m.get().isInvitedForTurn();
         }
         long count = positionRepository.countByTurn(turn);
         turn.setCountUsers((int)count);
         turnService.saveTurn(turn);
-        return turnMapper.turnToTurnDTO(turn, access, turn.getAccessTurnType().toString());
+        return turnMapper.turnToTurnDTO(turn, access, turn.getAccessTurnType().toString(), invited2, invited1, existsInvited);
     }
 
     @Override

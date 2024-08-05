@@ -253,6 +253,11 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    public boolean invitedExists(Turn turn) {
+        return memberRepository.existsAllByTurnAndInvitedOrInvitedForTurn(turn, true, true);
+    }
+
+    @Override
     public void changeMemberInviteForTurn(Long id, boolean status) {
         Optional<Member> memberPresent = memberRepository.findById(id);
         if (memberPresent.isPresent()) {
