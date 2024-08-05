@@ -23,5 +23,5 @@ public interface TurnMapper {
     @Mapping(target = "invitedForTurn", source = "invitedForTurn")
     @Mapping(target = "invitedModerator", source = "invitedModerator")
     @Mapping(target = "existsInvited", source = "existsInvited")
-    TurnDTO turnToTurnDTO(Turn turn, String access, String accessType, boolean invitedForTurn, boolean invited, boolean existsInvited);
+    TurnDTO turnToTurnDTO(Turn turn, String access, String accessType, boolean invitedForTurn, boolean invitedModerator, boolean existsInvited);
 }
