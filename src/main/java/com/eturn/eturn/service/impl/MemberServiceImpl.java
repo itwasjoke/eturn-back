@@ -251,10 +251,9 @@ public class MemberServiceImpl implements MemberService {
             throw new NotFoundMemberException("Not found member");
         }
     }
-
     @Override
     public boolean invitedExists(Turn turn) {
-        return memberRepository.existsAllByTurnAndInvitedOrInvitedForTurn(turn, true, true);
+        return memberRepository.getOneInvitedExists(turn, true, true).isPresent();
     }
 
     @Override

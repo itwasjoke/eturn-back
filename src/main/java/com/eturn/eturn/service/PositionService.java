@@ -36,6 +36,6 @@ public interface PositionService {
     TurnDTO getTurn(String hash, String login);
     int count(String hash);
     void inviteUser(String hash, String username);
-    void changeMemberInvite(Long id, boolean status);
+    void changeMemberInvite(Long id, boolean status, boolean isModerator);
 
 }

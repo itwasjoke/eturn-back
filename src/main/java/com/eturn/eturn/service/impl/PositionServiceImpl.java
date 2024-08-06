@@ -459,18 +459,16 @@ public class PositionServiceImpl implements PositionService {
         Optional<Position> pInTurn = positionRepository.findFirstByTurnOrderByNumberAsc(turn);
         if (pInTurn.isPresent()){
             Position pos = pInTurn.get();
-            MemberDTO memberDTO = memberService.getMember(user, pos.getTurn());
-            if (memberDTO.access().equals("MODERATOR") || memberDTO.access().equals("CREATOR")){
-                int difference = 0;
-                return positionMoreInfoMapper.positionMoreInfoToPositionDTO(pos, difference);
-            }
-            else{
-                return null;
+            Optional<Member> optionalMember = memberService.getOptionalMember(user, pos.getTurn());
+            if (optionalMember.isPresent()) {
+                Member member = optionalMember.get();
+                if (member.getAccessMemberEnum() == AccessMemberEnum.MODERATOR || member.getAccessMemberEnum() == AccessMemberEnum.BLOCKED) {
+                    int difference = 0;
+                    return positionMoreInfoMapper.positionMoreInfoToPositionDTO(pos, difference);
+                }
             }
         }
-        else{
-            return null;
-        }
+        return null;
     }
 
     @Override
@@ -545,7 +543,7 @@ public class PositionServiceImpl implements PositionService {
     }
 
     @Override
-    public void changeMemberInvite(Long id, boolean status) {
+    public void changeMemberInvite(Long id, boolean status, boolean isModerator) {
         Optional<Member> memberPresent = memberService.getMemberFrom(id);
         if (memberPresent.isPresent()) {
             Member member = memberPresent.get();
@@ -554,14 +552,18 @@ public class PositionServiceImpl implements PositionService {
             if (status) {
                 if (isInvited) {
                     memberService.changeMemberStatusFrom(id, "MODERATOR", 0, 0);
-                } else if (isInvitedForTurn) {
-                    memberService.changeMemberStatusFrom(id, "MEMBER", 0, 0);
+                }
+                if (isInvitedForTurn) {
+                    if (!isModerator) {
+                        memberService.changeMemberStatusFrom(id, "MEMBER", 0, 0);
+                    }
                     createPositionAndSave(member.getUser().getLogin(), member.getTurn().getHash());
                 }
             } else {
-                if (isInvited) {
+                if (isInvited && isModerator) {
                     memberService.changeMemberInvite(id, false);
-                } else if (isInvitedForTurn) {
+                }
+                if (isInvitedForTurn && !isModerator) {
                     memberService.deleteMemberFrom(id);
                 }
             }

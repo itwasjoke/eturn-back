@@ -127,12 +127,12 @@ public class TurnController {
         return turnService.getMemberList(userDetails.getUsername(), type, hash, page);
     }
 
-    @GetMapping("/unconfMembers")
+    @GetMapping("/unconfirmed")
     @Operation(
             summary = "Получение списка неподтверждённых участников",
             description = "Выводит список тех, кто подал заявку (на модератора или в очередь по ссылке), но его пока не подтвердили"
     )
-    public List<MemberDTO> getUnconfMembers(
+    public List<MemberDTO> getUnconfirmedMembers(
             HttpServletRequest request,
             @RequestParam @Parameter(name = "type", description = "Тип участника MEMBER/MODERATOR") String type,
             @RequestParam @Parameter(name = "hash", description = "Хэш очереди") String hash

@@ -68,8 +68,9 @@ public class MemberController {
     )
     public void acceptInvite(
             @RequestParam @Parameter(name = "id", description = "Идентификатор участника") Long id,
-            @RequestParam @Parameter(name = "status", description = "Решение по заявке (принять/отклонить)") boolean status
+            @RequestParam @Parameter(name = "status", description = "Решение по заявке (принять/отклонить)") boolean status,
+            @RequestParam @Parameter(name = "isModerator", description = "Подтверждение модератора (true) или участника (false)") boolean isModerator
     ) {
-        positionService.changeMemberInvite(id, status);
+        positionService.changeMemberInvite(id, status, isModerator);
     }
 }
