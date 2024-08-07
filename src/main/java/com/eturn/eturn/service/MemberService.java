@@ -31,6 +31,8 @@ public interface MemberService {
     List<MemberDTO> getMemberList(Turn turn, String type, Pageable pageable);
     List<MemberDTO> getUnconfMemberList(Turn turn, String type);
     int countInviteModerators(Turn turn);
+    int countInviteMembers(Turn turn);
+    long countBlocked(Turn turn);
     Member changeMemberStatus(long id, String type, User user);
 
     void changeMemberStatusFrom(long id, String type, int invitedModerator, int invitedTurn);

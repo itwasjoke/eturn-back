@@ -1,5 +1,6 @@
 package com.eturn.eturn.dto.mapper;
 
+import com.eturn.eturn.dto.MembersCountDTO;
 import com.eturn.eturn.dto.TurnDTO;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
@@ -23,5 +24,6 @@ public interface TurnMapper {
     @Mapping(target = "invitedForTurn", source = "invitedForTurn")
     @Mapping(target = "invitedModerator", source = "invitedModerator")
     @Mapping(target = "existsInvited", source = "existsInvited")
-    TurnDTO turnToTurnDTO(Turn turn, String access, String accessType, boolean invitedForTurn, boolean invitedModerator, boolean existsInvited);
+    @Mapping(target = "membersCountDTO", source = "membersCountDTO")
+    TurnDTO turnToTurnDTO(Turn turn, String access, String accessType, boolean invitedForTurn, boolean invitedModerator, boolean existsInvited, MembersCountDTO membersCountDTO);
 }

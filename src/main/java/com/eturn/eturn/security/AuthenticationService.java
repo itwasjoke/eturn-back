@@ -113,7 +113,8 @@ public class AuthenticationService {
             } else {
                 User newUser = new User();
                 newUser.setId(etuIdUser.getId());
-                newUser.setName(etuIdUser.getFio());
+                int lastSpaceIndex = etuIdUser.getFio().lastIndexOf(' ');
+                newUser.setName(etuIdUser.getFio().substring(0, lastSpaceIndex));
                 newUser.setLogin("eturnLogin" + etuIdUser.getId().toString());
                 newUser.setPassword("eturnPassword"+etuIdUser.getId().toString());
                 if (Objects.equals(etuIdUser.getPosition(), "Учащийся") && etuIdUser.getEducations() != null) {

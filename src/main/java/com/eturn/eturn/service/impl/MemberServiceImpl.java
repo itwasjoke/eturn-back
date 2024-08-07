@@ -137,6 +137,16 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    public int countInviteMembers(Turn turn) {
+        return memberRepository.countByTurnAndInvitedForTurn(turn, true);
+    }
+
+    @Override
+    public long countBlocked(Turn turn) {
+        return memberRepository.countByTurnAndAccessMemberEnum(turn, AccessMemberEnum.BLOCKED);
+    }
+
+    @Override
     public Member changeMemberStatus(long id, String type, User user) {
         Optional<Member> member = memberRepository.findById(id);
         if (member.isPresent()){
@@ -184,8 +194,8 @@ public class MemberServiceImpl implements MemberService {
                 if (invitedModerator == 1) memberGet.setInvited(true);
             }
             if (invitedTurn != -1) {
-                if (invitedModerator == 0) memberGet.setInvitedForTurn(false);
-                if (invitedModerator == 1) memberGet.setInvitedForTurn(true);
+                if (invitedTurn == 0) memberGet.setInvitedForTurn(false);
+                if (invitedTurn == 1) memberGet.setInvitedForTurn(true);
             }
             AccessMemberEnum accessMemberEnum = AccessMemberEnum.valueOf(type);
             memberGet.setAccessMemberEnum(accessMemberEnum);

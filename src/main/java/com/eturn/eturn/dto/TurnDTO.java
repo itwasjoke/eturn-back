@@ -42,7 +42,9 @@ public record TurnDTO(
         @Schema(description = "Подана ли заявка на вступление в очередь", example="false")
         boolean invitedForTurn,
         @Schema(description = "Есть ли заявки для модератора", example="false")
-        boolean existsInvited
+        boolean existsInvited,
+        @Schema(description = "Количество участников/модераторов/заявок/заблокированных", example="3, 24, 2, 8, 1")
+        MembersCountDTO membersCountDTO
 ) {
 
 }
