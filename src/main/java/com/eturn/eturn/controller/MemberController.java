@@ -36,12 +36,12 @@ public class MemberController {
     @PutMapping()
     @Operation(
             summary = "Изменение типа доступа участника",
-            description = "Изменяет тип доступа участника (MEMBER/MODERATOR/BLOCKED) по id"
+            description = "Изменяет тип доступа участника (MEMBER/BLOCKED) по id"
     )
     public void changeMemberAccess(
             HttpServletRequest request,
             @RequestParam @Parameter(name = "id", description = "Идентификатор участника") Long id,
-            @RequestParam @Parameter(name = "type", description = "Тип доступа (MEMBER/MODERATOR/BLOCKED)") String type
+            @RequestParam @Parameter(name = "type", description = "Тип доступа (MEMBER/BLOCKED)") String type
     ){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();

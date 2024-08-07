@@ -37,8 +37,8 @@ public class AuthController {
             description = "Отправка логина и пароля, получение токена авторизации"
     )
     public JwtAuthenticationResponse signIn(
-            @RequestParam @Parameter(description = "Логин") String login,
-            @RequestParam @Parameter(description = "Пароль") String password
+            @RequestParam @Parameter(name = "login", description = "Логин") String login,
+            @RequestParam @Parameter(name = "password", description = "Пароль") String password
     ){
         return authenticationService.signIn(login, password);
     }

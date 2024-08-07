@@ -249,10 +249,6 @@ public class PositionServiceImpl implements PositionService {
                     Position pos = positionO.get();
                     if (pos.isStart()){
                         delete(id, user.getUsername());
-                        Optional<Position> pForUser = positionRepository.findFirstByUserAndTurnOrderByNumberAsc(pos.getUser(), pos.getTurn());
-                        if (pForUser.isEmpty() && access.equals("MEMBER") && pos.getTurn().getAccessTurnType()==AccessTurnEnum.FOR_LINK){
-                            memberService.createMember(pos.getUser(), pos.getTurn(),"MEMBER_LINK", false);
-                        }
                         long time = new Date().getTime() - pos.getDateStart().getTime();
                         int countPositions = turn.getCountPositionsLeft();
                         if (countPositions == 0) {
@@ -348,6 +344,9 @@ public class PositionServiceImpl implements PositionService {
     @Transactional
     public void changeMemberStatus(long id, String type, String username) {
         User user = userService.findByLogin(username);
+        if (!Objects.equals(type, "MEMBER") && !Objects.equals(type, "BLOCKED")){
+            throw new NoAccessMemberException("You cant change status on MODERATOR");
+        }
         Member member = memberService.changeMemberStatus(id, type, user);
         boolean positionExist = positionRepository.existsAllByTurnAndUser(member.getTurn(), member.getUser());
         if (member.getAccessMemberEnum() == AccessMemberEnum.MEMBER){
@@ -380,7 +379,7 @@ public class PositionServiceImpl implements PositionService {
             Optional<Position> nowPos = positionRepository.findFirstByTurnOrderByNumberAsc(p1.getTurn());
             Position currPos;
             if (nowPos.isEmpty()) {
-                return;
+                throw new NoSkipPositionException("You cant skip position");
             }
             currPos = nowPos.get();
             //List<Position> positions = positionRepository.findTop2ByTurnOrderByNumberAsc(p.getTurn());
@@ -500,9 +499,17 @@ public class PositionServiceImpl implements PositionService {
         boolean invited1 = false;
         boolean invited2 = false;
         boolean existsInvited = false;
+        MembersCountDTO membersCountDTO = null;
         if (m.isPresent()){
             if (m.get().getAccessMemberEnum() == AccessMemberEnum.CREATOR || m.get().getAccessMemberEnum() == AccessMemberEnum.MODERATOR) {
                 existsInvited = memberService.invitedExists(turn);
+                 membersCountDTO = new MembersCountDTO(
+                        (int) memberService.getCountModerators(turn),
+                        (int) memberService.getCountMembers(turn),
+                        memberService.countInviteMembers(turn),
+                        memberService.countInviteModerators(turn),
+                        (int) memberService.countBlocked(turn)
+                );
             }
             access = m.get().getAccessMemberEnum().name();
             invited1 = m.get().isInvited();
@@ -511,7 +518,7 @@ public class PositionServiceImpl implements PositionService {
         long count = positionRepository.countByTurn(turn);
         turn.setCountUsers((int)count);
         turnService.saveTurn(turn);
-        return turnMapper.turnToTurnDTO(turn, access, turn.getAccessTurnType().toString(), invited2, invited1, existsInvited);
+        return turnMapper.turnToTurnDTO(turn, access, turn.getAccessTurnType().toString(), invited2, invited1, existsInvited, membersCountDTO);
     }
 
     @Override
@@ -551,11 +558,19 @@ public class PositionServiceImpl implements PositionService {
             boolean isInvitedForTurn = member.isInvitedForTurn();
             if (status) {
                 if (isInvited) {
-                    memberService.changeMemberStatusFrom(id, "MODERATOR", 0, 0);
+                    if (isModerator) {
+                        memberService.changeMemberStatusFrom(id, "MODERATOR", 0, 0);
+                    }
                 }
                 if (isInvitedForTurn) {
                     if (!isModerator) {
-                        memberService.changeMemberStatusFrom(id, "MEMBER", 0, 0);
+                        if (isInvited) {
+                            memberService.changeMemberStatusFrom(id, "MEMBER", 1, 0);
+                        } else {
+                            memberService.changeMemberStatusFrom(id, "MEMBER", 0, 0);
+                        }
+                    } else if (!isInvited){
+                        throw new NoInviteException("User not invite to moderator");
                     }
                     createPositionAndSave(member.getUser().getLogin(), member.getTurn().getHash());
                 }
@@ -564,7 +579,11 @@ public class PositionServiceImpl implements PositionService {
                     memberService.changeMemberInvite(id, false);
                 }
                 if (isInvitedForTurn && !isModerator) {
-                    memberService.deleteMemberFrom(id);
+                    if (isInvited) {
+                        memberService.changeMemberStatusFrom(id, "MEMBER_LINK", 1, 0);
+                    } else {
+                        memberService.deleteMemberFrom(id);
+                    }
                 }
             }
 
