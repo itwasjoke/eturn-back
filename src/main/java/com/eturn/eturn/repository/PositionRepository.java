@@ -41,6 +41,8 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
 
     Optional<Position> findTopByTurnAndUserOrderByNumberAsc(Turn turn, User user);
 
+    Optional<Position> findFirstByTurnOrderByNumberDesc(Turn turn);
+
     long countByTurn(Turn turn);
 
     void deletePositionsByUserAndTurn(User user, Turn turn);
