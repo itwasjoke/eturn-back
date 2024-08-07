@@ -27,7 +27,9 @@ public record PositionMoreInfoDTO(
         @Schema(description = "Дата начала отсчета", example="01.01.01 10:00")
         Date dateEnd,
         @Schema(description = "Количество возможностей пропустить следующего", example="5")
-        Integer skipCount
+        Integer skipCount,
+        @Schema(description = "Позиция последняя по счету", example="false")
+        Boolean isLast
 ) {
 
 }

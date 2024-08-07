@@ -382,8 +382,6 @@ public class PositionServiceImpl implements PositionService {
                 throw new NoSkipPositionException("You cant skip position");
             }
             currPos = nowPos.get();
-            //List<Position> positions = positionRepository.findTop2ByTurnOrderByNumberAsc(p.getTurn());
-            //Optional<Position> p1 = positionRepository.findByNumber(position.get().getNumber() + 1);
             Optional<Position> pNew = positionRepository.findFirstByTurnAndNumberGreaterThan(p1.getTurn(), position.get().getNumber());
             if (pNew.isPresent() && p1.getUser() == user && p1.getSkipCount() != 0) {
                 Position p2 = pNew.get();
@@ -429,19 +427,23 @@ public class PositionServiceImpl implements PositionService {
     public PositionMoreInfoDTO getFirstUserPosition(String hash, String username) {
         User user = userService.findByLogin(username);
         Turn turn = turnService.getTurnFrom(hash);
-
-        deleteOverdueElements(turn);
-
         Optional<Position> p = positionRepository.findTopByTurnAndUserOrderByNumberAsc(turn, user);
         Optional<Position> pInTurn = positionRepository.findFirstByTurnOrderByNumberAsc(turn);
+        Optional<Position> pLast = positionRepository.findFirstByTurnOrderByIdDesc(turn);
+        boolean isLast = false;
+        if (pLast.isPresent() && p.isPresent()) {
+            if (p.get().getId().equals(pLast.get().getId())){
+                isLast = true;
+            }
+        }
         if (p.isPresent() && pInTurn.isPresent()){
             if (pInTurn.get().getId().equals(p.get().getId())){
                 int difference = 0;
-                return positionMoreInfoMapper.positionMoreInfoToPositionDTO(p.get(), difference);
+                return positionMoreInfoMapper.positionMoreUserToPositionDTO(p.get(), difference, isLast);
             }
             else{
                 int difference = (int) positionRepository.countNumbersLeft(p.get().getNumber(), turn);
-                return positionMoreInfoMapper.positionMoreInfoToPositionDTO(p.get(), difference);
+                return positionMoreInfoMapper.positionMoreUserToPositionDTO(p.get(), difference, isLast);
             }
         }
         else{
@@ -453,15 +455,13 @@ public class PositionServiceImpl implements PositionService {
     public PositionMoreInfoDTO getFirstPosition(String hash, String username) {
         User user = userService.findByLogin(username);
         Turn turn = turnService.getTurnFrom(hash);
-
-        deleteOverdueElements(turn);
         Optional<Position> pInTurn = positionRepository.findFirstByTurnOrderByNumberAsc(turn);
         if (pInTurn.isPresent()){
             Position pos = pInTurn.get();
             Optional<Member> optionalMember = memberService.getOptionalMember(user, pos.getTurn());
             if (optionalMember.isPresent()) {
                 Member member = optionalMember.get();
-                if (member.getAccessMemberEnum() == AccessMemberEnum.MODERATOR || member.getAccessMemberEnum() == AccessMemberEnum.BLOCKED) {
+                if (member.getAccessMemberEnum() == AccessMemberEnum.MODERATOR || member.getAccessMemberEnum() == AccessMemberEnum.CREATOR) {
                     int difference = 0;
                     return positionMoreInfoMapper.positionMoreInfoToPositionDTO(pos, difference);
                 }
