@@ -426,7 +426,7 @@ public class PositionServiceImpl implements PositionService {
         Turn turn = turnService.getTurnFrom(hash);
         Optional<Position> p = positionRepository.findTopByTurnAndUserOrderByNumberAsc(turn, user);
         Optional<Position> pInTurn = positionRepository.findFirstByTurnOrderByNumberAsc(turn);
-        Optional<Position> pLast = positionRepository.findFirstByTurnOrderByIdDesc(turn);
+        Optional<Position> pLast = positionRepository.findFirstByTurnOrderByNumberDesc(turn);
         boolean isLast = false;
         if (pLast.isPresent() && p.isPresent()) {
             if (p.get().getId().equals(pLast.get().getId())){
