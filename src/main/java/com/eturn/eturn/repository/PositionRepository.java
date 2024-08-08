@@ -42,7 +42,7 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
     int countAllByNumberBetween(int number1, int number2);
     void deleteByTurnAndNumberLessThanEqual(Turn turn, int number);
     Optional<Position> findFirstByTurnAndUserAndNumberGreaterThanOrderByNumberDesc(Turn turn, User user, int number);
-    Optional<Position> findFirstByTurnAndNumberGreaterThan(Turn turn, int number);
+    Optional<Position> findFirstByTurnAndNumberGreaterThanOrderByNumberAsc(Turn turn, int number);
     Optional<Position> findFirstByTurnAndNumberLessThanOrderByNumberDesc(Turn turn, int number);
 
     // TODO Сделать, чтобы он считал количество позиций по 2 минутам и удалял нужное количество позиций. Изменить запрос и добавить id до.
