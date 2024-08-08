@@ -16,6 +16,4 @@ public interface GroupMapper {
     @Mapping(target = "turns", ignore = true)
     @Mapping(target = "number", source = "dto.number")
     Group DTOtoGroup(GroupDTO dto);
-    @Mapping(target = "number", source = "group.number")
-    GroupDTO groupToDTO(Group group);
 }

@@ -1,6 +1,5 @@
 package com.eturn.eturn.dto;
 
-import com.eturn.eturn.enums.RoleEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "Сущность существущего пользователя")

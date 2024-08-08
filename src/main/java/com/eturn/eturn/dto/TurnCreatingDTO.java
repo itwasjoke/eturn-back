@@ -1,13 +1,10 @@
 package com.eturn.eturn.dto;
 
-import com.eturn.eturn.entity.*;
 import com.eturn.eturn.enums.AccessTurnEnum;
 import com.eturn.eturn.enums.TurnEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.*;
-import org.apache.catalina.util.Introspection;
 import org.hibernate.validator.constraints.Range;
 
 import java.util.Date;

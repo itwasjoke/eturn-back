@@ -56,16 +56,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getUserFrom(Long id) {
-        Optional<User> user = userRepository.findById(id);
-        if (user.isPresent()) {
-            return user.get();
-        } else {
-            throw new LocalNotFoundUserException("No user in database on getUserMethod");
-        }
-    }
-
-    @Override
     public Optional<User> getUser(Long id) {
         return userRepository.findById(id);
     }

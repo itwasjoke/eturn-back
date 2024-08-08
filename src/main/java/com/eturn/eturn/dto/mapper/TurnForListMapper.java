@@ -1,6 +1,5 @@
 package com.eturn.eturn.dto.mapper;
 
-import com.eturn.eturn.dto.TurnDTO;
 import com.eturn.eturn.dto.TurnForListDTO;
 import com.eturn.eturn.entity.Turn;
 import org.mapstruct.InjectionStrategy;

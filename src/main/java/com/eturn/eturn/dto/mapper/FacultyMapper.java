@@ -15,5 +15,4 @@ import org.mapstruct.ReportingPolicy;
 public interface FacultyMapper {
     @Mapping(target="turns", ignore = true)
     Faculty DTOtoFaculty(FacultyDTO dto);
-    FacultyDTO facultyToDTO(Faculty faculty);
 }

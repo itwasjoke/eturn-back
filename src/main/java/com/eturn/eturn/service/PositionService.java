@@ -9,7 +9,6 @@ import java.util.List;
 
 
 public interface PositionService {
-//    PositionDTO getPositionById(Long id);
 
     // TODO int pageSize, int pageNumber
 //    Optional<Position> getLastPosition(Long idUser, Long idTurn);
@@ -34,7 +33,6 @@ public interface PositionService {
     Member addTurnToUser(User user, Turn turn);
 
     TurnDTO getTurn(String hash, String login);
-    int count(String hash);
     void inviteUser(String hash, String username);
     void changeMemberInvite(Long id, boolean status, boolean isModerator);
 
