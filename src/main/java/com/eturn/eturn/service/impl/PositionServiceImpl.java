@@ -516,9 +516,31 @@ public class PositionServiceImpl implements PositionService {
             invited2 = m.get().isInvitedForTurn();
         }
         long count = positionRepository.countByTurn(turn);
+        String accessType = "for_link";
+        List<Long> list = new ArrayList<>();
         turn.setCountUsers((int)count);
+        if (!turn.getAllowedGroups().isEmpty()){
+            accessType = "groups";
+            for (Group item: turn.getAllowedGroups()){
+                list.add(item.getId());
+            }
+        } else if (!turn.getAllowedFaculties().isEmpty()){
+            accessType = "faculties";
+            for (Faculty f: turn.getAllowedFaculties()) {
+                list.add(f.getId());
+            }
+        }
         turnService.saveTurn(turn);
-        return turnMapper.turnToTurnDTO(turn, access, turn.getAccessTurnType().toString(), invited2, invited1, existsInvited, membersCountDTO);
+        return turnMapper.turnToTurnDTO(
+                turn,
+                access,
+                accessType,
+                invited2,
+                invited1,
+                existsInvited,
+                membersCountDTO,
+                list
+        );
     }
 
     @Override
