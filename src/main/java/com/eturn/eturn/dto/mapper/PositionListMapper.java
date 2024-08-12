@@ -16,6 +16,5 @@ import java.util.List;
         injectionStrategy = InjectionStrategy.CONSTRUCTOR
 )
 public interface PositionListMapper {
-    List<PositionDTO> map(List<Position> position);
     List<PositionDTO> map(Page<Position> position);
 }

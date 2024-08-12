@@ -3,7 +3,6 @@ package com.eturn.eturn.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import org.apache.catalina.util.Introspection;
 
 import java.util.Date;
 

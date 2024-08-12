@@ -3,15 +3,11 @@ package com.eturn.eturn.service.impl;
 import com.eturn.eturn.dto.FacultyDTO;
 import com.eturn.eturn.dto.mapper.FacultyMapper;
 import com.eturn.eturn.entity.Faculty;
-import com.eturn.eturn.exception.faculty.NotFoundFacultyException;
 import com.eturn.eturn.repository.FacultyRepository;
 import com.eturn.eturn.service.FacultyService;
-import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
-import java.util.Optional;
 
 @Service
 public class FacultyServiceImpl implements FacultyService {

@@ -1,7 +1,6 @@
 package com.eturn.eturn.service.impl;
 
 import com.eturn.eturn.dto.*;
-import com.eturn.eturn.dto.mapper.MemberMapper;
 import com.eturn.eturn.dto.mapper.PositionListMapper;
 import com.eturn.eturn.dto.mapper.PositionMoreInfoMapper;
 import com.eturn.eturn.dto.mapper.TurnMapper;
@@ -30,19 +29,17 @@ public class PositionServiceImpl implements PositionService {
     private final TurnService turnService;
 
     final private TurnMapper turnMapper;
-    final private MemberMapper memberMapper;
     private final PositionMoreInfoMapper positionMoreInfoMapper;
     private final MemberService memberService;
 
 
     public PositionServiceImpl(PositionRepository positionRepository, UserService userService,
-                               PositionListMapper positionListMapper, TurnService turnService, TurnMapper turnMapper, MemberMapper memberMapper, PositionMoreInfoMapper positionMoreInfoMapper, MemberService memberService) {
+                               PositionListMapper positionListMapper, TurnService turnService, TurnMapper turnMapper, PositionMoreInfoMapper positionMoreInfoMapper, MemberService memberService) {
         this.positionRepository = positionRepository;
         this.userService = userService;
         this.positionListMapper = positionListMapper;
         this.turnService = turnService;
         this.turnMapper = turnMapper;
-        this.memberMapper = memberMapper;
         this.positionMoreInfoMapper = positionMoreInfoMapper;
         this.memberService = memberService;
     }
@@ -377,17 +374,16 @@ public class PositionServiceImpl implements PositionService {
             Position p1 = position.get();
             deleteOverdueElements(p1.getTurn());
             Optional<Position> nowPos = positionRepository.findFirstByTurnOrderByNumberAsc(p1.getTurn());
-            Position currPos;
             if (nowPos.isEmpty()) {
                 throw new NoSkipPositionException("You cant skip position");
             }
-            currPos = nowPos.get();
-            Optional<Position> pNew = positionRepository.findFirstByTurnAndNumberGreaterThan(p1.getTurn(), position.get().getNumber());
+            Position currPos = nowPos.get();
+            Optional<Position> pNew = positionRepository.findFirstByTurnAndNumberGreaterThanOrderByNumberAsc(p1.getTurn(), position.get().getNumber());
             if (pNew.isPresent() && p1.getUser() == user && p1.getSkipCount() != 0) {
                 Position p2 = pNew.get();
                 int number1 = p1.getNumber();
                 int number2 = p2.getNumber();
-                Optional<Position> p3New = positionRepository.findFirstByTurnAndNumberGreaterThan(p2.getTurn(), p2.getNumber());
+                Optional<Position> p3New = positionRepository.findFirstByTurnAndNumberGreaterThanOrderByNumberAsc(p2.getTurn(), p2.getNumber());
                 if (p3New.isPresent()) {
                     Position p3 = p3New.get();
                     if (p1.getUser() == p3.getUser()) {
@@ -541,12 +537,6 @@ public class PositionServiceImpl implements PositionService {
                 membersCountDTO,
                 list
         );
-    }
-
-    @Override
-    public int count(String hash) {
-        Turn turn = turnService.getTurnFrom(hash);
-        return positionRepository.countAllByTurn(turn);
     }
     @Override
     @Transactional

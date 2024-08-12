@@ -1,20 +1,15 @@
 package com.eturn.eturn.controller;
 
-import com.eturn.eturn.dto.PositionDTO;
 import com.eturn.eturn.dto.PositionMoreInfoDTO;
 import com.eturn.eturn.dto.PositionsTurnDTO;
-import com.eturn.eturn.dto.TurnDTO;
 import com.eturn.eturn.service.PositionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.http.HttpRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping(value ="/position", produces = "application/json; charset=utf-8")

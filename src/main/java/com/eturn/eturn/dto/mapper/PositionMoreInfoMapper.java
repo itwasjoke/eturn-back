@@ -1,6 +1,5 @@
 package com.eturn.eturn.dto.mapper;
 
-import com.eturn.eturn.dto.PositionDTO;
 import com.eturn.eturn.dto.PositionMoreInfoDTO;
 import com.eturn.eturn.entity.Position;
 import org.mapstruct.InjectionStrategy;

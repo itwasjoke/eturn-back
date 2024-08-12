@@ -25,12 +25,9 @@ import java.util.Optional;
 @Service
 public class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository;
-    private final UserService userService;
-//    private final TurnService turnService;
     private final MemberListMapper memberListMapper;
-    public MemberServiceImpl(MemberRepository memberRepository, UserService userService, MemberListMapper memberListMapper) {
+    public MemberServiceImpl(MemberRepository memberRepository, MemberListMapper memberListMapper) {
         this.memberRepository = memberRepository;
-        this.userService = userService;
         this.memberListMapper = memberListMapper;
     }
 
@@ -94,12 +91,6 @@ public class MemberServiceImpl implements MemberService {
         else{
             throw new NotFoundMemberException("Cannot find member on getMember method MemberServiceImpl.java");
         }
-    }
-
-    @Override
-    public Boolean memberExist(User user, Turn turn) {
-        Optional<Member> member = memberRepository.findMemberByUserAndTurn(user, turn);
-        return member.isPresent();
     }
 
     @Override
@@ -264,17 +255,5 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public boolean invitedExists(Turn turn) {
         return memberRepository.getOneInvitedExists(turn, true, true).isPresent();
-    }
-
-    @Override
-    public void changeMemberInviteForTurn(Long id, boolean status) {
-        Optional<Member> memberPresent = memberRepository.findById(id);
-        if (memberPresent.isPresent()) {
-            Member member = memberPresent.get();
-            member.setInvitedForTurn(status);
-            memberRepository.save(member);
-        } else {
-            throw new NotFoundMemberException("Not found member");
-        }
     }
 }

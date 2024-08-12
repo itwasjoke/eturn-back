@@ -1,6 +1,5 @@
 package com.eturn.eturn.dto;
 
-import com.eturn.eturn.entity.Group;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "Сущность нового пользователя")
