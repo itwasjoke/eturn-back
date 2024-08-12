@@ -13,8 +13,11 @@ public class EtuIdUser {
     @JsonProperty("id")
     private Long id;
 
-    @JsonProperty("fio")
-    private String fio;
+    @JsonProperty("first_name")
+    private String firstName;
+
+    @JsonProperty("second_name")
+    private String secondName;
 
     @JsonProperty("position")
     private String position;

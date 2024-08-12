@@ -241,9 +241,7 @@ public class TurnServiceImpl implements TurnService {
                 if (turn.name() != null) {
                     newTurn.setName(turn.name());
                 }
-                if (turn.description() != null) {
-                    newTurn.setDescription(turn.description());
-                }
+                newTurn.setDescription(turn.description());
                 if (turn.allowedGroups() != null && newTurn.getAllowedGroups() != null) {
                     if (!turn.allowedGroups().isEmpty() && !newTurn.getAllowedGroups().isEmpty()) {
                         Set<Group> groups = newTurn.getAllowedGroups();
