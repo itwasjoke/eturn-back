@@ -1,12 +1,9 @@
 package com.eturn.eturn.dto;
 
-import com.eturn.eturn.entity.Position;
 import com.eturn.eturn.enums.TurnEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.Date;
 import java.util.List;
