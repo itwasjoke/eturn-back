@@ -20,7 +20,7 @@ import java.util.Set;
 public class User implements UserDetails {
     @Id
     // TODO Удалить эту аннотацию @GeneratedValue при использовании ETU ID
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String login;

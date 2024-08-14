@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "Сущность нового пользователя")
 public record UserCreateDTO(
-
+        Long id,
         @Schema(description = "Имя пользователя", example="Иванов Иван Иванович")
         String name,
         @Schema(description = "Тип пользователя", example="STUDENT")

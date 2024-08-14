@@ -116,7 +116,7 @@ public class AuthenticationService {
                 newUser.setName(etuIdUser.getFirstName() + " " + etuIdUser.getSecondName());
                 newUser.setLogin("eturnLogin" + etuIdUser.getId().toString());
                 newUser.setPassword("eturnPassword"+etuIdUser.getId().toString());
-                if (Objects.equals(etuIdUser.getPosition(), "Учащийся") && etuIdUser.getEducations() != null) {
+                if (etuIdUser.getEducations() != null) {
                     EtuIdEducation etuIdEducation = etuIdUser.getEducations().get(0);
                     EduGroups eduGroups = etuIdEducation.getEduGroups();
                     Optional<Group> group = groupService.getGroup(eduGroups.getName());
