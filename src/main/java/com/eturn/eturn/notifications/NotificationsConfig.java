@@ -14,8 +14,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import java.util.concurrent.Executor;
 
 @Configuration
-@EnableAsync
 public class NotificationsConfig {
+
+    private static final String TOPIC_EASY = "easy-notifications";
+    private static final String TURN_EASY = "easy-queue";
 //    @Bean
 //    public ApnsService apnsService() {
 //        return APNS
@@ -48,17 +50,17 @@ public class NotificationsConfig {
     }
     @Bean
     public DirectExchange exchange() {
-        return new DirectExchange("easy-notifications", true, false);
+        return new DirectExchange(TOPIC_EASY, true, false);
     }
 
     @Bean
     public Queue queue() {
-        return new Queue("easy-queue", true);
+        return new Queue(TURN_EASY, true);
     }
 
     @Bean
     public Binding binding(Queue queue, DirectExchange exchange) {
-        return BindingBuilder.bind(queue).to(exchange).with("easy-notifications");
+        return BindingBuilder.bind(queue).to(exchange).with(TOPIC_EASY);
     }
 
     @Bean

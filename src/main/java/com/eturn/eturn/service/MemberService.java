@@ -12,7 +12,6 @@ import java.util.Optional;
 
 
 public interface MemberService {
-
     Member createMember(User user, Turn turn, String access, boolean invitedForTurn);
     Optional<Member> getMemberFrom(long id);
     Optional<Member> getOptionalMember(User user, Turn turn);

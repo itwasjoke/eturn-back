@@ -1,5 +1,6 @@
 package com.eturn.eturn.security;
 
+import com.eturn.eturn.dto.AuthData;
 import com.eturn.eturn.dto.UserCreateDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -53,8 +54,8 @@ public class AuthController {
             summary = "Вход",
             description = "Отправка логина и пароля, получение токена авторизации"
     )
-    public JwtAuthenticationResponse signIn(@RequestBody String token){
-        return authenticationService.auth(token);
+    public JwtAuthenticationResponse signIn(@RequestBody AuthData authData){
+        return authenticationService.auth(authData);
     }
 
 }

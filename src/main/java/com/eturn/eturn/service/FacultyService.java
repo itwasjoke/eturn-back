@@ -5,8 +5,5 @@ import com.eturn.eturn.entity.Faculty;
 
 
 public interface FacultyService {
-
     Faculty createFaculty(FacultyDTO facultyDTO);
-
-
 }

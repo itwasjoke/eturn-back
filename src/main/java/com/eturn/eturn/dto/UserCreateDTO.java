@@ -1,6 +1,8 @@
 package com.eturn.eturn.dto;
 
+import com.eturn.eturn.enums.ApplicationType;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Enumerated;
 
 @Schema(description = "Сущность нового пользователя")
 public record UserCreateDTO(
@@ -14,6 +16,8 @@ public record UserCreateDTO(
         @Schema(description = "Логин", example="user123")
         String login,
         @Schema(description = "Пароль", example="password123")
-        String password
+        String password,
+        String appType,
+        String tokenNotify
 ) {
 }

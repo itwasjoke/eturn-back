@@ -1,5 +1,6 @@
 package com.eturn.eturn.security;
 
+import com.eturn.eturn.dto.AuthData;
 import com.eturn.eturn.dto.FacultyDTO;
 import com.eturn.eturn.dto.UserCreateDTO;
 import com.eturn.eturn.dto.mapper.UserMapper;
@@ -9,13 +10,17 @@ import com.eturn.eturn.dto.parsing.GroupResponse;
 import com.eturn.eturn.entity.Faculty;
 import com.eturn.eturn.entity.Group;
 import com.eturn.eturn.entity.User;
+import com.eturn.eturn.enums.ApplicationType;
 import com.eturn.eturn.enums.Role;
 import com.eturn.eturn.exception.group.NotFoundGroupException;
 import com.eturn.eturn.exception.user.AuthPasswordException;
 import com.eturn.eturn.exception.user.NotFoundUserException;
+import com.eturn.eturn.notifications.NotificationController;
 import com.eturn.eturn.service.FacultyService;
 import com.eturn.eturn.service.GroupService;
 import com.eturn.eturn.service.UserService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -33,6 +38,7 @@ import java.util.Optional;
 
 @Service
 public class AuthenticationService {
+    private static final Logger logger = LogManager.getLogger(AuthenticationService.class);
     private final JwtService jwtService;
     @Value("${external.api.url}")
     private String externalApiUrl;
@@ -87,10 +93,10 @@ public class AuthenticationService {
         }
     }
 
-    public JwtAuthenticationResponse auth(String token) {
+    public JwtAuthenticationResponse auth(AuthData authData) {
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + token);
+        headers.set("Authorization", "Bearer " + authData.tokenETUID());
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
         ResponseEntity<EtuIdUser> response = restTemplate.exchange(
@@ -107,17 +113,42 @@ public class AuthenticationService {
         User currentUser;
         if (etuIdUser != null) {
             Optional<User> user = userService.getUser(etuIdUser.getId());
+            EtuIdEducation etuIdEducation = etuIdUser.getEducations().get(0);
+            EduGroups eduGroups = etuIdEducation.getEduGroups();
             if (user.isPresent()) {
                 currentUser = user.get();
+                if (etuIdUser.getEducations() != null) {
+                    Optional<Group> group = groupService.getGroup(eduGroups.getName());
+                    if (group.isPresent()) {
+                        currentUser.setGroup(group.get());
+                    } else {
+                        throw new NotFoundGroupException("no group exception");
+                    }
+                }
+                if (authData.tokenNotify()!=null) {
+                    try {
+                        currentUser.setTokenNotification(authData.tokenNotify());
+                        currentUser.setApplicationType(ApplicationType.valueOf(authData.type()));
+                    } catch (IllegalArgumentException e) {
+                        logger.error("cannot resolve type of application");
+                    }
+                }
+                currentUser = userService.updateUser(currentUser);
             } else {
                 User newUser = new User();
                 newUser.setId(etuIdUser.getId());
+                if (authData.tokenNotify()!=null) {
+                    try {
+                        newUser.setTokenNotification(authData.tokenNotify());
+                        newUser.setApplicationType(ApplicationType.valueOf(authData.type()));
+                    } catch (IllegalArgumentException e) {
+                        logger.error("cannot resolve type of application");
+                    }
+                }
                 newUser.setName(etuIdUser.getFirstName() + " " + etuIdUser.getSecondName());
                 newUser.setLogin("eturnLogin" + etuIdUser.getId().toString());
                 newUser.setPassword("eturnPassword"+etuIdUser.getId().toString());
                 if (etuIdUser.getEducations() != null) {
-                    EtuIdEducation etuIdEducation = etuIdUser.getEducations().get(0);
-                    EduGroups eduGroups = etuIdEducation.getEduGroups();
                     Optional<Group> group = groupService.getGroup(eduGroups.getName());
                     if (group.isPresent()) {
                         newUser.setGroup(group.get());
@@ -147,9 +178,14 @@ public class AuthenticationService {
 
     // TODO Удалить функцию, когда необходимость в тестировании пользователей отсутствует.
     public JwtAuthenticationResponse signUp(UserCreateDTO userCreateDTO) {
-
+        User user;
         Role r = Role.valueOf(userCreateDTO.role());
-        User user = userMapper.userCreateDTOtoUser(userCreateDTO, r);
+        if (userCreateDTO.appType().equals("IOS") || userCreateDTO.appType().equals("ANDROID") || userCreateDTO.appType().equals("RUSTORE")) {
+            ApplicationType a = ApplicationType.valueOf(userCreateDTO.appType());
+            user = userMapper.userCreateDTOtoUser(userCreateDTO, r, a);
+        } else {
+            user = userMapper.userCreateDTOtoUser(userCreateDTO, r, null);
+        }
         String password = passwordEncoder.encode(userCreateDTO.password());
         user.setPassword(password);
         User newUser = userService.createUser(user);

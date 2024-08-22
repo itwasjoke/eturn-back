@@ -18,21 +18,17 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
     Optional<Position> findFirstByUserAndTurnOrderByNumberAsc(User user, Turn turn);
     Optional<Position> findFirstByUserAndTurnOrderByNumberDesc(User user, Turn turn);
     Page<Position> findAllByTurnOrderByNumberAsc(Turn turn, Pageable pageable);
+    Page<Position> findAllByTurn_IdOrderByNumberAsc(Long id, Pageable pageable);
     Optional<Position> findFirstByTurnOrderByIdDesc(Turn turn);
-
     boolean existsAllByTurnAndUser(Turn turn, User user);
-
     @Query(name = "getPositionForDelete")
     Position resultsPositionDelete(@Param("turn") Long turn, @Param("count") int count);
-
     @Query(name = "getPositionForDeleteOverdueElements")
     Position resultsPositionDeleteOverdueElements(@Param("turn") Long turn, @Param("count") int count);
-
     Optional<Position> findFirstByTurnOrderByNumberAsc(Turn turn);
     Optional<Position> findTopByTurnAndUserOrderByNumberAsc(Turn turn, User user);
 
     Optional<Position> findFirstByTurnOrderByNumberDesc(Turn turn);
-
     long countByTurn(Turn turn);
     void deletePositionsByUserAndTurn(User user, Turn turn);
     void deleteAllByTurnAndUser(Turn turn, User user);
@@ -44,7 +40,4 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
     Optional<Position> findFirstByTurnAndUserAndNumberGreaterThanOrderByNumberDesc(Turn turn, User user, int number);
     Optional<Position> findFirstByTurnAndNumberGreaterThanOrderByNumberAsc(Turn turn, int number);
     Optional<Position> findFirstByTurnAndNumberLessThanOrderByNumberDesc(Turn turn, int number);
-
-    // TODO Сделать, чтобы он считал количество позиций по 2 минутам и удалял нужное количество позиций. Изменить запрос и добавить id до.
-
 }

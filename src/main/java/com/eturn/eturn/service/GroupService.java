@@ -7,8 +7,6 @@ import com.eturn.eturn.entity.Group;
 import java.util.Optional;
 
 public interface GroupService {
-
     void createOptionalGroup(Long id, String number, Integer course, Faculty faculty);
     Optional<Group> getGroup(String number);
-
 }
