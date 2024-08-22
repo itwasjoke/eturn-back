@@ -9,6 +9,7 @@ import com.eturn.eturn.service.impl.notifications.IOSNotifyServiceImpl;
 import com.eturn.eturn.service.impl.notifications.RuStoreNotifyServiceImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.aspectj.weaver.ast.Not;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
@@ -53,15 +54,22 @@ public class NotificationListener {
     @RabbitListener(queues = TURN_EASY, messageConverter = "jackson2JsonMessageConverter")
     public void receiveMessage(Notification notification) {
         logger.info("Notification delivered to listener");
+        switch (notification.type){
+            case 0:
+                sendNotificationFor3Positions(notification);
+            case 1:
+                logger.info("There will be a notification of new members here");
+            default:
+        }
+    }
+
+    private void sendNotificationFor3Positions(Notification notification){
         PositionsNotificationDTO info = positionService.getPositionsForNotify(notification.turnId);
-        if (info.userList() != null) {
+        if (info.userList() != null && info.turnName() != null) {
             int num = 0;
             for (User u : info.userList()) {
-                logger.info("Notification for user " + u.getName() + " with type " + u.getApplicationType().toString());
                 if (typeExists(u)) {
-                    logger.info("Type for user exists: " + u.getApplicationType().toString());
                     NotificationService notificationService = getCurrentService(u.getApplicationType());
-                    logger.info("Service for user accepted");
                     notificationService.notifyUserOfTurnPositionChange(u.getTokenNotification(), info.turnName(), num);
                 }
                 num += 5;

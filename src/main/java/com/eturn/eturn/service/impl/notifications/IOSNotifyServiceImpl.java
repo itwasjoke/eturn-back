@@ -23,7 +23,7 @@ public class IOSNotifyServiceImpl implements NotificationService {
         String title = number == 0 ? "Вы следующий" : "Ваша позиция уже скоро";
         String body = "В очереди \"" + turnName + "\" ";
         body = number == 0 ? body + "настал ваш черёд. Нажмите, чтобы войти" : "перед вами " + number + "человек. Будьте наготове!";
-        logger.info("notification: " + title + " " + body);
+        logger.info("Notification body: " + title + " // " + body);
 //        String payload = APNS.newPayload().alertTitle(title).alertBody(body).build();
 //        apnsService.push(tokenFirst, payload);
     }
