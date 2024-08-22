@@ -3,7 +3,7 @@ package com.eturn.eturn.dto.mapper;
 import com.eturn.eturn.dto.UserCreateDTO;
 import com.eturn.eturn.dto.UserDTO;
 import com.eturn.eturn.entity.*;
-import com.eturn.eturn.enums.RoleEnum;
+import com.eturn.eturn.enums.Role;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -20,7 +20,7 @@ public interface UserMapper {
     @Mapping(target = "role", source = "role")
     UserDTO userToUserDTO(User user, String faculty, String group, String role);
 
-    @Mapping(target = "roleEnum", source = "role")
+    @Mapping(target = "role", source = "role")
 //    @Mapping(target = "password", source = "passwordEncode")
-    User userCreateDTOtoUser(UserCreateDTO dto, RoleEnum role);
+    User userCreateDTOtoUser(UserCreateDTO dto, Role role);
     }

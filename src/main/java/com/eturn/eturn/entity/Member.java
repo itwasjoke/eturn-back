@@ -1,6 +1,6 @@
 package com.eturn.eturn.entity;
 
-import com.eturn.eturn.enums.AccessMemberEnum;
+import com.eturn.eturn.enums.AccessMember;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,7 +29,7 @@ public class Member {
 
 
     @Enumerated(EnumType.STRING)
-    private AccessMemberEnum accessMemberEnum;
+    private AccessMember accessMember;
 
     private boolean invited = false;
 

@@ -4,7 +4,7 @@ import com.eturn.eturn.dto.MemberDTO;
 import com.eturn.eturn.entity.Member;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
-import com.eturn.eturn.enums.AccessMemberEnum;
+import com.eturn.eturn.enums.AccessMember;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
@@ -16,7 +16,7 @@ public interface MemberService {
     Member createMember(User user, Turn turn, String access, boolean invitedForTurn);
     Optional<Member> getMemberFrom(long id);
     Optional<Member> getOptionalMember(User user, Turn turn);
-    AccessMemberEnum getAccess(User user, Turn turn);
+    AccessMember getAccess(User user, Turn turn);
     MemberDTO getMember(User user, Turn turn);
     long getCountMembers(Turn turn);
     long getCountModerators(Turn turn);

@@ -1,6 +1,6 @@
 package com.eturn.eturn.dto;
 
-import com.eturn.eturn.enums.TurnEnum;
+import com.eturn.eturn.enums.TurnType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -33,7 +33,7 @@ public record TurnDTO(
         @Schema(description = "Тип доступа", example="FOR_LINK/GROUPS/FACULTIES")
         String accessType,
         @Schema(description = "Тип очереди", example="EDU/ORG")
-        TurnEnum turnType,
+        TurnType turnType,
         @Schema(description = "Количество позиций, через которое можно вставать в очередь", example="1")
         Integer positionCount,
         @Schema(description = "Разрешенные элементы очереди", example="[1, 2, 4, 65, 144]")

@@ -1,0 +1,48 @@
+version: "3.1"
+
+volumes:
+  pg_eturn:
+
+services:
+  eturn_db:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=eturn_user
+      - POSTGRES_PASSWORD=DfcbkmtdCfvjdfhjd
+      - POSTGRES_DB=eturn
+    volumes:
+      - pg_eturn:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:37113:5432"
+  rabbitmq:
+    image: rabbitmq:3.10.7-management
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+      - RABBITMQ_DEFAULT_VHOST=/
+    volumes:
+      - ./rabbitmq:/var/lib/rabbitmq
+    ports:
+      - "37122:5672"
+      - "37112:15672"
+  eturn_app:
+    restart: always
+    build: .
+    ports:
+      - "37111:37111"
+    depends_on:
+      - eturn_db
+      - rabbitmq
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://eturn_db:5432/eturn"
+#      INSERTION_QUEUE: insertion.queue
+#      VALIDATION_QUEUE: validation.queue
+#      NUMBER_OF_VALIDATION_CONSUMERS: 1
+#      RESPONSE_EXCHANGE: response.exchange
+#      RESPONSE_ROUTING_KEY: response.routing.key
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 37122
+      RABBITMQ_VHOST: /
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest

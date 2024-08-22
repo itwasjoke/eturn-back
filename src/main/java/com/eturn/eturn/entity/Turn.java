@@ -1,44 +1,42 @@
 package com.eturn.eturn.entity;
 
-import com.eturn.eturn.dto.TurnDTO;
-import com.eturn.eturn.enums.AccessTurnEnum;
-import com.eturn.eturn.enums.TurnEnum;
+import com.eturn.eturn.enums.AccessTurn;
+import com.eturn.eturn.enums.TurnType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDate;
 import java.util.Date;
 import java.util.Set;
 
 @Getter
 @Setter
 @Entity
-@NamedNativeQuery(name = "getMemberOutTurns", query = " SELECT m.access_member_enum, t.hash, t.id, t.name, t.description, t.user_id, t.date_start, t.date_end, t.count_users, t.tags, t.access_tags " +
+@NamedNativeQuery(name = "getMemberOutTurns", query = " SELECT m.access_member, t.hash, t.id, t.name, t.description, t.user_id, t.date_start, t.date_end, t.count_users, t.tags, t.access_tags " +
         "FROM turn AS t " +
         "INNER JOIN turn_faculty AS tf ON t.id = tf.turn_id " +
         "LEFT JOIN member AS m ON (t.id = m.turn_id AND m.user_id = :userId) " +
         "WHERE " +
-        "    (t.access_turn_type != 'FOR_LINK' AND tf.faculty_id = :facultyId AND m.access_member_enum IS NULL) " +
+        "    (t.access_turn_type != 'FOR_LINK' AND tf.faculty_id = :facultyId AND m.access_member IS NULL) " +
         "UNION " +
-        "SELECT m.access_member_enum, t.hash, t.id, t.name, t.description, t.user_id, t.date_start, t.date_end, t.count_users, t.tags, t.access_tags " +
+        "SELECT m.access_member, t.hash, t.id, t.name, t.description, t.user_id, t.date_start, t.date_end, t.count_users, t.tags, t.access_tags " +
         "FROM turn AS t " +
         "INNER JOIN turn_group AS tg ON t.id = tg.turn_id " +
         "LEFT JOIN member AS m ON (t.id = m.turn_id AND m.user_id = :userId ) " +
         "WHERE " +
-        "    (t.access_turn_type != 'FOR_LINK' AND (t.turn_type = :turnType) AND tg.group_id = :groupId AND m.access_member_enum IS NULL) " +
+        "    (t.access_turn_type != 'FOR_LINK' AND (t.turn_type = :turnType) AND tg.group_id = :groupId AND m.access_member IS NULL) " +
         "UNION " +
-        "SELECT m.access_member_enum, t.hash, t.id, t.name, t.description, t.user_id, t.date_start, t.date_end, t.count_users, t.tags, t.access_tags " +
+        "SELECT m.access_member, t.hash, t.id, t.name, t.description, t.user_id, t.date_start, t.date_end, t.count_users, t.tags, t.access_tags " +
         "FROM turn AS t " +
         "LEFT JOIN member AS m ON (t.id = m.turn_id AND m.user_id = :userId) " +
         "WHERE " +
-        "(m.access_member_enum = 'MEMBER_LINK' AND t.access_turn_type = 'FOR_LINK')", resultSetMapping = "TurnMapping")
-@NamedNativeQuery(name = "getMemberInTurns", query = "SELECT m.access_member_enum, t.hash, t.id, t.name, t.description, t.user_id, t.date_start, t.date_end, t.count_users, t.tags, t.access_tags " +
+        "(m.access_member = 'MEMBER_LINK')", resultSetMapping = "TurnMapping")
+@NamedNativeQuery(name = "getMemberInTurns", query = "SELECT m.access_member, t.hash, t.id, t.name, t.description, t.user_id, t.date_start, t.date_end, t.count_users, t.tags, t.access_tags " +
         "FROM turn AS t " +
         "LEFT JOIN member AS m ON (t.id = m.turn_id AND m.user_id = :userId) " +
         "WHERE m.user_id = :userId AND (t.turn_type = :turnType)" +
-        "AND m.access_member_enum != 'BLOCKED' " +
-        "AND m.access_member_enum != 'MEMBER_LINK'", resultSetMapping = "TurnMapping")
+        "AND m.access_member != 'BLOCKED'" +
+        "AND m.access_member != 'MEMBER_LINK'", resultSetMapping = "TurnMapping")
 @SqlResultSetMapping(
         name = "TurnMapping",
         entities =
@@ -56,7 +54,7 @@ import java.util.Set;
                         @FieldResult(name = "accessTags", column = "access_tags")
                 }
         ),
-        columns = @ColumnResult(name = "access_member_enum", type = String.class)
+        columns = @ColumnResult(name = "access_member", type = String.class)
 )
 @Table(name = "turn")
 public class Turn {
@@ -81,10 +79,10 @@ public class Turn {
     private User creator;
 
     @Enumerated(EnumType.STRING)
-    private TurnEnum turnType;
+    private TurnType turnType;
 
     @Enumerated(EnumType.STRING)
-    private AccessTurnEnum accessTurnType;
+    private AccessTurn accessTurnType;
 
     @ManyToMany()
     @JoinTable(

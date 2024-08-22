@@ -1,25 +1,16 @@
 package com.eturn.eturn.service.impl;
 
-import com.eturn.eturn.dto.GroupDTO;
 import com.eturn.eturn.dto.UserDTO;
 import com.eturn.eturn.dto.mapper.UserMapper;
 import com.eturn.eturn.entity.*;
-import com.eturn.eturn.enums.RoleEnum;
-import com.eturn.eturn.exception.user.AuthPasswordException;
-import com.eturn.eturn.exception.user.LocalNotFoundUserException;
+import com.eturn.eturn.enums.Role;
 import com.eturn.eturn.exception.user.NotFoundUserException;
 import com.eturn.eturn.repository.UserRepository;
-import com.eturn.eturn.service.FacultyService;
-import com.eturn.eturn.service.GroupService;
 import com.eturn.eturn.service.UserService;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -39,12 +30,12 @@ public class UserServiceImpl implements UserService {
             User user = u.get();
             String group = null;
             String faculty = null;
-            if (user.getRoleEnum() == RoleEnum.STUDENT) {
+            if (user.getRole() == Role.STUDENT) {
                 group = user.getGroup().getNumber();
                 faculty = user.getGroup().getFaculty().getName();
             }
             String role = null;
-            RoleEnum R = user.getRoleEnum();
+            Role R = user.getRole();
             switch (R) {
                 case STUDENT -> role = "Студент";
                 case EMPLOYEE -> role = "Сотрудник";

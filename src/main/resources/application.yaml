@@ -3,9 +3,19 @@ spring:
     allow-circular-references: true
     allow-bean-definition-overriding: true
   datasource:
-#    url: jdbc:postgresql://localhost:5432/eturn
-#    username: postgres
-#    password: postgres
+    url: jdbc:postgresql://localhost:37113/eturn
+    username: eturn_user
+    password: DfcbkmtdCfvjdfhjd
+
+  rabbitmq:
+    host: rabbitmq
+    port: 37122
+    username: guest
+    password: guest
+    virtual-host: /
+#    template:
+#      exchange: response.exchange
+#      routing-key: response.routing.key
 
 #    url: jdbc:postgresql://localhost:5432/postgres
 #    username: vsnigerev
@@ -14,18 +24,18 @@ spring:
     #url: jdbc:postgresql://127.0.0.1:5432/postgres
     #username: ${POSTGRES_USERNAME:postgresql}
     #password: ${POSTGRES_PASSWORD:12345678}
-      url: jdbc:postgresql://127.0.0.1:5432/eturn
-      username: ${POSTGRES_USERNAME:developer}
-      password: ${POSTGRES_PASSWORD:dfcbkmtd2004}
+#      url: jdbc:postgresql://127.0.0.1:5432/eturn
+#      username: ${POSTGRES_USERNAME:developer}
+#      password: ${POSTGRES_PASSWORD:dfcbkmtd2004}
   jpa:
-    show-sql: true
+    show-sql: false
     hibernate:
 #      ddl-auto: none
       ddl-auto: create-drop
     generate-ddl: true
 
 server:
-  port: 8089
+  port: 37111
 
 token:
   signing:

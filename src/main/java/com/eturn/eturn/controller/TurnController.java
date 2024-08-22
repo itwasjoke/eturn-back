@@ -116,7 +116,7 @@ public class TurnController {
     )
     public List<MemberDTO> getMemberList(
             HttpServletRequest request,
-            @RequestParam @Parameter(name = "type", description = "Тип участника MEMBER/MODERATOR/BLOCKED/MEMBER_LINK") String type,
+            @RequestParam @Parameter(name = "type", description = "Тип участника MEMBER/MODERATOR/BLOCKED") String type,
             @RequestParam @Parameter(name = "hash", description = "Хэш очереди") String hash,
             @RequestParam @Parameter(name = "page", description = "Номер страницы (пагинация)") int page
     ){

@@ -9,7 +9,7 @@ import com.eturn.eturn.dto.parsing.GroupResponse;
 import com.eturn.eturn.entity.Faculty;
 import com.eturn.eturn.entity.Group;
 import com.eturn.eturn.entity.User;
-import com.eturn.eturn.enums.RoleEnum;
+import com.eturn.eturn.enums.Role;
 import com.eturn.eturn.exception.group.NotFoundGroupException;
 import com.eturn.eturn.exception.user.AuthPasswordException;
 import com.eturn.eturn.exception.user.NotFoundUserException;
@@ -29,7 +29,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -126,16 +125,16 @@ public class AuthenticationService {
                         throw new NotFoundGroupException("no group exception");
                     }
                 }
-                RoleEnum roleEnum;
+                Role role;
                 switch (etuIdUser.getPosition()) {
                     case "Учащийся":
-                        roleEnum = RoleEnum.STUDENT;
+                        role = Role.STUDENT;
                     case "Сотрудник":
-                        roleEnum = RoleEnum.EMPLOYEE;
+                        role = Role.EMPLOYEE;
                     default:
-                        roleEnum = RoleEnum.STUDENT;
+                        role = Role.STUDENT;
                 }
-                newUser.setRoleEnum(roleEnum);
+                newUser.setRole(role);
                 currentUser = userService.createUser(newUser);
             }
         }
@@ -149,7 +148,7 @@ public class AuthenticationService {
     // TODO Удалить функцию, когда необходимость в тестировании пользователей отсутствует.
     public JwtAuthenticationResponse signUp(UserCreateDTO userCreateDTO) {
 
-        RoleEnum r = RoleEnum.valueOf(userCreateDTO.role());
+        Role r = Role.valueOf(userCreateDTO.role());
         User user = userMapper.userCreateDTOtoUser(userCreateDTO, r);
         String password = passwordEncoder.encode(userCreateDTO.password());
         user.setPassword(password);

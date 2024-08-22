@@ -1,9 +1,7 @@
 package com.eturn.eturn.enums;
 
-public enum RoleEnum {
+/** Типы доступа. */
+public enum Role {
     EMPLOYEE,
     STUDENT,
-
-    RoleEnum() {
-    }
 }

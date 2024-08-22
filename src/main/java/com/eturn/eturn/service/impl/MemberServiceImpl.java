@@ -5,13 +5,12 @@ import com.eturn.eturn.dto.mapper.MemberListMapper;
 import com.eturn.eturn.entity.Member;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
-import com.eturn.eturn.enums.AccessMemberEnum;
+import com.eturn.eturn.enums.AccessMember;
 import com.eturn.eturn.exception.member.NoAccessMemberException;
 import com.eturn.eturn.exception.member.NotFoundMemberException;
 import com.eturn.eturn.exception.member.UnknownMemberException;
 import com.eturn.eturn.repository.MemberRepository;
 import com.eturn.eturn.service.MemberService;
-import com.eturn.eturn.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -39,9 +38,9 @@ public class MemberServiceImpl implements MemberService {
             if (memberOptional.isPresent()){
                 throw new UnknownMemberException("this member already exists");
             }
-            AccessMemberEnum accessMemberEnum = AccessMemberEnum.valueOf(access);
+            AccessMember accessMember = AccessMember.valueOf(access);
             Member member = new Member();
-            member.setAccessMemberEnum(accessMemberEnum);
+            member.setAccessMember(accessMember);
             member.setTurn(turn);
             member.setUser(user);
             member.setInvitedForTurn(invitedForTurn);
@@ -63,13 +62,9 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public AccessMemberEnum getAccess(User user, Turn turn) {
+    public AccessMember getAccess(User user, Turn turn) {
         Optional<Member> m = memberRepository.findMemberByUserAndTurn(user, turn);
-        if (m.isPresent()){
-            return m.get().getAccessMemberEnum();
-        } else {
-            return null;
-        }
+        return m.map(Member::getAccessMember).orElse(null);
     }
 
     @Override
@@ -83,10 +78,10 @@ public class MemberServiceImpl implements MemberService {
                     memberToDTO.getTurn().getId(),
                     memberToDTO.getUser().getName(),
                     memberToDTO.getUser().getGroup().getNumber(),
-                    memberToDTO.getAccessMemberEnum().toString(),
+                    memberToDTO.getAccessMember().toString(),
                     memberToDTO.isInvited(),
                     memberToDTO.isInvitedForTurn()
-                    );
+            );
         }
         else{
             throw new NotFoundMemberException("Cannot find member on getMember method MemberServiceImpl.java");
@@ -95,29 +90,29 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public long getCountMembers(Turn turn) {
-        return memberRepository.countByTurnAndAccessMemberEnum(turn, AccessMemberEnum.MEMBER);
+        return memberRepository.countByTurnAndAccessMember(turn, AccessMember.MEMBER);
     }
 
     @Override
     public long getCountModerators(Turn turn) {
-        return memberRepository.countByTurnAndAccessMemberEnum(turn, AccessMemberEnum.MODERATOR);
+        return memberRepository.countByTurnAndAccessMember(turn, AccessMember.MODERATOR);
     }
 
     @Override
     public List<MemberDTO> getMemberList(Turn turn, String type, Pageable pageable) {
-        AccessMemberEnum accessMemberEnum = AccessMemberEnum.valueOf(type);
-        Page<Member> members = memberRepository.getMemberByTurnAndAccessMemberEnum(turn, accessMemberEnum, pageable);
+        AccessMember accessMember = AccessMember.valueOf(type);
+        Page<Member> members = memberRepository.getMemberByTurnAndAccessMember(turn, accessMember, pageable);
         return memberListMapper.map(members);
     }
 
     @Override
     public List<MemberDTO> getUnconfMemberList(Turn turn, String type) {
-        AccessMemberEnum accessMemberEnum = AccessMemberEnum.valueOf(type);
+        AccessMember accessMember = AccessMember.valueOf(type);
         List<Member> members = null;
-        if (accessMemberEnum == AccessMemberEnum.MODERATOR) {
+        if (accessMember == AccessMember.MODERATOR) {
             members = memberRepository.getMemberByTurnAndInvited(turn, true);
-        } else if (accessMemberEnum == AccessMemberEnum.MEMBER) {
-            members = memberRepository.getMemberByTurnAndAccessMemberEnumAndInvitedForTurn(turn, AccessMemberEnum.MEMBER_LINK, true);
+        } else if (accessMember == AccessMember.MEMBER) {
+            members = memberRepository.getMemberByTurnAndAccessMemberAndInvitedForTurn(turn, AccessMember.MEMBER_LINK, true);
         }
         return memberListMapper.mapMember(members);
     }
@@ -134,7 +129,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public long countBlocked(Turn turn) {
-        return memberRepository.countByTurnAndAccessMemberEnum(turn, AccessMemberEnum.BLOCKED);
+        return memberRepository.countByTurnAndAccessMember(turn, AccessMember.BLOCKED);
     }
 
     @Override
@@ -144,17 +139,17 @@ public class MemberServiceImpl implements MemberService {
             Member memberGet = member.get();
             Optional<Member> memberUser = memberRepository.findMemberByUserAndTurn(user, memberGet.getTurn());
             if (memberUser.isPresent()){
-                if (memberUser.get().getAccessMemberEnum()==AccessMemberEnum.MODERATOR ||
-                        memberUser.get().getAccessMemberEnum()==AccessMemberEnum.CREATOR ){
-                        if (memberGet.getAccessMemberEnum()!=AccessMemberEnum.CREATOR){
+                if (memberUser.get().getAccessMember()== AccessMember.MODERATOR ||
+                        memberUser.get().getAccessMember()== AccessMember.CREATOR ){
+                        if (memberGet.getAccessMember()!= AccessMember.CREATOR){
                             if (!Objects.equals(type, "MEMBER") && !Objects.equals(type, "MODERATOR") && !Objects.equals(type, "BLOCKED") && !Objects.equals(type, "MEMBER_LINK")){
                                 throw new NoAccessMemberException("no access");
                             }
-                            if (memberUser.get().getAccessMemberEnum()!=AccessMemberEnum.CREATOR && type.equals("MODERATOR")){
+                            if (memberUser.get().getAccessMember()!= AccessMember.CREATOR && type.equals("MODERATOR")){
                                 throw new NoAccessMemberException("no access");
                             }
-                            AccessMemberEnum accessMemberEnum = AccessMemberEnum.valueOf(type);
-                            memberGet.setAccessMemberEnum(accessMemberEnum);
+                            AccessMember accessMember = AccessMember.valueOf(type);
+                            memberGet.setAccessMember(accessMember);
                             return memberRepository.save(memberGet);
                         }
                         else {
@@ -188,8 +183,8 @@ public class MemberServiceImpl implements MemberService {
                 if (invitedTurn == 0) memberGet.setInvitedForTurn(false);
                 if (invitedTurn == 1) memberGet.setInvitedForTurn(true);
             }
-            AccessMemberEnum accessMemberEnum = AccessMemberEnum.valueOf(type);
-            memberGet.setAccessMemberEnum(accessMemberEnum);
+            AccessMember accessMember = AccessMember.valueOf(type);
+            memberGet.setAccessMember(accessMember);
             memberRepository.save(memberGet);
         }
         else{
@@ -202,13 +197,13 @@ public class MemberServiceImpl implements MemberService {
         Optional<Member> member = memberRepository.findById(id);
         if (member.isPresent()){
             Member memberGet = member.get();
-            if (memberGet.getAccessMemberEnum()==AccessMemberEnum.CREATOR){
+            if (memberGet.getAccessMember()== AccessMember.CREATOR){
                 throw new NoAccessMemberException("you cannot delete creator of the turn");
             }
             Optional<Member> memberUser = memberRepository.findMemberByUserAndTurn(user, memberGet.getTurn());
             if (memberUser.isPresent()){
-                if (memberUser.get().getAccessMemberEnum()==AccessMemberEnum.MODERATOR ||
-                        memberUser.get().getAccessMemberEnum()==AccessMemberEnum.CREATOR || memberGet.getUser()==user){
+                if (memberUser.get().getAccessMember()== AccessMember.MODERATOR ||
+                        memberUser.get().getAccessMember()== AccessMember.CREATOR || memberGet.getUser()==user){
                     Member memberDeleted = member.get();
                     memberRepository.deleteById(id);
                     return memberDeleted;

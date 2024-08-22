@@ -1,7 +1,7 @@
 package com.eturn.eturn.entity;
 
-import com.eturn.eturn.enums.RoleEnum;
-import io.swagger.v3.oas.annotations.media.Schema;
+import com.eturn.eturn.enums.ApplicationType;
+import com.eturn.eturn.enums.Role;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,7 +34,7 @@ public class User implements UserDetails {
     private Group group;
 
     @Enumerated(EnumType.STRING)
-    private RoleEnum roleEnum;
+    private Role role;
 
     @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
     private Set<Turn> createdTurns;
@@ -46,9 +46,14 @@ public class User implements UserDetails {
     @JoinColumn(name = "turn_id")
     private Set<Position> positions;
 
+    private String tokenNotification;
+
+    @Enumerated(EnumType.STRING)
+    private ApplicationType applicationType;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(roleEnum.toString()));
+        return List.of(new SimpleGrantedAuthority(role.toString()));
     }
 
     @Override

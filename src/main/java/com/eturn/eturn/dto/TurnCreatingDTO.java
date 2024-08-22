@@ -1,7 +1,7 @@
 package com.eturn.eturn.dto;
 
-import com.eturn.eturn.enums.AccessTurnEnum;
-import com.eturn.eturn.enums.TurnEnum;
+import com.eturn.eturn.enums.AccessTurn;
+import com.eturn.eturn.enums.TurnType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.*;
@@ -23,10 +23,10 @@ public record TurnCreatingDTO(
         String description,
         @Schema(description = "Тип очереди", example="EDU / ORG")
         @Enumerated()
-        @NotNull TurnEnum turnType,
+        @NotNull TurnType turnType,
         @Schema(description = "Доступ к очереди", example="FOR_ALLOWED_GROUPS")
         @Enumerated()
-        @NotNull AccessTurnEnum turnAccess,
+        @NotNull AccessTurn turnAccess,
         @Schema(description = "Допустимые группы")
         Set<GroupDTO> allowedGroups,
         @Schema(description = "Допустимые факультеты")

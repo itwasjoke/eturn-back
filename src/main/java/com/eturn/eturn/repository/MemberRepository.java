@@ -3,8 +3,7 @@ package com.eturn.eturn.repository;
 import com.eturn.eturn.entity.Member;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
-import com.eturn.eturn.enums.AccessMemberEnum;
-import com.eturn.eturn.enums.AccessTurnEnum;
+import com.eturn.eturn.enums.AccessMember;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,17 +18,17 @@ import java.util.Optional;
 @Repository
 public interface MemberRepository extends JpaRepository<Member,Long> {
     Optional<Member> findMemberByUserAndTurn(User user, Turn turn);
-    Page<Member> getMemberByTurnAndAccessMemberEnum(Turn turn, AccessMemberEnum accessMemberEnum, Pageable pageable);
+    Page<Member> getMemberByTurnAndAccessMember(Turn turn, AccessMember accessMember, Pageable pageable);
     List<Member> getMemberByTurnAndInvited(Turn turn, boolean invited);
-    List<Member> getMemberByTurnAndAccessMemberEnumAndInvitedForTurn(Turn turn, AccessMemberEnum accessMemberEnum, boolean invitedForTurn);
+    List<Member> getMemberByTurnAndAccessMemberAndInvitedForTurn(Turn turn, AccessMember accessMember, boolean invitedForTurn);
     int countByTurnAndInvited(Turn turn, boolean invited);
     int countByTurnAndInvitedForTurn(Turn turn, boolean invitedForTurn);
-    long countByTurnAndAccessMemberEnum(Turn turn, AccessMemberEnum accessMemberEnum);
+    long countByTurnAndAccessMember(Turn turn, AccessMember accessMember);
     void deleteByTurnAndUser(Turn turn, User user);
     void deleteById(long id);
     @Query("SELECT 1 FROM Member m WHERE (m.invited = :i1 OR m.invitedForTurn = :i2) AND m.turn = :turn ")
     Optional<Member> getOneInvitedExists(@Param("turn") Turn turn, @Param("i1") boolean i1, @Param("i2") boolean i2);
     @Modifying
-    @Query("DELETE FROM Member m WHERE SIZE(m.positionsMember) = 0 AND m.turn = :turn AND m.accessMemberEnum = 'MEMBER'")
+    @Query("DELETE FROM Member m WHERE SIZE(m.positionsMember) = 0 AND m.turn = :turn AND m.accessMember = 'MEMBER'")
     void deleteMembersWithoutPositions(@Param("turn") Turn turn);
 }

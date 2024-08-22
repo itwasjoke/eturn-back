@@ -1,5 +1,6 @@
 package com.eturn.eturn.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,6 +11,7 @@ import java.util.Set;
 @Setter
 @Entity
 @Table(name = "groups")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Group {
     @Id
     private Long id;

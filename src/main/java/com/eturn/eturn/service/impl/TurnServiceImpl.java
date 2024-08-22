@@ -6,9 +6,9 @@ import com.eturn.eturn.dto.mapper.GroupMapper;
 import com.eturn.eturn.dto.mapper.TurnForListMapper;
 import com.eturn.eturn.dto.mapper.TurnCreatingMapper;
 import com.eturn.eturn.entity.*;
-import com.eturn.eturn.enums.AccessMemberEnum;
-import com.eturn.eturn.enums.AccessTurnEnum;
-import com.eturn.eturn.enums.RoleEnum;
+import com.eturn.eturn.enums.AccessMember;
+import com.eturn.eturn.enums.AccessTurn;
+import com.eturn.eturn.enums.Role;
 import com.eturn.eturn.exception.member.NoAccessMemberException;
 import com.eturn.eturn.exception.member.NotFoundMemberException;
 import com.eturn.eturn.exception.turn.*;
@@ -17,7 +17,8 @@ import com.eturn.eturn.security.HashGenerator;
 import com.eturn.eturn.service.MemberService;
 import com.eturn.eturn.service.TurnService;
 import com.eturn.eturn.service.UserService;
-import org.springframework.data.domain.Page;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,8 @@ import java.util.*;
 
 @Service
 public class TurnServiceImpl implements TurnService {
+
+    private static Logger logger = LogManager.getLogger(TurnServiceImpl.class);
     private final TurnRepository turnRepository;
     private final UserService userService;
     private final MemberService memberService;
@@ -95,17 +98,17 @@ public class TurnServiceImpl implements TurnService {
             long timeDiff = turnDTO.dateEnd().getTime() - turnDTO.dateStart().getTime();
             long year = 1000*60*60*24*365L;
             long month = 1000*60*60*24*31L;
-            if (user.getRoleEnum() == RoleEnum.STUDENT && (timeDiff > 1000*60*60*24*3 || timeDiff < 0))
+            if (user.getRole() == Role.STUDENT && (timeDiff > 1000*60*60*24*3 || timeDiff < 0))
                 throw new InvalidTimeToCreateTurnException("Invalid turn duration");
-            if (user.getRoleEnum() == RoleEnum.EMPLOYEE && (timeDiff > year || timeDiff < 0))
+            if (user.getRole() == Role.EMPLOYEE && (timeDiff > year || timeDiff < 0))
                 throw new InvalidTimeToCreateTurnException("Invalid turn duration");
-            if (user.getRoleEnum() == RoleEnum.STUDENT && ((turnDTO.dateStart().getTime() - now.getTime() > month) || (turnDTO.dateStart().getTime() - now.getTime() < -1000*60*2)))
+            if (user.getRole() == Role.STUDENT && ((turnDTO.dateStart().getTime() - now.getTime() > month) || (turnDTO.dateStart().getTime() - now.getTime() < -1000*60*2)))
                 throw new InvalidLengthTurnException("The turn is too long (or short)");
-            if (user.getRoleEnum() == RoleEnum.EMPLOYEE && ((turnDTO.dateStart().getTime() - now.getTime() > month * 3) || (turnDTO.dateStart().getTime() - now.getTime() < -1000*60*2)))
+            if (user.getRole() == Role.EMPLOYEE && ((turnDTO.dateStart().getTime() - now.getTime() > month * 3) || (turnDTO.dateStart().getTime() - now.getTime() < -1000*60*2)))
                 throw new InvalidLengthTurnException("The turn is too long (or short)");
             Turn turn = turnCreatingMapper.turnMoreDTOToTurn(turnDTO, user);
             StringBuilder allowedElements = new StringBuilder(" ");
-            if (turn.getAccessTurnType() == AccessTurnEnum.FOR_ALLOWED_ELEMENTS) {
+            if (turn.getAccessTurnType() == AccessTurn.FOR_ALLOWED_ELEMENTS) {
                 if (turn.getAllowedGroups() != null) {
                     for (Group group : turn.getAllowedGroups()) {
                         allowedElements.append(group.getNumber()).append(" ");
@@ -121,7 +124,6 @@ public class TurnServiceImpl implements TurnService {
             String tags = turn.getName() + " " + turn.getDescription() + allowedElements + user.getName();
             turn.setTags(tags);
             turn.setCountUsers(0);
-            Turn turnNew = turnRepository.save(turn);
             String hash = HashGenerator.generateUniqueCode();
             int count = 0;
             while (turnRepository.existsAllByHash(hash)) {
@@ -135,10 +137,11 @@ public class TurnServiceImpl implements TurnService {
                 // TODO Создать нормальное исключение
                 throw new InvalidDataTurnException("error");
             }
-            turnNew.setHash(hash);
-            Turn turnWithHash = turnRepository.save(turnNew);
+            turn.setHash(hash);
+            Turn turnWithHash = turnRepository.save(turn);
+            logger.info("Turn created");
             memberService.createMember(user, turnWithHash, "CREATOR", false);
-            return turnWithHash.getHash();
+            return hash;
         } else
             throw new InvalidDataTurnException("The dateEnd cannot be earlier than the dateStart on createTurn method (TurnServiceImpl.java)");
 
@@ -152,8 +155,8 @@ public class TurnServiceImpl implements TurnService {
         if (turn.isEmpty()){
             throw new NotFoundTurnException("No turn in database on deleteTurn method (TurnServiceImpl.java)");
         }
-        AccessMemberEnum access = memberService.getAccess(user, turn.get());
-        if (access == AccessMemberEnum.CREATOR) {
+        AccessMember access = memberService.getAccess(user, turn.get());
+        if (access == AccessMember.CREATOR) {
             turnRepository.deleteTurnById(turn.get().getId());
         } else {
             throw new NoAccessDeleteTurnException("Only creator can delete turn information on deleteTurn method (TurnServiceImpl.java)");
@@ -175,7 +178,7 @@ public class TurnServiceImpl implements TurnService {
         Optional<Member> member = memberService.getOptionalMember(user, turn);
         String access;
         if (member.isPresent()){
-            access = member.get().getAccessMemberEnum().toString();
+            access = member.get().getAccessMember().toString();
         }
         else {
             access = null;
@@ -195,8 +198,8 @@ public class TurnServiceImpl implements TurnService {
         }
         Optional<Member> member = memberService.getOptionalMember(user, turn.get());
         if (member.isPresent()){
-            AccessMemberEnum access = member.get().getAccessMemberEnum();
-            if (access == AccessMemberEnum.CREATOR || access == AccessMemberEnum.MODERATOR){
+            AccessMember access = member.get().getAccessMember();
+            if (access == AccessMember.CREATOR || access == AccessMember.MODERATOR){
                 Pageable paging = PageRequest.of(page, 20);
                 return memberService.getMemberList(turn.get(), type, paging);
             }
@@ -218,8 +221,8 @@ public class TurnServiceImpl implements TurnService {
         }
         Optional<Member> member = memberService.getOptionalMember(user, turn.get());
         if (member.isPresent()){
-            AccessMemberEnum access = member.get().getAccessMemberEnum();
-            if (access == AccessMemberEnum.CREATOR || access == AccessMemberEnum.MODERATOR){
+            AccessMember access = member.get().getAccessMember();
+            if (access == AccessMember.CREATOR || access == AccessMember.MODERATOR){
                 return memberService.getUnconfMemberList(turn.get(), type);
             }
             else{
@@ -268,7 +271,7 @@ public class TurnServiceImpl implements TurnService {
                 }
                 Set<String> groupsName = new HashSet<>();
                 Set<String> facultiesName = new HashSet<>();
-                if (newTurn.getAccessTurnType() == AccessTurnEnum.FOR_ALLOWED_ELEMENTS) {
+                if (newTurn.getAccessTurnType() == AccessTurn.FOR_ALLOWED_ELEMENTS) {
                     if (newTurn.getAllowedGroups() != null) {
                         for (Group group : newTurn.getAllowedGroups()) {
                             groupsName.add(group.getNumber());

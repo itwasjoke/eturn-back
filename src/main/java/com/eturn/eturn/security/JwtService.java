@@ -1,32 +1,19 @@
 package com.eturn.eturn.security;
 
-import com.eturn.eturn.dto.UserCreateDTO;
-import com.eturn.eturn.entity.Faculty;
-import com.eturn.eturn.entity.Group;
 import com.eturn.eturn.entity.User;
-import com.eturn.eturn.enums.RoleEnum;
-import com.eturn.eturn.exception.user.NotFoundUserException;
-import com.eturn.eturn.service.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
-import javax.management.relation.Role;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 
 @Service
@@ -53,7 +40,7 @@ public class JwtService {
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", userCreated.getId());
-        claims.put("role", userCreated.getRoleEnum());
+        claims.put("role", userCreated.getRole());
         return generateToken(claims, userCreated);
 
     }

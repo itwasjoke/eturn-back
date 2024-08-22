@@ -5,11 +5,12 @@ import com.eturn.eturn.dto.mapper.PositionListMapper;
 import com.eturn.eturn.dto.mapper.PositionMoreInfoMapper;
 import com.eturn.eturn.dto.mapper.TurnMapper;
 import com.eturn.eturn.entity.*;
-import com.eturn.eturn.enums.AccessMemberEnum;
-import com.eturn.eturn.enums.AccessTurnEnum;
+import com.eturn.eturn.enums.AccessMember;
+import com.eturn.eturn.enums.AccessTurn;
 import com.eturn.eturn.exception.member.NoAccessMemberException;
 import com.eturn.eturn.exception.member.NotFoundMemberException;
 import com.eturn.eturn.exception.position.*;
+import com.eturn.eturn.notifications.NotificationController;
 import com.eturn.eturn.repository.PositionRepository;
 import com.eturn.eturn.service.*;
 import org.springframework.data.domain.Page;
@@ -28,17 +29,20 @@ public class PositionServiceImpl implements PositionService {
     private final PositionListMapper positionListMapper;
     private final TurnService turnService;
 
+    private final NotificationController notificationController;
+
     final private TurnMapper turnMapper;
     private final PositionMoreInfoMapper positionMoreInfoMapper;
     private final MemberService memberService;
 
 
     public PositionServiceImpl(PositionRepository positionRepository, UserService userService,
-                               PositionListMapper positionListMapper, TurnService turnService, TurnMapper turnMapper, PositionMoreInfoMapper positionMoreInfoMapper, MemberService memberService) {
+                               PositionListMapper positionListMapper, TurnService turnService, NotificationController notificationController, TurnMapper turnMapper, PositionMoreInfoMapper positionMoreInfoMapper, MemberService memberService) {
         this.positionRepository = positionRepository;
         this.userService = userService;
         this.positionListMapper = positionListMapper;
         this.turnService = turnService;
+        this.notificationController = notificationController;
         this.turnMapper = turnMapper;
         this.positionMoreInfoMapper = positionMoreInfoMapper;
         this.memberService = memberService;
@@ -96,12 +100,12 @@ public class PositionServiceImpl implements PositionService {
         }
         else {
             currentMember = member.get();
-            if (currentMember.getAccessMemberEnum() == AccessMemberEnum.MEMBER_LINK && turn.getAccessTurnType() == AccessTurnEnum.FOR_LINK){
+            if (currentMember.getAccessMember() == AccessMember.MEMBER_LINK && turn.getAccessTurnType() == AccessTurn.FOR_LINK){
                 memberService.changeMemberStatusFrom(currentMember.getId(), "MEMBER", -1, -1);
             }
         }
-        AccessMemberEnum access = currentMember.getAccessMemberEnum();
-        if (access != AccessMemberEnum.BLOCKED && !currentMember.isInvitedForTurn()){
+        AccessMember access = currentMember.getAccessMember();
+        if (access != AccessMember.BLOCKED && !currentMember.isInvitedForTurn()){
             deleteOverdueElements(turn);
             // рассчет участников
             if (positionRepository.countAllByTurn(turn) > 0) {
@@ -237,8 +241,8 @@ public class PositionServiceImpl implements PositionService {
             MemberDTO memberDTO = memberService.getMember(user, posI.getTurn());
             String access = memberDTO.access();
             if (posI.getUser()==user
-                    || access.equals(AccessMemberEnum.CREATOR.toString())
-                    || access.equals(AccessMemberEnum.MODERATOR.toString()))
+                    || access.equals(AccessMember.CREATOR.toString())
+                    || access.equals(AccessMember.MODERATOR.toString()))
             {
                 deleteOverdueElements(posI.getTurn());
                 Optional<Position> positionO = positionRepository.findById(id);
@@ -298,25 +302,27 @@ public class PositionServiceImpl implements PositionService {
                 throw new NoAccessMemberException("you are not member");
             }
             Member member = oMember.get();
-            AccessMemberEnum access = member.getAccessMemberEnum();
-            if (access == AccessMemberEnum.MEMBER && pos.getUser()==user || access == AccessMemberEnum.CREATOR || access == AccessMemberEnum.MODERATOR) {
+            AccessMember access = member.getAccessMember();
+            if (access == AccessMember.MEMBER && pos.getUser()==user || access == AccessMember.CREATOR || access == AccessMember.MODERATOR) {
                 positionRepository.delete(pos);
                 Optional<Position> p = positionRepository.findFirstByTurnOrderByNumberAsc(pos.getTurn());
-                if (p.isPresent()){
+                if (p.isPresent()) {
                     Position changePosition = p.get();
+                    System.out.println("YES YES YES");
+                    notificationController.notifyUserOfTurnPositionChange(changePosition.getTurn().getId());
                     Date date = new Date();
                     Calendar c = Calendar.getInstance();
                     c.setTime(date);
                     c.add(Calendar.MINUTE, pos.getTurn().getTimer());
                     changePosition.setDateEnd(c.getTime());
                     positionRepository.save(changePosition);
-                }
-                Optional<Position> pUser = positionRepository.findFirstByUserAndTurnOrderByNumberAsc(pos.getUser(), pos.getTurn());
-                if (pUser.isEmpty() && access == AccessMemberEnum.MEMBER && pos.getTurn().getAccessTurnType()==AccessTurnEnum.FOR_LINK){
-                    memberService.changeMemberStatusFrom(member.getId(), "MEMBER_LINK", -1, -1);
-                }
-                else if (pUser.isEmpty() && access == AccessMemberEnum.MEMBER) {
-                    memberService.deleteMemberFrom(pos.getTurn(), user);
+
+                    Optional<Position> pUser = positionRepository.findFirstByUserAndTurnOrderByNumberAsc(pos.getUser(), pos.getTurn());
+                    if (pUser.isEmpty() && access == AccessMember.MEMBER && pos.getTurn().getAccessTurnType() == AccessTurn.FOR_LINK) {
+                        memberService.changeMemberStatusFrom(member.getId(), "MEMBER_LINK", -1, -1);
+                    } else if (pUser.isEmpty() && access == AccessMember.MEMBER) {
+                        memberService.deleteMemberFrom(pos.getTurn(), user);
+                    }
                 }
             }
             else{
@@ -346,16 +352,16 @@ public class PositionServiceImpl implements PositionService {
         }
         Member member = memberService.changeMemberStatus(id, type, user);
         boolean positionExist = positionRepository.existsAllByTurnAndUser(member.getTurn(), member.getUser());
-        if (member.getAccessMemberEnum() == AccessMemberEnum.MEMBER){
+        if (member.getAccessMember() == AccessMember.MEMBER){
             Turn turn = member.getTurn();
             if (
                     !positionExist
-                    && turn.getAccessTurnType() == AccessTurnEnum.FOR_ALLOWED_ELEMENTS
+                    && turn.getAccessTurnType() == AccessTurn.FOR_ALLOWED_ELEMENTS
             ){
                 memberService.deleteMemberFrom(member.getId());
             } else if (
                     !positionExist
-                            && turn.getAccessTurnType() == AccessTurnEnum.FOR_LINK
+                            && turn.getAccessTurnType() == AccessTurn.FOR_LINK
             ) {
                 member = memberService.changeMemberStatus(id, "MEMBER_LINK", user);
             }
@@ -457,7 +463,7 @@ public class PositionServiceImpl implements PositionService {
             Optional<Member> optionalMember = memberService.getOptionalMember(user, pos.getTurn());
             if (optionalMember.isPresent()) {
                 Member member = optionalMember.get();
-                if (member.getAccessMemberEnum() == AccessMemberEnum.MODERATOR || member.getAccessMemberEnum() == AccessMemberEnum.CREATOR) {
+                if (member.getAccessMember() == AccessMember.MODERATOR || member.getAccessMember() == AccessMember.CREATOR) {
                     int difference = 0;
                     return positionMoreInfoMapper.positionMoreInfoToPositionDTO(pos, difference);
                 }
@@ -468,8 +474,8 @@ public class PositionServiceImpl implements PositionService {
 
     @Override
     public Member addTurnToUser(User user, Turn turn) {
-        AccessTurnEnum turnEnum = turn.getAccessTurnType();
-        if (turnEnum == AccessTurnEnum.FOR_LINK) {
+        AccessTurn turnEnum = turn.getAccessTurnType();
+        if (turnEnum == AccessTurn.FOR_LINK) {
             return memberService.createMember(user, turn, "MEMBER_LINK", true);
         } else {
             Set<Group> groups = turn.getAllowedGroups();
@@ -497,7 +503,7 @@ public class PositionServiceImpl implements PositionService {
         boolean existsInvited = false;
         MembersCountDTO membersCountDTO = null;
         if (m.isPresent()){
-            if (m.get().getAccessMemberEnum() == AccessMemberEnum.CREATOR || m.get().getAccessMemberEnum() == AccessMemberEnum.MODERATOR) {
+            if (m.get().getAccessMember() == AccessMember.CREATOR || m.get().getAccessMember() == AccessMember.MODERATOR) {
                 existsInvited = memberService.invitedExists(turn);
                  membersCountDTO = new MembersCountDTO(
                         (int) memberService.getCountModerators(turn),
@@ -507,7 +513,7 @@ public class PositionServiceImpl implements PositionService {
                         (int) memberService.countBlocked(turn)
                 );
             }
-            access = m.get().getAccessMemberEnum().name();
+            access = m.get().getAccessMember().name();
             invited1 = m.get().isInvited();
             invited2 = m.get().isInvitedForTurn();
         }
@@ -551,7 +557,7 @@ public class PositionServiceImpl implements PositionService {
         }
         Optional<Member> memberPresent = memberService.getOptionalMember(user, turn);
         if (memberPresent.isPresent()) {
-            if (memberPresent.get().getAccessMemberEnum() == AccessMemberEnum.BLOCKED) {
+            if (memberPresent.get().getAccessMember() == AccessMember.BLOCKED) {
                 throw new NoAccessMemberException("You are blocked");
             }
             memberService.changeMemberInvite(memberPresent.get().getId(), true);
