@@ -1,11 +1,6 @@
 package com.eturn.eturn.service.impl.notifications;
 
-import java.util.List;
 import com.eturn.eturn.service.NotificationService;
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.FirebaseMessagingException;
-import com.google.firebase.messaging.Message;
-import com.google.firebase.messaging.Notification;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
@@ -35,12 +30,16 @@ public class AndroidNotifyServiceImpl implements NotificationService {
     }
 
     @Override
-    public void notifyTurnCreated(List<String> tokens, String turnName) {
-
+    public void notifyTurnCreated(String token, String turnName) {
+        String title = "Вам доступна новая очередь";
+        String body = "Создана новая очередь под названием \"" + turnName + "\"";
+        logger.info("Notification body: " + title + " // " + body);
     }
 
     @Override
-    public void notifyReceiptRequest(List<String> tokens) {
-
+    public void notifyReceiptRequest(String token, String turnName) {
+        String title = "Новая заявка";
+        String body = "Обработайте заявки на вступление в очереди \"" + turnName + "\"";
+        logger.info("Notification body: " + title + " // " + body);
     }
 }

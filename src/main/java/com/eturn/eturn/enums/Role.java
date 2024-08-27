@@ -4,4 +4,5 @@ package com.eturn.eturn.enums;
 public enum Role {
     EMPLOYEE,
     STUDENT,
+    ADMIN
 }

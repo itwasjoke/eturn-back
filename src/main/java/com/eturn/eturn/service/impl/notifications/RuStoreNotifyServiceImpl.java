@@ -5,8 +5,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 public class RuStoreNotifyServiceImpl implements NotificationService {
     private static final Logger logger = LogManager.getLogger(RuStoreNotifyServiceImpl.class);
@@ -19,12 +17,16 @@ public class RuStoreNotifyServiceImpl implements NotificationService {
     }
 
     @Override
-    public void notifyTurnCreated(List<String> tokens, String turnName) {
-
+    public void notifyTurnCreated(String token, String turnName) {
+        String title = "Вам доступна новая очередь";
+        String body = "Создана новая очередь под названием \"" + turnName + "\"";
+        logger.info("Notification body: " + title + " // " + body);
     }
 
     @Override
-    public void notifyReceiptRequest(List<String> tokens) {
-
+    public void notifyReceiptRequest(String token, String turnName) {
+        String title = "Новая заявка";
+        String body = "Обработайте заявки на вступление в очереди \"" + turnName + "\"";
+        logger.info("Notification body: " + title + " // " + body);
     }
 }

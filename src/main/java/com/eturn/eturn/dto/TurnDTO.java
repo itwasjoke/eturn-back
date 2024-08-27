@@ -2,17 +2,17 @@ package com.eturn.eturn.dto;
 
 import com.eturn.eturn.enums.TurnType;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 
 import java.util.Date;
 import java.util.List;
 
+/** DTO для отправки очереди */
 @Schema(description = "Очередь")
 public record TurnDTO(
         @Schema(description = "Идентификатор очереди", example="AXKVe4")
         String hash,
-        @Size(min = 1, max = 255)
         @NotNull
         @Schema(description = "Имя очереди", example="Очередь за булочкой")
         String name,
@@ -30,13 +30,14 @@ public record TurnDTO(
         Integer averageTime,
         @Schema(description = "Доступ", example="CREATOR")
         String access,
-        @Schema(description = "Тип доступа", example="FOR_LINK/GROUPS/FACULTIES")
+        @Schema(description = "Тип доступа", example="FOR_LINK/FOR_ALLOWED_ELEMENTS")
         String accessType,
-        @Schema(description = "Тип очереди", example="EDU/ORG")
+        @Schema(description = "Тип очереди", example="EDU")
+        @Enumerated()
         TurnType turnType,
         @Schema(description = "Количество позиций, через которое можно вставать в очередь", example="1")
         Integer positionCount,
-        @Schema(description = "Разрешенные элементы очереди", example="[1, 2, 4, 65, 144]")
+        @Schema(description = "ID групп и факультетов для редактирования", example="[1, 2, 4, 65, 144]")
         List<Long> accessElements,
         @Schema(description = "Подана ли заявка на вступление в модерацию", example="false")
         boolean invitedModerator,
@@ -44,7 +45,7 @@ public record TurnDTO(
         boolean invitedForTurn,
         @Schema(description = "Есть ли заявки для модератора", example="false")
         boolean existsInvited,
-        @Schema(description = "Количество участников/модераторов/заявок/заблокированных", example="3, 24, 2, 8, 1")
+        @Schema(description = "Количество участников")
         MembersCountDTO membersCount,
         @Schema(description = "Время на удаление", example="2")
         Integer timer

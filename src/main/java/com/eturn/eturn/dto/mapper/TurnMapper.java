@@ -10,6 +10,7 @@ import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
 
+/** Маппер для очереди */
 @Mapper(
         componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.IGNORE,

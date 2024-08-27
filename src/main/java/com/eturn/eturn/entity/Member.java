@@ -27,7 +27,6 @@ public class Member {
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Position> positionsMember;
 
-
     @Enumerated(EnumType.STRING)
     private AccessMember accessMember;
 

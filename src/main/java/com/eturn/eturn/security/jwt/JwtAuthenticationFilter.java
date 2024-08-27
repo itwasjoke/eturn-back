@@ -1,4 +1,4 @@
-package com.eturn.eturn.security;
+package com.eturn.eturn.security.jwt;
 
 import com.eturn.eturn.service.UserService;
 import jakarta.servlet.FilterChain;

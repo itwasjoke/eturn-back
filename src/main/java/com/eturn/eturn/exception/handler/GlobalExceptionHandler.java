@@ -11,6 +11,7 @@ import com.eturn.eturn.exception.member.NotFoundMemberException;
 import com.eturn.eturn.exception.member.UnknownMemberException;
 import com.eturn.eturn.exception.position.*;
 import com.eturn.eturn.exception.turn.*;
+import com.eturn.eturn.exception.user.AccessException;
 import com.eturn.eturn.exception.user.AuthPasswordException;
 import com.eturn.eturn.exception.user.LocalNotFoundUserException;
 import com.eturn.eturn.exception.user.NotFoundUserException;
@@ -122,6 +123,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         log.error("Error with this message: " + e.getMessage());
         String body = "Вы не можете создать так много очередей";
         return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    @ExceptionHandler(AccessException.class)
+    public ResponseEntity<Object> handleInvalidCreateTurn(AccessException e, WebRequest request) {
+        log.error("Error with this message: " + e.getMessage());
+        String body = "Нет доступа к этому ресурсу";
+        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
     }
 
     //

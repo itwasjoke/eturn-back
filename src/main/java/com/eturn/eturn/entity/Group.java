@@ -15,13 +15,11 @@ import java.util.Set;
 public class Group {
     @Id
     private Long id;
-
     private String number;
     private Integer course;
     @ManyToOne
     @JoinColumn(name = "faculty_id")
     private Faculty faculty;
-
     @ManyToMany(mappedBy = "allowedGroups",fetch = FetchType.LAZY)
     private Set<Turn> turns;
 }

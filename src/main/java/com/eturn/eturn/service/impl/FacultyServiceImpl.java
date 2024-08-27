@@ -23,7 +23,7 @@ public class FacultyServiceImpl implements FacultyService {
 
     @Override
     public Faculty createFaculty(FacultyDTO facultyDTO) {
-        Faculty f = facultyMapper.DTOtoFaculty(facultyDTO);
+        Faculty f = facultyMapper.dtoToFaculty(facultyDTO);
         if (facultyRepository.existsById(f.getId())){
             Faculty existedFaculty = facultyRepository.getFacultyById(f.getId());
             if (!Objects.equals(existedFaculty.getName(), f.getName())){

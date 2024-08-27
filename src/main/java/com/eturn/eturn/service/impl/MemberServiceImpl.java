@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -250,5 +251,17 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public boolean invitedExists(Turn turn) {
         return memberRepository.getOneInvitedExists(turn, true, true).isPresent();
+    }
+
+    @Override
+    public List<User> getModeratorsOfTurn(long turnId) {
+        List<Member> members = memberRepository.getAllByTurn_IdAndAccessMember(turnId, AccessMember.MODERATOR);
+        Member creator = memberRepository.getMemberByTurn_IdAndAccessMember(turnId, AccessMember.CREATOR);
+        List<User> users = new ArrayList<>();
+        for (Member m: members) {
+            users.add(m.getUser());
+        }
+        users.add(creator.getUser());
+        return users;
     }
 }

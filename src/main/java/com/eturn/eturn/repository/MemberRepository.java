@@ -31,4 +31,6 @@ public interface MemberRepository extends JpaRepository<Member,Long> {
     @Modifying
     @Query("DELETE FROM Member m WHERE SIZE(m.positionsMember) = 0 AND m.turn = :turn AND m.accessMember = 'MEMBER'")
     void deleteMembersWithoutPositions(@Param("turn") Turn turn);
+    List<Member> getAllByTurn_IdAndAccessMember(long turnId, AccessMember accessMember);
+    Member getMemberByTurn_IdAndAccessMember(long turnId, AccessMember accessMember);
 }

@@ -12,6 +12,7 @@ import com.eturn.eturn.enums.Role;
 import com.eturn.eturn.exception.member.NoAccessMemberException;
 import com.eturn.eturn.exception.member.NotFoundMemberException;
 import com.eturn.eturn.exception.turn.*;
+import com.eturn.eturn.notifications.NotificationController;
 import com.eturn.eturn.repository.TurnRepository;
 import com.eturn.eturn.security.HashGenerator;
 import com.eturn.eturn.service.MemberService;
@@ -33,12 +34,12 @@ public class TurnServiceImpl implements TurnService {
     private final TurnRepository turnRepository;
     private final UserService userService;
     private final MemberService memberService;
+    private final TurnCreatingMapper turnCreatingMapper;
+    private final TurnForListMapper turnForListMapper;
+    private final GroupMapper groupMapper;
+    private final FacultyMapper facultyMapper;
 
-    final private TurnCreatingMapper turnCreatingMapper;
-    final private TurnForListMapper turnForListMapper;
-
-    final private GroupMapper groupMapper;
-    final private FacultyMapper facultyMapper;
+    private final NotificationController notificationController;
 
 
     public TurnServiceImpl(
@@ -47,7 +48,7 @@ public class TurnServiceImpl implements TurnService {
             MemberService memberService,
             TurnCreatingMapper turnCreatingMapper,
             TurnForListMapper turnForListMapper,
-            GroupMapper groupMapper, FacultyMapper facultyMapper) {
+            GroupMapper groupMapper, FacultyMapper facultyMapper, NotificationController notificationController) {
         this.turnRepository = turnRepository;
         this.userService = userService;
         this.memberService = memberService;
@@ -55,6 +56,7 @@ public class TurnServiceImpl implements TurnService {
         this.turnForListMapper = turnForListMapper;
         this.groupMapper = groupMapper;
         this.facultyMapper = facultyMapper;
+        this.notificationController = notificationController;
     }
     @Override
     public Turn getTurnFrom(String hash) {
@@ -112,6 +114,7 @@ public class TurnServiceImpl implements TurnService {
                 if (turn.getAllowedGroups() != null) {
                     for (Group group : turn.getAllowedGroups()) {
                         allowedElements.append(group.getNumber()).append(" ");
+                        notificationController.notifyTurnCreated(group.getId(), turn.getName());
                     }
                 }
                 if (turn.getAllowedFaculties() != null) {
@@ -177,15 +180,9 @@ public class TurnServiceImpl implements TurnService {
         User user = userService.findByLogin(username);
         Optional<Member> member = memberService.getOptionalMember(user, turn);
         String access;
-        if (member.isPresent()){
-            access = member.get().getAccessMember().toString();
-        }
-        else {
-            access = null;
-        }
+        access = member.map(value -> value.getAccessMember().toString()).orElse(null);
         List<TurnForListDTO> turnList = new ArrayList<>();
         turnList.add(turnForListMapper.turnToTurnForListDTO(turn, access));
-
         return turnList;
     }
 
@@ -193,7 +190,7 @@ public class TurnServiceImpl implements TurnService {
     public List<MemberDTO> getMemberList(String username, String type, String hash, int page) {
         User user = userService.findByLogin(username);
         Optional<Turn> turn = turnRepository.findTurnByHash(hash);
-        if (turn.isEmpty()){
+        if (turn.isEmpty()) {
             throw new NotFoundTurnException("turn not found in getMember function");
         }
         Optional<Member> member = memberService.getOptionalMember(user, turn.get());
@@ -249,7 +246,7 @@ public class TurnServiceImpl implements TurnService {
                     if (!turn.allowedGroups().isEmpty() && !newTurn.getAllowedGroups().isEmpty()) {
                         Set<Group> groups = newTurn.getAllowedGroups();
                         for (GroupDTO groupDTO : turn.allowedGroups()) {
-                            groups.add(groupMapper.DTOtoGroup(groupDTO));
+                            groups.add(groupMapper.dtoToGroup(groupDTO));
                         }
                         newTurn.setAllowedGroups(groups);
                     }
@@ -258,7 +255,7 @@ public class TurnServiceImpl implements TurnService {
                     if (!turn.allowedFaculties().isEmpty() && !newTurn.getAllowedFaculties().isEmpty()) {
                         Set<Faculty> faculties = newTurn.getAllowedFaculties();
                         for (FacultyDTO facultyDTO : turn.allowedFaculties()) {
-                            faculties.add(facultyMapper.DTOtoFaculty(facultyDTO));
+                            faculties.add(facultyMapper.dtoToFaculty(facultyDTO));
                         }
                         newTurn.setAllowedFaculties(faculties);
                     }

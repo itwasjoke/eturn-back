@@ -7,6 +7,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
+/** Маппер для групп */
 @Mapper(
         componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
@@ -15,5 +16,5 @@ import org.mapstruct.ReportingPolicy;
 public interface GroupMapper {
     @Mapping(target = "turns", ignore = true)
     @Mapping(target = "number", source = "dto.number")
-    Group DTOtoGroup(GroupDTO dto);
+    Group dtoToGroup(GroupDTO dto);
 }

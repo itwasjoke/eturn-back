@@ -35,10 +35,8 @@ import java.util.Map;
 @RequestMapping(value ="/turn", produces = "application/json; charset=utf-8")
 @Tag(name = "Очереди", description = "Обработка информации об очередях")
 public class TurnController {
-
     private final TurnService turnService;
     private final PositionService positionService;
-
     public TurnController(TurnService turnService, PositionService positionService) {
         this.turnService = turnService;
         this.positionService = positionService;

@@ -10,6 +10,7 @@ import org.hibernate.validator.constraints.Range;
 import java.util.Date;
 import java.util.Set;
 
+/** DTO для создания очереди */
 @Schema(description = "Очередь с подробной информацией")
 public record TurnCreatingDTO(
         @Schema(description = "Идентификатор очереди", example="1")
@@ -21,7 +22,7 @@ public record TurnCreatingDTO(
         @Schema(description = "Описание очереди", example="Готовим банковские карты. Всем приятного аппетита!")
         @Size(min = 1, max = 200)
         String description,
-        @Schema(description = "Тип очереди", example="EDU / ORG")
+        @Schema(description = "Тип очереди", example="EDU")
         @Enumerated()
         @NotNull TurnType turnType,
         @Schema(description = "Доступ к очереди", example="FOR_ALLOWED_GROUPS")

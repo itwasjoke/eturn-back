@@ -1,8 +1,8 @@
 package com.eturn.eturn.service.impl;
 
 import com.eturn.eturn.dto.*;
+import com.eturn.eturn.dto.mapper.DetailedPositionMapper;
 import com.eturn.eturn.dto.mapper.PositionListMapper;
-import com.eturn.eturn.dto.mapper.PositionMoreInfoMapper;
 import com.eturn.eturn.dto.mapper.TurnMapper;
 import com.eturn.eturn.entity.*;
 import com.eturn.eturn.enums.AccessMember;
@@ -33,26 +33,25 @@ public class PositionServiceImpl implements PositionService {
     private final PositionListMapper positionListMapper;
     private final TurnService turnService;
     private final NotificationController notificationController;
-
-    final private TurnMapper turnMapper;
-    private final PositionMoreInfoMapper positionMoreInfoMapper;
+    private final TurnMapper turnMapper;
+    private final DetailedPositionMapper detailedPositionMapper;
     private final MemberService memberService;
 
 
     public PositionServiceImpl(PositionRepository positionRepository, UserService userService,
-                               PositionListMapper positionListMapper, TurnService turnService, NotificationController notificationController, TurnMapper turnMapper, PositionMoreInfoMapper positionMoreInfoMapper, MemberService memberService) {
+                               PositionListMapper positionListMapper, TurnService turnService, NotificationController notificationController, TurnMapper turnMapper, DetailedPositionMapper detailedPositionMapper, MemberService memberService) {
         this.positionRepository = positionRepository;
         this.userService = userService;
         this.positionListMapper = positionListMapper;
         this.turnService = turnService;
         this.notificationController = notificationController;
         this.turnMapper = turnMapper;
-        this.positionMoreInfoMapper = positionMoreInfoMapper;
+        this.detailedPositionMapper = detailedPositionMapper;
         this.memberService = memberService;
     }
 
     @Transactional
-        public void deleteOverdueElements(Turn turn){
+    public void deleteOverdueElements(Turn turn){
         if (turn.getTimer() == 0 || turn.getDateStart().getTime() > new Date().getTime()) {
             return;
         }
@@ -62,7 +61,7 @@ public class PositionServiceImpl implements PositionService {
             if (positionFirst.getDateEnd()!=null && !positionFirst.isStart()){
                 Date dateNow = new Date();
                 long timeBetween = dateNow.getTime() - positionFirst.getDateEnd().getTime();
-                if (timeBetween>0){
+                if (timeBetween>0) {
                     timeBetween = timeBetween / 1000;
                     timeBetween = timeBetween / 60;
                     timeBetween = timeBetween / turn.getTimer();
@@ -73,6 +72,7 @@ public class PositionServiceImpl implements PositionService {
                     }
                     positionRepository.deleteByTurnAndNumberLessThanEqual(turn, number);
                     memberService.deleteMembersWithoutPositions(turn);
+                    logger.info(String.format("From turn %s deleted %d elements", turn.getName(), timeBetween));
                     Optional<Position> positionFirstO2 = positionRepository.findFirstByTurnOrderByNumberAsc(turn);
                     if (positionFirstO2.isPresent()){
                         Position positionF = positionFirstO2.get();
@@ -82,6 +82,7 @@ public class PositionServiceImpl implements PositionService {
                         c.add(Calendar.MINUTE, turn.getTimer());
                         positionF.setDateEnd(c.getTime());
                         positionRepository.save(positionF);
+                        logger.info(String.format("From turn %s timer starts", turn.getName()));
                     }
                 }
             }
@@ -90,9 +91,7 @@ public class PositionServiceImpl implements PositionService {
 
     @Override
     @Transactional
-    public PositionMoreInfoDTO createPositionAndSave(String login, String hash) {
-
-        // получение основной информации
+    public DetailedPositionDTO createPositionAndSave(String login, String hash) {
         Turn turn = turnService.getTurnFrom(hash);
         User user = userService.findByLogin(login);
         Optional<Member> member = memberService.getOptionalMember(user, turn);
@@ -100,8 +99,7 @@ public class PositionServiceImpl implements PositionService {
         Member currentMember;
         if (member.isEmpty()) {
             currentMember = addTurnToUser(user, turn);
-        }
-        else {
+        } else {
             currentMember = member.get();
             if (currentMember.getAccessMember() == AccessMember.MEMBER_LINK && turn.getAccessTurnType() == AccessTurn.FOR_LINK){
                 memberService.changeMemberStatusFrom(currentMember.getId(), "MEMBER", -1, -1);
@@ -120,12 +118,9 @@ public class PositionServiceImpl implements PositionService {
                 if (PERMITTED_COUNT_PEOPLE_SYSTEM == -1 && ourPosition.isPresent()) {
                     throw new NoCreatePosException(String.valueOf(-1));
                 } else if (PERMITTED_COUNT_PEOPLE_SYSTEM == -1) {
-
                     Position p = createNewPosition(lastPos, currentMember);
-
                     int differenceForUser = (int) positionRepository.countNumbersLeft(p.getNumber(), turn);
-
-                    return positionMoreInfoMapper.positionMoreInfoToPositionDTO(p, differenceForUser);
+                    return detailedPositionMapper.positionMoreInfoToPositionDTO(p, differenceForUser);
                 }
                 int PERMITTED_COUNT_PEOPLE = PERMITTED_COUNT_PEOPLE_SYSTEM;
                 if (PERMITTED_COUNT_PEOPLE_SYSTEM == 0) {
@@ -171,11 +166,11 @@ public class PositionServiceImpl implements PositionService {
                     if (ourPosition.isEmpty()) {
                         differenceForUser = (int) positionRepository.countNumbersLeft(p.getNumber(), turn);
                     }
-                    return positionMoreInfoMapper.positionMoreInfoToPositionDTO(p, differenceForUser);
+                    return detailedPositionMapper.positionMoreInfoToPositionDTO(p, differenceForUser);
                 }
             } else {
                 Position p = createNewPosition(lastPos, currentMember);
-                return positionMoreInfoMapper.positionMoreInfoToPositionDTO(p, 0);
+                return detailedPositionMapper.positionMoreInfoToPositionDTO(p, 0);
             }
         }
         else{
@@ -225,8 +220,8 @@ public class PositionServiceImpl implements PositionService {
         } else {
             allPositions = null;
         }
-        PositionMoreInfoDTO userPosition = getFirstUserPosition(hash, username);
-        PositionMoreInfoDTO turnPosition = getFirstPosition(hash, username);
+        DetailedPositionDTO userPosition = getFirstUserPosition(hash, username);
+        DetailedPositionDTO turnPosition = getFirstPosition(hash, username);
         return new PositionsTurnDTO(userPosition, turnPosition, allPositions);
 
     }
@@ -339,14 +334,6 @@ public class PositionServiceImpl implements PositionService {
 
     @Override
     @Transactional
-    public void deleteMember(long id, String username) {
-        User user = userService.findByLogin(username);
-        Member member = memberService.deleteMember(id, user);
-        positionRepository.deletePositionsByUserAndTurn(user,member.getTurn());
-    }
-
-    @Override
-    @Transactional
     public void changeMemberStatus(long id, String type, String username) {
         User user = userService.findByLogin(username);
         if (!Objects.equals(type, "MEMBER") && !Objects.equals(type, "BLOCKED")){
@@ -428,7 +415,7 @@ public class PositionServiceImpl implements PositionService {
 
     @Override
     @Transactional
-    public PositionMoreInfoDTO getFirstUserPosition(String hash, String username) {
+    public DetailedPositionDTO getFirstUserPosition(String hash, String username) {
         User user = userService.findByLogin(username);
         Turn turn = turnService.getTurnFrom(hash);
         Optional<Position> p = positionRepository.findTopByTurnAndUserOrderByNumberAsc(turn, user);
@@ -443,11 +430,11 @@ public class PositionServiceImpl implements PositionService {
         if (p.isPresent() && pInTurn.isPresent()){
             if (pInTurn.get().getId().equals(p.get().getId())){
                 int difference = 0;
-                return positionMoreInfoMapper.positionMoreUserToPositionDTO(p.get(), difference, isLast);
+                return detailedPositionMapper.positionMoreUserToPositionDTO(p.get(), difference, isLast);
             }
             else{
                 int difference = (int) positionRepository.countNumbersLeft(p.get().getNumber(), turn);
-                return positionMoreInfoMapper.positionMoreUserToPositionDTO(p.get(), difference, isLast);
+                return detailedPositionMapper.positionMoreUserToPositionDTO(p.get(), difference, isLast);
             }
         }
         else{
@@ -456,7 +443,7 @@ public class PositionServiceImpl implements PositionService {
     }
 
     @Override
-    public PositionMoreInfoDTO getFirstPosition(String hash, String username) {
+    public DetailedPositionDTO getFirstPosition(String hash, String username) {
         User user = userService.findByLogin(username);
         Turn turn = turnService.getTurnFrom(hash);
         Optional<Position> pInTurn = positionRepository.findFirstByTurnOrderByNumberAsc(turn);
@@ -467,7 +454,7 @@ public class PositionServiceImpl implements PositionService {
                 Member member = optionalMember.get();
                 if (member.getAccessMember() == AccessMember.MODERATOR || member.getAccessMember() == AccessMember.CREATOR) {
                     int difference = 0;
-                    return positionMoreInfoMapper.positionMoreInfoToPositionDTO(pos, difference);
+                    return detailedPositionMapper.positionMoreInfoToPositionDTO(pos, difference);
                 }
             }
         }
@@ -478,6 +465,7 @@ public class PositionServiceImpl implements PositionService {
     public Member addTurnToUser(User user, Turn turn) {
         AccessTurn turnEnum = turn.getAccessTurnType();
         if (turnEnum == AccessTurn.FOR_LINK) {
+            notificationController.notifyReceiptRequest(turn.getId(), turn.getName());
             return memberService.createMember(user, turn, "MEMBER_LINK", true);
         } else {
             Set<Group> groups = turn.getAllowedGroups();
@@ -563,9 +551,11 @@ public class PositionServiceImpl implements PositionService {
                 throw new NoAccessMemberException("You are blocked");
             }
             memberService.changeMemberInvite(memberPresent.get().getId(), true);
+            notificationController.notifyReceiptRequest(turn.getId(), turn.getName());
         } else {
             Member member = memberService.createMember(user, turn, "MEMBER_LINK", false);
             memberService.changeMemberInvite(member.getId(), true);
+            notificationController.notifyReceiptRequest(turn.getId(), turn.getName());
         }
     }
 
@@ -630,5 +620,4 @@ public class PositionServiceImpl implements PositionService {
             return new PositionsNotificationDTO(null, null);
         }
     }
-
 }

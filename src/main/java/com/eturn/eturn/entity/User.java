@@ -19,23 +19,15 @@ import java.util.Set;
 @Table(name = "users")
 public class User implements UserDetails {
     @Id
-    // TODO Удалить эту аннотацию @GeneratedValue при использовании ETU ID
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String login;
-
     private String password;
-
     private String name;
-
     @ManyToOne
     @JoinColumn(name = "group_id")
     private Group group;
-
     @Enumerated(EnumType.STRING)
     private Role role;
-
     @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
     private Set<Turn> createdTurns;
 

@@ -14,20 +14,18 @@ public class GroupServiceImpl implements GroupService {
     public GroupServiceImpl(GroupRepository groupRepository) {
         this.groupRepository = groupRepository;
     }
-
     @Override
     public Optional<Group> getGroup(String number) {
         return groupRepository.getGroupByNumber(number);
     }
-
     @Override
     public void createOptionalGroup(Long id, String number, Integer course, Faculty faculty) {
         if (groupRepository.existsById(id)){
             Group groupExisted = groupRepository.getGroupById(id);
             if (
-                    !Objects.equals(groupExisted.getNumber(), number) ||
-                            !Objects.equals(groupExisted.getCourse(), course) ||
-                            !Objects.equals(groupExisted.getFaculty().getId(), faculty.getId())
+                    !Objects.equals(groupExisted.getNumber(), number)
+                            || !Objects.equals(groupExisted.getCourse(), course)
+                            || !Objects.equals(groupExisted.getFaculty().getId(), faculty.getId())
             ){
                 Group group = new Group();
                 group.setId(id);

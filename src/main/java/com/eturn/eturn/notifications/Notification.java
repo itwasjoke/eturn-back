@@ -12,5 +12,6 @@ import java.util.List;
 public class Notification {
     Long turnId;
     Integer type;
-    List<Long> groupList;
+    Long groupId;
+    String turnName;
 }

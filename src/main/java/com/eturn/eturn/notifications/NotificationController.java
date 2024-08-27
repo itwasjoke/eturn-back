@@ -27,19 +27,29 @@ public class NotificationController {
         this.rabbitTemplate = rabbitTemplate;
     }
 
-    public void notifyUserOfTurnPositionChange(Long id) {
+    public void notifyUserOfTurnPositionChange(Long turnId) {
         Notification notification = new Notification();
-        notification.setTurnId(id);
+        notification.setTurnId(turnId);
         notification.setType(0);
         logger.info("Notification sent to broker");
         rabbitTemplate.convertAndSend(TOPIC_EASY, TOPIC_EASY, notification);
     }
 
-    public void notifyTurnCreated(Long id, List<Group> list) {
-
+    public void notifyTurnCreated(long groupId, String turnName) {
+        Notification notification = new Notification();
+        notification.setType(1);
+        notification.setTurnName(turnName);
+        notification.setGroupId(groupId);
+        logger.info("Notification sent to broker");
+        rabbitTemplate.convertAndSend(TOPIC_EASY, TOPIC_EASY, notification);
     }
 
-    public void notifyReceiptRequest(List<User> users) {
-
+    public void notifyReceiptRequest(long turnId, String turnName) {
+        Notification notification = new Notification();
+        notification.setType(2);
+        notification.setTurnId(turnId);
+        notification.setTurnName(turnName);
+        logger.info("Notification sent to broker");
+        rabbitTemplate.convertAndSend(TOPIC_EASY, TOPIC_EASY, notification);
     }
 }

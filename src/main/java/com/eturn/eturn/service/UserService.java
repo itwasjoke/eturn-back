@@ -6,6 +6,7 @@ import com.eturn.eturn.entity.Group;
 import com.eturn.eturn.entity.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
@@ -15,4 +16,5 @@ public interface UserService {
     User findByLogin(String login);
     UserDetailsService userDetailsService();
     User updateUser(User user);
+    List<User> getGroupUsers(long groupId);
 }

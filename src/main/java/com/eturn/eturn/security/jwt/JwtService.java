@@ -1,4 +1,4 @@
-package com.eturn.eturn.security;
+package com.eturn.eturn.security.jwt;
 
 import com.eturn.eturn.entity.User;
 import io.jsonwebtoken.Claims;

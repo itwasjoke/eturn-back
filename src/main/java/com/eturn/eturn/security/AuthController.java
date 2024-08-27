@@ -2,6 +2,7 @@ package com.eturn.eturn.security;
 
 import com.eturn.eturn.dto.AuthData;
 import com.eturn.eturn.dto.UserCreateDTO;
+import com.eturn.eturn.security.jwt.JwtAuthenticationResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,17 +22,19 @@ public class AuthController {
         this.authenticationService = authenticationService;
     }
 
-    // TODO Удалить запрос, когда необходимость в тестировании пользователей отсутствует.
     @PostMapping("/sign-up")
     @Operation(
             summary = "Регистрация",
             description = "Создание объекта пользователя и возвращение токена авторизации"
     )
-    public JwtAuthenticationResponse signUp(@RequestBody UserCreateDTO request){
-        return authenticationService.signUp(request);
+    public JwtAuthenticationResponse signUp(
+            @RequestBody UserCreateDTO user,
+            HttpServletRequest request){
+        var authentication = (Authentication) request.getUserPrincipal();
+        var userDetails = (UserDetails) authentication.getPrincipal();
+        return authenticationService.signUp(user, userDetails.getUsername());
     }
 
-    // TODO Удалить запрос, когда необходимость в тестировании пользователей отсутствует.
     @PostMapping("/sign-in")
     @Operation(
             summary = "Вход",
@@ -45,8 +48,10 @@ public class AuthController {
     }
 
     @PostMapping("/groups")
-    public void createGroups() {
-        authenticationService.createFaculties();
+    public void createGroups(HttpServletRequest request) {
+        var authentication = (Authentication) request.getUserPrincipal();
+        var userDetails = (UserDetails) authentication.getPrincipal();
+        authenticationService.createFaculties(userDetails.getUsername());
     }
 
     @PostMapping("/etuid")

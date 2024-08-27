@@ -2,15 +2,13 @@ package com.eturn.eturn.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-
 import java.util.Date;
 
+/** Более детальная DTO с информацией об участниках */
 @Schema(description = "Позиция с подробной информацией")
-public record PositionMoreInfoDTO(
+public record DetailedPositionDTO(
         @Schema(description = "Идентификатор позиции", example="1")
         Long id,
-        @Size(min = 1, max = 255)
         @NotNull
         @Schema(description = "Имя пользователя", example="Иванов Иван Иванович")
         String name,

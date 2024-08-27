@@ -1,6 +1,6 @@
 package com.eturn.eturn.controller;
 
-import com.eturn.eturn.dto.PositionMoreInfoDTO;
+import com.eturn.eturn.dto.DetailedPositionDTO;
 import com.eturn.eturn.dto.PositionsTurnDTO;
 import com.eturn.eturn.service.PositionService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,7 +40,7 @@ public class PositionController {
             summary = "Создание позиции",
             description = "Берет текущего авторизированного пользователя и создает позицию для него"
     )
-    public PositionMoreInfoDTO createPosition(
+    public DetailedPositionDTO createPosition(
             HttpServletRequest request,
             @PathVariable @Parameter(name = "hash", description = "Хэш очереди") String hash
     ){

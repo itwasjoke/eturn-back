@@ -14,7 +14,7 @@ services:
     volumes:
       - pg_eturn:/var/lib/postgresql/data
     ports:
-      - "127.0.0.1:37113:5432"
+      - "37113:5432"
   rabbitmq:
     image: rabbitmq:3.10.7-management
     environment:
@@ -36,11 +36,11 @@ services:
       - rabbitmq
     environment:
       SPRING_DATASOURCE_URL: "jdbc:postgresql://eturn_db:5432/eturn"
-#      INSERTION_QUEUE: insertion.queue
-#      VALIDATION_QUEUE: validation.queue
-#      NUMBER_OF_VALIDATION_CONSUMERS: 1
-#      RESPONSE_EXCHANGE: response.exchange
-#      RESPONSE_ROUTING_KEY: response.routing.key
+      SPRING_DATASOURCE_USERNAME: eturn_user
+      SPRING_DATASOURCE_PASSWORD: DfcbkmtdCfvjdfhjd
+      ETURN_DEFAULTS_USERNAME: adminEturnQFNJLe2FQw345
+      ETURN_DEFAULTS_PASSWORD: JFIOASF__1**FQ3!$4F
+      TOKEN_SIGNING_KEY: 53A73E5F1C4E0A2D3B5F2D784E6A1B423D6F247D1F6E5C3A596D635A75327855
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 37122
       RABBITMQ_VHOST: /

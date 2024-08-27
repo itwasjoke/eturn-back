@@ -2,6 +2,7 @@ package com.eturn.eturn.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
+/** DTO участника очререди */
 @Schema(description = "Участник")
 public record MemberDTO(
         @Schema(description = "Идентификатор участника очереди", example="1")
@@ -16,9 +17,9 @@ public record MemberDTO(
         String group,
         @Schema(description = "Доступ участника", example="MEMBER")
         String access,
-        @Schema(description = "Заявка на модератора", example="true")
+        @Schema(description = "Есть ли заявка на модерацию", example="true")
         boolean invited,
-        @Schema(description = "Заявка в очередь по ссылке", example="true")
+        @Schema(description = "Есть ли заявка на вступление в очередь", example="true")
         boolean invitedForTurn
 ) {
 }

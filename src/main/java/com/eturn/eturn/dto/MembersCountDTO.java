@@ -2,6 +2,7 @@ package com.eturn.eturn.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
+/** DTO для подсчета количества участников */
 @Schema(description = "Количество участников/модераторов/заявок/заблокированных")
 public record MembersCountDTO(
         @Schema(description = "Количество модераторов", example = "3")

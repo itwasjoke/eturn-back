@@ -6,8 +6,9 @@ import org.hibernate.validator.constraints.Range;
 
 import java.util.Set;
 
+/** DTO для редактирования очереди */
 public record TurnEditDTO(
-        @Schema(description = "Идентификатор очереди", example="1")
+        @Schema(description = "Идентификатор очереди", example="fwDFw")
         String hash,
         @Schema(description = "Имя очереди", example="Очередь за булочкой")
         @Size(min = 1, max = 30)
@@ -15,9 +16,9 @@ public record TurnEditDTO(
         @Schema(description = "Описание очереди", example="Готовим банковские карты. Всем приятного аппетита!")
         @Size(min = 1, max = 200)
         String description,
-        @Schema(description = "Допустимые группы", example = "2391")
+        @Schema(description = "Допустимые группы")
         Set<GroupDTO> allowedGroups,
-        @Schema(description = "Допустимые факультеты", example = "ФКТИ")
+        @Schema(description = "Допустимые факультеты")
         Set<FacultyDTO> allowedFaculties,
         @Schema(description = "Время на то, чтобы войти", example="1")
         @PositiveOrZero
@@ -25,7 +26,7 @@ public record TurnEditDTO(
         Integer timer,
         @Schema(description = "Количество позиций, через которое можно вставать в очередь", example="1")
         @PositiveOrZero
-        @Range(min = 0, max = 40)
+        @Range(min = -1, max = 40)
         Integer positionCount
 ) {
 

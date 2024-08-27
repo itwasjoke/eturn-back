@@ -14,11 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/user", produces = "application/json; charset=utf-8")
 @Tag(name = "Пользователь", description = "Работа с информацией об участнике")
 public class UserController {
-
     private final UserService userService;
-
-
-
     public UserController(UserService userService) {
         this.userService = userService;
     }

@@ -1,18 +1,19 @@
 package com.eturn.eturn.dto.mapper;
 
-import com.eturn.eturn.dto.PositionMoreInfoDTO;
+import com.eturn.eturn.dto.DetailedPositionDTO;
 import com.eturn.eturn.entity.Position;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
+/** Маппер для подробных позиций */
 @Mapper(
         componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
         injectionStrategy = InjectionStrategy.CONSTRUCTOR
 )
-public interface PositionMoreInfoMapper {
+public interface DetailedPositionMapper {
     @Mapping(target="id", source="position.id")
     @Mapping(target="name", source="position.user.name")
     @Mapping(target="group", source="position.groupName")
@@ -21,7 +22,7 @@ public interface PositionMoreInfoMapper {
     @Mapping(target = "dateEnd", source = "position.dateEnd")
     @Mapping(target = "difference", source = "dif")
     @Mapping(target = "isLast", ignore = true)
-    PositionMoreInfoDTO positionMoreInfoToPositionDTO(Position position, int dif);
+    DetailedPositionDTO positionMoreInfoToPositionDTO(Position position, int dif);
     @Mapping(target="id", source="position.id")
     @Mapping(target="name", source="position.user.name")
     @Mapping(target="group", source="position.groupName")
@@ -30,5 +31,5 @@ public interface PositionMoreInfoMapper {
     @Mapping(target = "dateEnd", source = "position.dateEnd")
     @Mapping(target = "difference", source = "dif")
     @Mapping(target = "isLast", source = "isLast")
-    PositionMoreInfoDTO positionMoreUserToPositionDTO(Position position, int dif, boolean isLast);
+    DetailedPositionDTO positionMoreUserToPositionDTO(Position position, int dif, boolean isLast);
 }

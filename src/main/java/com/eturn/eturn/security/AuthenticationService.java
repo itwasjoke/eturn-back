@@ -13,9 +13,14 @@ import com.eturn.eturn.entity.User;
 import com.eturn.eturn.enums.ApplicationType;
 import com.eturn.eturn.enums.Role;
 import com.eturn.eturn.exception.group.NotFoundGroupException;
+import com.eturn.eturn.exception.user.AccessException;
 import com.eturn.eturn.exception.user.AuthPasswordException;
 import com.eturn.eturn.exception.user.NotFoundUserException;
-import com.eturn.eturn.notifications.NotificationController;
+import com.eturn.eturn.security.entity.EduGroups;
+import com.eturn.eturn.security.entity.EtuIdEducation;
+import com.eturn.eturn.security.entity.EtuIdUser;
+import com.eturn.eturn.security.jwt.JwtAuthenticationResponse;
+import com.eturn.eturn.security.jwt.JwtService;
 import com.eturn.eturn.service.FacultyService;
 import com.eturn.eturn.service.GroupService;
 import com.eturn.eturn.service.UserService;
@@ -49,7 +54,6 @@ public class AuthenticationService {
 
     // TODO Эти две переменные снизу будут не нужны, когда будут удалены тестировочные функции
     private final PasswordEncoder passwordEncoder;
-
     private final UserMapper userMapper;
     private final AuthenticationManager authenticationManager;
 
@@ -64,32 +68,38 @@ public class AuthenticationService {
         this.authenticationManager = authenticationManager;
     }
 
-    public void createFaculties(){
-        HttpHeaders headers = new HttpHeaders();
-        HttpEntity<String> entity = new HttpEntity<>(headers);
+    public void createFaculties(String username){
+        User u = userService.findByLogin(username);
+        if (u.getRole() == Role.ADMIN) {
+            HttpHeaders headers = new HttpHeaders();
+            HttpEntity<String> entity = new HttpEntity<>(headers);
 
-        String externalApiUrlGroups = "https://digital.etu.ru/api/mobile/groups";
-        ResponseEntity<List<FacultiesResponse>> response = restTemplate.exchange(
-                externalApiUrlGroups,
-                HttpMethod.GET,
-                entity,
-                new ParameterizedTypeReference<List<FacultiesResponse>>() {}
-        );
+            String externalApiUrlGroups = "https://digital.etu.ru/api/mobile/groups";
+            ResponseEntity<List<FacultiesResponse>> response = restTemplate.exchange(
+                    externalApiUrlGroups,
+                    HttpMethod.GET,
+                    entity,
+                    new ParameterizedTypeReference<List<FacultiesResponse>>() {
+                    }
+            );
 
-        if (!response.getStatusCode().is2xxSuccessful()){
-            throw new NotFoundGroupException("network problem");
-        }
-        if (!response.getBody().isEmpty()){
-            List<FacultiesResponse> faculties = response.getBody();
-            for (FacultiesResponse faculty : faculties) {
-                FacultyDTO facultyDTO = new FacultyDTO(faculty.getId(), faculty.getTitle());
-                Faculty facultyCreated = facultyService.createFaculty(facultyDTO);
-                for (DepartmentResponse department : faculty.getDepartmentResponses()) {
-                    for (GroupResponse group : department.getGroupResponses()){
-                        groupService.createOptionalGroup(group.getId(), group.getNumber(), group.getCourse(), facultyCreated);
+            if (!response.getStatusCode().is2xxSuccessful()) {
+                throw new NotFoundGroupException("network problem");
+            }
+            if (!response.getBody().isEmpty()) {
+                List<FacultiesResponse> faculties = response.getBody();
+                for (FacultiesResponse faculty : faculties) {
+                    FacultyDTO facultyDTO = new FacultyDTO(faculty.getId(), faculty.getTitle());
+                    Faculty facultyCreated = facultyService.createFaculty(facultyDTO);
+                    for (DepartmentResponse department : faculty.getDepartmentResponses()) {
+                        for (GroupResponse group : department.getGroupResponses()) {
+                            groupService.createOptionalGroup(group.getId(), group.getNumber(), group.getCourse(), facultyCreated);
+                        }
                     }
                 }
             }
+        } else {
+            throw new AccessException("no admin access");
         }
     }
 
@@ -158,10 +168,9 @@ public class AuthenticationService {
                 }
                 Role role;
                 switch (etuIdUser.getPosition()) {
-                    case "Учащийся":
-                        role = Role.STUDENT;
                     case "Сотрудник":
                         role = Role.EMPLOYEE;
+                        break;
                     default:
                         role = Role.STUDENT;
                 }
@@ -172,38 +181,37 @@ public class AuthenticationService {
         else {
             throw new NotFoundUserException("no user in ETU ID");
         }
-        var jwt = "Bearer " + jwtService.generateToken(currentUser);
+        String jwt = "Bearer " + jwtService.generateToken(currentUser);
         return new JwtAuthenticationResponse(jwt);
     }
+    public JwtAuthenticationResponse signUp(UserCreateDTO userCreateDTO, String username) {
+        User userAdmin = userService.findByLogin(username);
+        if (userAdmin.getRole() == Role.ADMIN) {
+            User user;
+            Role r = Role.valueOf(userCreateDTO.role());
+            if (userCreateDTO.appType().equals("IOS") || userCreateDTO.appType().equals("ANDROID") || userCreateDTO.appType().equals("RUSTORE")) {
+                ApplicationType a = ApplicationType.valueOf(userCreateDTO.appType());
+                user = userMapper.userCreateDTOtoUser(userCreateDTO, r, a);
+            } else {
+                user = userMapper.userCreateDTOtoUser(userCreateDTO, r, null);
+            }
+            String password = passwordEncoder.encode(userCreateDTO.password());
+            user.setPassword(password);
+            User newUser = userService.createUser(user);
 
-    // TODO Удалить функцию, когда необходимость в тестировании пользователей отсутствует.
-    public JwtAuthenticationResponse signUp(UserCreateDTO userCreateDTO) {
-        User user;
-        Role r = Role.valueOf(userCreateDTO.role());
-        if (userCreateDTO.appType().equals("IOS") || userCreateDTO.appType().equals("ANDROID") || userCreateDTO.appType().equals("RUSTORE")) {
-            ApplicationType a = ApplicationType.valueOf(userCreateDTO.appType());
-            user = userMapper.userCreateDTOtoUser(userCreateDTO, r, a);
+            var jwt = "Bearer " + jwtService.generateToken(newUser);
+            return new JwtAuthenticationResponse(jwt);
         } else {
-            user = userMapper.userCreateDTOtoUser(userCreateDTO, r, null);
+            throw new AccessException("no admin access");
         }
-        String password = passwordEncoder.encode(userCreateDTO.password());
-        user.setPassword(password);
-        User newUser = userService.createUser(user);
-
-        var jwt = "Bearer "+jwtService.generateToken(newUser);
-        return new JwtAuthenticationResponse(jwt);
     }
-
-    // TODO Удалить функцию, когда необходимость в тестировании пользователей отсутствует.
     public JwtAuthenticationResponse signIn(String login, String password) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 login,
                 password
         ));
-
-        var user = userService.findByLogin(login);
-
-        var jwt = "Bearer "+jwtService.generateToken(user);
+        User user = userService.findByLogin(login);
+        String jwt = "Bearer "+jwtService.generateToken(user);
         return new JwtAuthenticationResponse(jwt);
     }
 }

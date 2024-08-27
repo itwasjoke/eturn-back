@@ -2,7 +2,8 @@ package com.eturn.eturn.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "Сущность существущего пользователя")
+/** DTO для отправки информации о пользователе */
+@Schema(description = "Пользователь")
 public record UserDTO(
         @Schema(description = "Идентификатор пользователя")
         Long id,

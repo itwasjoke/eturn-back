@@ -10,7 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(value ="/member", produces = "application/json; charset=utf-8")
+@RequestMapping(value = "/member", produces = "application/json; charset=utf-8")
 @Tag(name = "Участники", description = "Обработка участников конкретной очереди")
 public class MemberController {
 
@@ -20,19 +20,6 @@ public class MemberController {
         this.positionService = positionService;
     }
 
-    @DeleteMapping("/{id}")
-    @Operation(
-            summary = "Удаление участника",
-            description = "Удаляет участника по id"
-    )
-    public void deleteMember(
-            HttpServletRequest request,
-            @PathVariable @Parameter(name = "id", description = "Идентификатор участника") String id
-    ){
-        var authentication = (Authentication) request.getUserPrincipal();
-        var userDetails = (UserDetails) authentication.getPrincipal();
-        positionService.deleteMember(Long.parseLong(id), userDetails.getUsername());
-    }
     @PutMapping()
     @Operation(
             summary = "Изменение типа доступа участника",

@@ -4,8 +4,8 @@ spring:
     allow-bean-definition-overriding: true
   datasource:
     url: jdbc:postgresql://localhost:37113/eturn
-    username: eturn_user
-    password: DfcbkmtdCfvjdfhjd
+    username: admin
+    password: admin
 
   rabbitmq:
     host: rabbitmq
@@ -39,8 +39,12 @@ server:
 
 token:
   signing:
-    key: 53A73E5F1C4E0A2D3B5F2D784E6A1B423D6F247D1F6E5C3A596D635A75327855
+    key: admin
 
+eturn:
+  defaults:
+    username: "admin"
+    password: "admin"
 
 springdoc:
 #  api-docs:

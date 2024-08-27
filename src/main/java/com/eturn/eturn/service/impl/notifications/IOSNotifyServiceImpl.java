@@ -1,14 +1,9 @@
 package com.eturn.eturn.service.impl.notifications;
 
-import com.eturn.eturn.notifications.NotificationController;
 import com.eturn.eturn.service.NotificationService;
-import com.notnoop.apns.APNS;
-import com.notnoop.apns.ApnsService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class IOSNotifyServiceImpl implements NotificationService {
@@ -29,12 +24,16 @@ public class IOSNotifyServiceImpl implements NotificationService {
     }
 
     @Override
-    public void notifyTurnCreated(List<String> tokens, String turnName) {
-
+    public void notifyTurnCreated(String token, String turnName) {
+        String title = "Вам доступна новая очередь";
+        String body = "Создана новая очередь под названием \"" + turnName + "\"";
+        logger.info("Notification body: " + title + " // " + body);
     }
 
     @Override
-    public void notifyReceiptRequest(List<String> tokens) {
-
+    public void notifyReceiptRequest(String token, String turnName) {
+        String title = "Новая заявка";
+        String body = "Обработайте заявки на вступление в очереди \"" + turnName + "\"";
+        logger.info("Notification body: " + title + " // " + body);
     }
 }

@@ -7,6 +7,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
+/** Маппер для факультетов */
 @Mapper(
         componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
@@ -14,5 +15,5 @@ import org.mapstruct.ReportingPolicy;
 )
 public interface FacultyMapper {
     @Mapping(target="turns", ignore = true)
-    Faculty DTOtoFaculty(FacultyDTO dto);
+    Faculty dtoToFaculty(FacultyDTO dto);
 }
