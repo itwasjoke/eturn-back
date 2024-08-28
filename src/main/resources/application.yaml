@@ -10,8 +10,8 @@ spring:
   rabbitmq:
     host: rabbitmq
     port: 37122
-    username: guest
-    password: guest
+    username: eturnuser
+    password: klbWQFEfeGr4vdv41fs
     virtual-host: /
 #    template:
 #      exchange: response.exchange
