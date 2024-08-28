@@ -186,7 +186,7 @@ public class AuthenticationService {
     }
     public JwtAuthenticationResponse signUp(UserCreateDTO userCreateDTO, String username) {
         User userAdmin = userService.findByLogin(username);
-        if (userAdmin.getRole() == Role.ADMIN) {
+        if (userAdmin.getRole() == Role.ADMIN && userCreateDTO.id() != 1) {
             User user;
             Role r = Role.valueOf(userCreateDTO.role());
             if (userCreateDTO.appType().equals("IOS") || userCreateDTO.appType().equals("ANDROID") || userCreateDTO.appType().equals("RUSTORE")) {
