@@ -4,19 +4,15 @@ import com.eturn.eturn.dto.GroupDTO;
 import com.eturn.eturn.entity.Group;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
-/** Маппер для групп */
+import java.util.List;
 @Mapper(
         componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
+        uses = GroupMapper.class,
         injectionStrategy = InjectionStrategy.CONSTRUCTOR
 )
-public interface GroupMapper {
-    @Mapping(target = "turns", ignore = true)
-    @Mapping(target = "number", source = "dto.number")
-    Group dtoToGroup(GroupDTO dto);
-    @Mapping(target = "faculty", ignore = true)
-    GroupDTO groupToDto(Group group);
+public interface GroupListMapper {
+    List<GroupDTO> map(List<Group> groups);
 }
