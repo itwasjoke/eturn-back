@@ -19,7 +19,7 @@ import java.util.List;
 @Component
 public class NotificationListener {
     private static final Logger logger = LogManager.getLogger(NotificationListener.class);
-    private static final String TURN_EASY = "easy-queue";
+    private static final String TURN_EASY = "eturn-queue";
     private final AndroidNotifyServiceImpl androidNotifyService;
     private final IOSNotifyServiceImpl iOSNotifyService;
     private final RuStoreNotifyServiceImpl ruStoreNotifyService;

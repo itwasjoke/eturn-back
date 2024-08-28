@@ -45,6 +45,10 @@ eturn:
   defaults:
     username: "admin"
     password: "admin"
+  rabbitmq:
+    queue: "eturn-queue"
+    topic: "eturn-notifications"
+    exchange: "eturn-qkjib2rtq3"
 
 springdoc:
 #  api-docs:

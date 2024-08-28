@@ -7,14 +7,23 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class NotificationsConfig {
 
-    private static final String TOPIC_EASY = "easy-notifications";
-    private static final String TURN_EASY = "easy-queue";
+    @Value("${eturn.rabbitmq.topic}")
+    private String TOPIC;
+    @Value("${eturn.rabbitmq.queue}")
+    private String QUEUE;
+    @Value("${eturn.rabbitmq.exchange}")
+    private String EXCHANGE;
+    @Value("${spring.rabbitmq.username}")
+    private String USERNAME;
+    @Value("${spring.rabbitmq.password}")
+    private String PASSWORD;
 //    @Bean
 //    public ApnsService apnsService() {
 //        return APNS
@@ -37,8 +46,8 @@ public class NotificationsConfig {
         CachingConnectionFactory connectionFactory = new CachingConnectionFactory();
         connectionFactory.setHost("rabbitmq");
         connectionFactory.setVirtualHost("/");
-        connectionFactory.setUsername("guest");
-        connectionFactory.setPassword("guest");
+        connectionFactory.setUsername(USERNAME);
+        connectionFactory.setPassword(PASSWORD);
         connectionFactory.setPort(5672);
         return connectionFactory;
     }
@@ -56,17 +65,17 @@ public class NotificationsConfig {
     }
     @Bean
     public DirectExchange exchange() {
-        return new DirectExchange(TOPIC_EASY, true, false);
+        return new DirectExchange(EXCHANGE, true, false);
     }
 
     @Bean
     public Queue queue() {
-        return new Queue(TURN_EASY, true);
+        return new Queue(QUEUE, true);
     }
 
     @Bean
     public Binding binding(Queue queue, DirectExchange exchange) {
-        return BindingBuilder.bind(queue).to(exchange).with(TOPIC_EASY);
+        return BindingBuilder.bind(queue).to(exchange).with(TOPIC);
     }
 
     @Bean

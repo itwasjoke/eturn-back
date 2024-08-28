@@ -1,23 +1,19 @@
 package com.eturn.eturn.notifications;
 
-import com.eturn.eturn.entity.Group;
-import com.eturn.eturn.entity.User;
-import com.eturn.eturn.service.PositionService;
-import com.eturn.eturn.service.impl.notifications.AndroidNotifyServiceImpl;
-import com.eturn.eturn.service.impl.notifications.RuStoreNotifyServiceImpl;
-import com.eturn.eturn.service.impl.notifications.IOSNotifyServiceImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 public class NotificationController {
 
     private static final Logger logger = LogManager.getLogger(NotificationController.class);
-    private static final String TOPIC_EASY = "easy-notifications";
+    @Value("${eturn.rabbitmq.topic}")
+    private String TOPIC;
+    @Value("${eturn.rabbitmq.exchange}")
+    private String EXCHANGE;
     private final RabbitTemplate rabbitTemplate;
 
 
@@ -32,7 +28,7 @@ public class NotificationController {
         notification.setTurnId(turnId);
         notification.setType(0);
         logger.info("Notification sent to broker");
-        rabbitTemplate.convertAndSend(TOPIC_EASY, TOPIC_EASY, notification);
+        rabbitTemplate.convertAndSend(EXCHANGE, TOPIC, notification);
     }
 
     public void notifyTurnCreated(long groupId, String turnName) {
@@ -41,7 +37,7 @@ public class NotificationController {
         notification.setTurnName(turnName);
         notification.setGroupId(groupId);
         logger.info("Notification sent to broker");
-        rabbitTemplate.convertAndSend(TOPIC_EASY, TOPIC_EASY, notification);
+        rabbitTemplate.convertAndSend(EXCHANGE, TOPIC, notification);
     }
 
     public void notifyReceiptRequest(long turnId, String turnName) {
@@ -50,6 +46,6 @@ public class NotificationController {
         notification.setTurnId(turnId);
         notification.setTurnName(turnName);
         logger.info("Notification sent to broker");
-        rabbitTemplate.convertAndSend(TOPIC_EASY, TOPIC_EASY, notification);
+        rabbitTemplate.convertAndSend(EXCHANGE, TOPIC, notification);
     }
 }
