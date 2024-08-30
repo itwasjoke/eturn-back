@@ -13,6 +13,8 @@ public record PositionDTO(
         String group,
         @Schema(description = "Статус(вход/выход)", example="false")
         Boolean start,
+        @Schema(description = "Идентификатор пользователя", example="1")
+        Long userId,
         @Schema(description = "Номер в очереди", example="35")
         int number
     ){

@@ -16,6 +16,7 @@ import org.mapstruct.ReportingPolicy;
 public interface PositionMapper {
     @Mapping(target="id", source="position.id")
     @Mapping(target="name", source="position.user.name")
+    @Mapping(target = "userId", source = "position.user.id")
     @Mapping(target="group", source="position.groupName")
     @Mapping(target = "start", source = "position.start")
     PositionDTO positionToPositionDTO(Position position);

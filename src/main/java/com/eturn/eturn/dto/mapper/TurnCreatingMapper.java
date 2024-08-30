@@ -17,7 +17,6 @@ import org.mapstruct.ReportingPolicy;
 public interface TurnCreatingMapper {
     @Mapping(target = "creator", source = "user")
     @Mapping(target = "name", source = "dto.name")
-    //@Mapping(target = "allowedGroups", source = "groups")
     @Mapping(target = "accessTurnType", source = "dto.turnAccess")
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "positions", ignore = true)
