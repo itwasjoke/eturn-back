@@ -1,7 +1,6 @@
 package com.eturn.eturn.controller;
 
 import com.eturn.eturn.dto.*;
-import com.eturn.eturn.service.PositionService;
 import com.eturn.eturn.service.TurnService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -36,10 +35,8 @@ import java.util.Map;
 @Tag(name = "Очереди", description = "Обработка информации об очередях")
 public class TurnController {
     private final TurnService turnService;
-    private final PositionService positionService;
-    public TurnController(TurnService turnService, PositionService positionService) {
+    public TurnController(TurnService turnService) {
         this.turnService = turnService;
-        this.positionService = positionService;
     }
 
     @GetMapping("/{hash}")
@@ -53,7 +50,7 @@ public class TurnController {
     ){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
-        return positionService.getTurn(hash, userDetails.getUsername());
+        return turnService.getTurn(hash, userDetails.getUsername());
     }
 
     @GetMapping
@@ -106,36 +103,6 @@ public class TurnController {
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
         return turnService.createTurn(turn, userDetails.getUsername());
-    }
-    @GetMapping("/members")
-    @Operation(
-            summary = "Получение списка участников",
-            description = "Выводит список участников (участник/модератор/заблокированный/по ссылке) очереди"
-    )
-    public List<MemberDTO> getMemberList(
-            HttpServletRequest request,
-            @RequestParam @Parameter(name = "type", description = "Тип участника MEMBER/MODERATOR/BLOCKED") String type,
-            @RequestParam @Parameter(name = "hash", description = "Хэш очереди") String hash,
-            @RequestParam @Parameter(name = "page", description = "Номер страницы (пагинация)") int page
-    ){
-        var authentication = (Authentication) request.getUserPrincipal();
-        var userDetails = (UserDetails) authentication.getPrincipal();
-        return turnService.getMemberList(userDetails.getUsername(), type, hash, page);
-    }
-
-    @GetMapping("/unconfirmed")
-    @Operation(
-            summary = "Получение списка неподтверждённых участников",
-            description = "Выводит список тех, кто подал заявку (на модератора или в очередь по ссылке), но его пока не подтвердили"
-    )
-    public List<MemberDTO> getUnconfirmedMembers(
-            HttpServletRequest request,
-            @RequestParam @Parameter(name = "type", description = "Тип участника MEMBER/MODERATOR") String type,
-            @RequestParam @Parameter(name = "hash", description = "Хэш очереди") String hash
-    ) {
-        var authentication = (Authentication) request.getUserPrincipal();
-        var userDetails = (UserDetails) authentication.getPrincipal();
-        return turnService.getUnconfMemberList(userDetails.getUsername(), type, hash);
     }
 
     @DeleteMapping("/{hash}")

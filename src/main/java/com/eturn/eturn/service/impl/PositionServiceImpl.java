@@ -3,12 +3,11 @@ package com.eturn.eturn.service.impl;
 import com.eturn.eturn.dto.*;
 import com.eturn.eturn.dto.mapper.DetailedPositionMapper;
 import com.eturn.eturn.dto.mapper.PositionListMapper;
-import com.eturn.eturn.dto.mapper.TurnMapper;
 import com.eturn.eturn.entity.*;
 import com.eturn.eturn.enums.AccessMember;
 import com.eturn.eturn.enums.AccessTurn;
+import com.eturn.eturn.enums.InvitedStatus;
 import com.eturn.eturn.exception.member.NoAccessMemberException;
-import com.eturn.eturn.exception.member.NotFoundMemberException;
 import com.eturn.eturn.exception.position.*;
 import com.eturn.eturn.notifications.NotificationController;
 import com.eturn.eturn.notifications.PositionsNotificationDTO;
@@ -16,6 +15,7 @@ import com.eturn.eturn.repository.PositionRepository;
 import com.eturn.eturn.service.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -33,19 +33,21 @@ public class PositionServiceImpl implements PositionService {
     private final PositionListMapper positionListMapper;
     private final TurnService turnService;
     private final NotificationController notificationController;
-    private final TurnMapper turnMapper;
     private final DetailedPositionMapper detailedPositionMapper;
     private final MemberService memberService;
 
-
-    public PositionServiceImpl(PositionRepository positionRepository, UserService userService,
-                               PositionListMapper positionListMapper, TurnService turnService, NotificationController notificationController, TurnMapper turnMapper, DetailedPositionMapper detailedPositionMapper, MemberService memberService) {
+    public PositionServiceImpl(PositionRepository positionRepository,
+                               UserService userService,
+                               PositionListMapper positionListMapper,
+                               TurnService turnService,
+                               NotificationController notificationController,
+                               DetailedPositionMapper detailedPositionMapper,
+                               @Lazy MemberService memberService) {
         this.positionRepository = positionRepository;
         this.userService = userService;
         this.positionListMapper = positionListMapper;
         this.turnService = turnService;
         this.notificationController = notificationController;
-        this.turnMapper = turnMapper;
         this.detailedPositionMapper = detailedPositionMapper;
         this.memberService = memberService;
     }
@@ -93,20 +95,20 @@ public class PositionServiceImpl implements PositionService {
     @Transactional
     public DetailedPositionDTO createPositionAndSave(String login, String hash) {
         Turn turn = turnService.getTurnFrom(hash);
-        User user = userService.findByLogin(login);
-        Optional<Member> member = memberService.getOptionalMember(user, turn);
+        User user = userService.getUserFromLogin(login);
+        Optional<Member> member = memberService.getMemberWith(user, turn);
         Optional<Position> lastPos = positionRepository.findFirstByTurnOrderByIdDesc(turn);
         Member currentMember;
         if (member.isEmpty()) {
             currentMember = addTurnToUser(user, turn);
         } else {
             currentMember = member.get();
-            if (currentMember.getAccessMember() == AccessMember.MEMBER_LINK && turn.getAccessTurnType() == AccessTurn.FOR_LINK){
+            if (currentMember.getAccessMember() == AccessMember.MEMBER_LINK && currentMember.getInvitedForTurn() == InvitedStatus.ACCESS_IN){
                 memberService.changeMemberStatusFrom(currentMember.getId(), "MEMBER", -1, -1);
             }
         }
         AccessMember access = currentMember.getAccessMember();
-        if (access != AccessMember.BLOCKED && !currentMember.isInvitedForTurn()){
+    if (access != AccessMember.BLOCKED && currentMember.getInvitedForTurn() == InvitedStatus.ACCESS_IN) {
             deleteOverdueElements(turn);
             // рассчет участников
             if (positionRepository.countAllByTurn(turn) > 0) {
@@ -229,14 +231,14 @@ public class PositionServiceImpl implements PositionService {
     @Override
     @Transactional
     public void update(Long id, String username) {
-        User user = userService.findByLogin(username);
+        User user = userService.getUserFromLogin(username);
         Optional<Position> position = positionRepository.findById(id);
         if (position.isPresent()){
             Position posI = position.get();
             Turn turn = posI.getTurn();
             if (turn.getDateStart().getTime() > new Date().getTime())
                 throw new DateNotArrivedPosException("The date has not come yet");
-            MemberDTO memberDTO = memberService.getMember(user, posI.getTurn());
+            MemberDTO memberDTO = memberService.getMemberDTO(user, posI.getTurn());
             String access = memberDTO.access();
             if (posI.getUser()==user
                     || access.equals(AccessMember.CREATOR.toString())
@@ -291,11 +293,11 @@ public class PositionServiceImpl implements PositionService {
     @Override
     @Transactional
     public void delete(Long id, String username) {
-        User user = userService.findByLogin(username);
+        User user = userService.getUserFromLogin(username);
         Optional<Position> position = positionRepository.findById(id);
         if (position.isPresent()) {
             Position pos = position.get();
-            Optional<Member> oMember= memberService.getOptionalMember(user, pos.getTurn());
+            Optional<Member> oMember= memberService.getMemberWith(user, pos.getTurn());
             if (oMember.isEmpty()){
                 throw new NoAccessMemberException("you are not member");
             }
@@ -318,7 +320,7 @@ public class PositionServiceImpl implements PositionService {
                     if (pUser.isEmpty() && access == AccessMember.MEMBER && pos.getTurn().getAccessTurnType() == AccessTurn.FOR_LINK) {
                         memberService.changeMemberStatusFrom(member.getId(), "MEMBER_LINK", -1, -1);
                     } else if (pUser.isEmpty() && access == AccessMember.MEMBER) {
-                        memberService.deleteMemberFrom(pos.getTurn(), user);
+                        memberService.deleteMemberWith(pos.getTurn(), user);
                     }
                 }
             }
@@ -334,43 +336,15 @@ public class PositionServiceImpl implements PositionService {
 
     @Override
     @Transactional
-    public void changeMemberStatus(long id, String type, String username) {
-        User user = userService.findByLogin(username);
-        if (!Objects.equals(type, "MEMBER") && !Objects.equals(type, "BLOCKED")){
-            throw new NoAccessMemberException("You cant change status on MODERATOR");
-        }
-        Member member = memberService.changeMemberStatus(id, type, user);
-        boolean positionExist = positionRepository.existsAllByTurnAndUser(member.getTurn(), member.getUser());
-        if (member.getAccessMember() == AccessMember.MEMBER){
-            Turn turn = member.getTurn();
-            if (
-                    !positionExist
-                    && turn.getAccessTurnType() == AccessTurn.FOR_ALLOWED_ELEMENTS
-            ){
-                memberService.deleteMemberFrom(member.getId());
-            } else if (
-                    !positionExist
-                            && turn.getAccessTurnType() == AccessTurn.FOR_LINK
-            ) {
-                member = memberService.changeMemberStatus(id, "MEMBER_LINK", user);
-            }
-        }
-        if (type.equals("BLOCKED")) {
-            positionRepository.deleteAllByTurnAndUser(member.getTurn(), member.getUser());
-        }
-    }
-
-    @Override
-    @Transactional
     public void skipPosition(long id, String username) {
-        User user = userService.findByLogin(username);
+        User user = userService.getUserFromLogin(username);
         Optional<Position> position = positionRepository.findById(id);
         if (position.isPresent()){
             Position p1 = position.get();
             deleteOverdueElements(p1.getTurn());
             Optional<Position> nowPos = positionRepository.findFirstByTurnOrderByNumberAsc(p1.getTurn());
             if (nowPos.isEmpty()) {
-                throw new NoSkipPositionException("You cant skip position");
+                return;
             }
             Position currPos = nowPos.get();
             Optional<Position> pNew = positionRepository.findFirstByTurnAndNumberGreaterThanOrderByNumberAsc(p1.getTurn(), position.get().getNumber());
@@ -407,8 +381,6 @@ public class PositionServiceImpl implements PositionService {
                 p1.setSkipCount(p1.getSkipCount() - 1);
                 positionRepository.save(p1);
                 positionRepository.save(p2);
-            } else {
-                throw new NoSkipPositionException("You cant skip position");
             }
         }
     }
@@ -416,7 +388,7 @@ public class PositionServiceImpl implements PositionService {
     @Override
     @Transactional
     public DetailedPositionDTO getFirstUserPosition(String hash, String username) {
-        User user = userService.findByLogin(username);
+        User user = userService.getUserFromLogin(username);
         Turn turn = turnService.getTurnFrom(hash);
         Optional<Position> p = positionRepository.findTopByTurnAndUserOrderByNumberAsc(turn, user);
         Optional<Position> pInTurn = positionRepository.findFirstByTurnOrderByNumberAsc(turn);
@@ -444,12 +416,12 @@ public class PositionServiceImpl implements PositionService {
 
     @Override
     public DetailedPositionDTO getFirstPosition(String hash, String username) {
-        User user = userService.findByLogin(username);
+        User user = userService.getUserFromLogin(username);
         Turn turn = turnService.getTurnFrom(hash);
         Optional<Position> pInTurn = positionRepository.findFirstByTurnOrderByNumberAsc(turn);
         if (pInTurn.isPresent()){
             Position pos = pInTurn.get();
-            Optional<Member> optionalMember = memberService.getOptionalMember(user, pos.getTurn());
+            Optional<Member> optionalMember = memberService.getMemberWith(user, pos.getTurn());
             if (optionalMember.isPresent()) {
                 Member member = optionalMember.get();
                 if (member.getAccessMember() == AccessMember.MODERATOR || member.getAccessMember() == AccessMember.CREATOR) {
@@ -480,129 +452,6 @@ public class PositionServiceImpl implements PositionService {
     }
 
     @Override
-    public TurnDTO getTurn(String hash, String login) {
-        User user = userService.findByLogin(login);
-        Turn turn = turnService.getTurnFrom(hash);
-        if (turn.getDateEnd().getTime() < new Date().getTime()) {
-            turnService.deleteTurn(login, hash);
-        }
-        Optional<Member> m = memberService.getOptionalMember(user, turn);
-        String access = null;
-        boolean invited1 = false;
-        boolean invited2 = false;
-        boolean existsInvited = false;
-        MembersCountDTO membersCountDTO = null;
-        if (m.isPresent()){
-            if (m.get().getAccessMember() == AccessMember.CREATOR || m.get().getAccessMember() == AccessMember.MODERATOR) {
-                existsInvited = memberService.invitedExists(turn);
-                 membersCountDTO = new MembersCountDTO(
-                        (int) memberService.getCountModerators(turn),
-                        (int) memberService.getCountMembers(turn),
-                        memberService.countInviteMembers(turn),
-                        memberService.countInviteModerators(turn),
-                        (int) memberService.countBlocked(turn)
-                );
-            }
-            access = m.get().getAccessMember().name();
-            invited1 = m.get().isInvited();
-            invited2 = m.get().isInvitedForTurn();
-        }
-        long count = positionRepository.countByTurn(turn);
-        String accessType = "for_link";
-        List<Long> list = new ArrayList<>();
-        turn.setCountUsers((int)count);
-        if (!turn.getAllowedGroups().isEmpty()){
-            accessType = "groups";
-            for (Group item: turn.getAllowedGroups()){
-                list.add(item.getId());
-            }
-        } else if (!turn.getAllowedFaculties().isEmpty()){
-            accessType = "faculties";
-            for (Faculty f: turn.getAllowedFaculties()) {
-                list.add(f.getId());
-            }
-        }
-        turnService.saveTurn(turn);
-        return turnMapper.turnToTurnDTO(
-                turn,
-                access,
-                accessType,
-                invited2,
-                invited1,
-                existsInvited,
-                membersCountDTO,
-                list
-        );
-    }
-    @Override
-    @Transactional
-    public void inviteUser(String hash, String username) {
-        User user = userService.findByLogin(username);
-        Turn turn = turnService.getTurnFrom(hash);
-        if (memberService.countInviteModerators(turn) > 20 || memberService.getCountModerators(turn) > 20) {
-            throw new NoInviteException("You cant invite");
-        }
-        if (turn.getCreator() == user) {
-            throw new NoAccessMemberException("You are creator");
-        }
-        Optional<Member> memberPresent = memberService.getOptionalMember(user, turn);
-        if (memberPresent.isPresent()) {
-            if (memberPresent.get().getAccessMember() == AccessMember.BLOCKED) {
-                throw new NoAccessMemberException("You are blocked");
-            }
-            memberService.changeMemberInvite(memberPresent.get().getId(), true);
-            notificationController.notifyReceiptRequest(turn.getId(), turn.getName());
-        } else {
-            Member member = memberService.createMember(user, turn, "MEMBER_LINK", false);
-            memberService.changeMemberInvite(member.getId(), true);
-            notificationController.notifyReceiptRequest(turn.getId(), turn.getName());
-        }
-    }
-
-    @Override
-    public void changeMemberInvite(Long id, boolean status, boolean isModerator) {
-        Optional<Member> memberPresent = memberService.getMemberFrom(id);
-        if (memberPresent.isPresent()) {
-            Member member = memberPresent.get();
-            boolean isInvited = member.isInvited();
-            boolean isInvitedForTurn = member.isInvitedForTurn();
-            if (status) {
-                if (isInvited) {
-                    if (isModerator) {
-                        memberService.changeMemberStatusFrom(id, "MODERATOR", 0, 0);
-                    }
-                }
-                if (isInvitedForTurn) {
-                    if (!isModerator) {
-                        if (isInvited) {
-                            memberService.changeMemberStatusFrom(id, "MEMBER", 1, 0);
-                        } else {
-                            memberService.changeMemberStatusFrom(id, "MEMBER", 0, 0);
-                        }
-                    } else if (!isInvited){
-                        throw new NoInviteException("User not invite to moderator");
-                    }
-                    createPositionAndSave(member.getUser().getLogin(), member.getTurn().getHash());
-                }
-            } else {
-                if (isInvited && isModerator) {
-                    memberService.changeMemberInvite(id, false);
-                }
-                if (isInvitedForTurn && !isModerator) {
-                    if (isInvited) {
-                        memberService.changeMemberStatusFrom(id, "MEMBER_LINK", 1, 0);
-                    } else {
-                        memberService.deleteMemberFrom(id);
-                    }
-                }
-            }
-
-        } else {
-            throw new NotFoundMemberException("Member not found");
-        }
-    }
-
-    @Override
     public PositionsNotificationDTO getPositionsForNotify(Long turnId) {
         Pageable paging = PageRequest.of(0, 10);
         Page<Position> page = positionRepository.findAllByTurn_IdOrderByNumberAsc(turnId,paging);
@@ -619,5 +468,10 @@ public class PositionServiceImpl implements PositionService {
             logger.warn("No notifications will send for "+ turnId +" turn");
             return new PositionsNotificationDTO(null, null);
         }
+    }
+
+    @Override
+    public long countPositionsByTurn(Turn turn) {
+        return positionRepository.countByTurn(turn);
     }
 }

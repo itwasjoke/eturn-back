@@ -12,25 +12,26 @@ import java.util.Optional;
 
 
 public interface MemberService {
+    void inviteMember(String hash, String username);
     Member createMember(User user, Turn turn, String access, boolean invitedForTurn);
-    Optional<Member> getMemberFrom(long id);
-    Optional<Member> getOptionalMember(User user, Turn turn);
+    Optional<Member> getMemberWith(long id);
+    Optional<Member> getMemberWith(User user, Turn turn);
+    MemberDTO getMemberDTO(User user, Turn turn);
     AccessMember getAccess(User user, Turn turn);
-    MemberDTO getMember(User user, Turn turn);
     long getCountMembers(Turn turn);
     long getCountModerators(Turn turn);
-    List<MemberDTO> getMemberList(Turn turn, String type, Pageable pageable);
-    List<MemberDTO> getUnconfMemberList(Turn turn, String type);
     int countInviteModerators(Turn turn);
     int countInviteMembers(Turn turn);
     long countBlocked(Turn turn);
-    Member changeMemberStatus(long id, String type, User user);
+    List<MemberDTO> getMemberList(String username, String type, String hash, int page);
+    List<MemberDTO> getUnconfirmedMemberList(String username, String type, String hash);
+    Member changeMemberStatus(long id, String type, String username);
     void changeMemberStatusFrom(long id, String type, int invitedModerator, int invitedTurn);
-    Member deleteMember(long id, User user);
-    void deleteMemberFrom(Turn turn, User user);
-    void deleteMemberFrom(Long id);
+    void changeMemberInvite(Long id, boolean status, boolean isModerator);
+    void deleteMemberWith(Turn turn, User user);
     void deleteMembersWithoutPositions(Turn turn);
     void changeMemberInvite(Long id, boolean status);
     boolean invitedExists(Turn turn);
     List<User> getModeratorsOfTurn(long turnId);
+    void deleteMemberWith(Long id);
 }

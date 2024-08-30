@@ -27,6 +27,6 @@ public class UserController {
     public UserDTO getUser(HttpServletRequest request){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
-        return userService.getUser(userDetails.getUsername());
+        return userService.getUserDTOFromLogin(userDetails.getUsername());
     }
 }

@@ -20,6 +20,6 @@ public record MemberDTO(
         @Schema(description = "Есть ли заявка на модерацию", example="true")
         boolean invited,
         @Schema(description = "Есть ли заявка на вступление в очередь", example="true")
-        boolean invitedForTurn
+        String invitedForTurn
 ) {
 }

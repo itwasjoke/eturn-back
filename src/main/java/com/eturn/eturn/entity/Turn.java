@@ -12,26 +12,26 @@ import java.util.Set;
 @Getter
 @Setter
 @Entity
-@NamedNativeQuery(name = "getMemberOutTurns", query = " SELECT m.access_member, t.hash, t.id, t.name, t.description, t.user_id, t.date_start, t.date_end, t.count_users, t.tags, t.access_tags " +
+@NamedNativeQuery(name = "getMemberOutTurns", query = " SELECT m.access_member, t.hash, t.id, t.name, t.description, t.user_id, t.date_start, t.date_end, t.tags, t.access_tags " +
         "FROM turn AS t " +
         "INNER JOIN turn_faculty AS tf ON t.id = tf.turn_id " +
         "LEFT JOIN member AS m ON (t.id = m.turn_id AND m.user_id = :userId) " +
         "WHERE " +
         "    (t.access_turn_type != 'FOR_LINK' AND tf.faculty_id = :facultyId AND m.access_member IS NULL) " +
         "UNION " +
-        "SELECT m.access_member, t.hash, t.id, t.name, t.description, t.user_id, t.date_start, t.date_end, t.count_users, t.tags, t.access_tags " +
+        "SELECT m.access_member, t.hash, t.id, t.name, t.description, t.user_id, t.date_start, t.date_end, t.tags, t.access_tags " +
         "FROM turn AS t " +
         "INNER JOIN turn_group AS tg ON t.id = tg.turn_id " +
         "LEFT JOIN member AS m ON (t.id = m.turn_id AND m.user_id = :userId ) " +
         "WHERE " +
         "    (t.access_turn_type != 'FOR_LINK' AND (t.turn_type = :turnType) AND tg.group_id = :groupId AND m.access_member IS NULL) " +
         "UNION " +
-        "SELECT m.access_member, t.hash, t.id, t.name, t.description, t.user_id, t.date_start, t.date_end, t.count_users, t.tags, t.access_tags " +
+        "SELECT m.access_member, t.hash, t.id, t.name, t.description, t.user_id, t.date_start, t.date_end, t.tags, t.access_tags " +
         "FROM turn AS t " +
         "LEFT JOIN member AS m ON (t.id = m.turn_id AND m.user_id = :userId) " +
         "WHERE " +
         "(m.access_member = 'MEMBER_LINK')", resultSetMapping = "TurnMapping")
-@NamedNativeQuery(name = "getMemberInTurns", query = "SELECT m.access_member, t.hash, t.id, t.name, t.description, t.user_id, t.date_start, t.date_end, t.count_users, t.tags, t.access_tags " +
+@NamedNativeQuery(name = "getMemberInTurns", query = "SELECT m.access_member, t.hash, t.id, t.name, t.description, t.user_id, t.date_start, t.date_end, t.tags, t.access_tags " +
         "FROM turn AS t " +
         "LEFT JOIN member AS m ON (t.id = m.turn_id AND m.user_id = :userId) " +
         "WHERE m.user_id = :userId AND (t.turn_type = :turnType)" +
@@ -49,7 +49,6 @@ import java.util.Set;
                         @FieldResult(name = "creator", column = "user_id"),
                         @FieldResult(name = "dateStart", column = "date_start"),
                         @FieldResult(name = "dateEnd", column = "date_end"),
-                        @FieldResult(name = "countUsers", column = "count_users"),
                         @FieldResult(name = "tags", column = "tags"),
                         @FieldResult(name = "accessTags", column = "access_tags")
                 }
@@ -103,8 +102,6 @@ public class Turn {
     private Date dateStart;
 
     private Date dateEnd;
-
-    private Integer countUsers;
 
     private Integer timer;
 

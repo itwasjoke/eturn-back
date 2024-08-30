@@ -29,7 +29,7 @@ public interface TurnMapper {
             Turn turn,
             String access,
             String accessType,
-            boolean invitedForTurn,
+            String invitedForTurn,
             boolean invitedModerator,
             boolean existsInvited,
             MembersCountDTO membersCount,

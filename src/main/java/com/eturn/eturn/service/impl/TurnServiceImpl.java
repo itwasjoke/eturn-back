@@ -1,27 +1,23 @@
 package com.eturn.eturn.service.impl;
 
 import com.eturn.eturn.dto.*;
-import com.eturn.eturn.dto.mapper.FacultyMapper;
-import com.eturn.eturn.dto.mapper.GroupMapper;
-import com.eturn.eturn.dto.mapper.TurnForListMapper;
-import com.eturn.eturn.dto.mapper.TurnCreatingMapper;
+import com.eturn.eturn.dto.mapper.*;
 import com.eturn.eturn.entity.*;
 import com.eturn.eturn.enums.AccessMember;
 import com.eturn.eturn.enums.AccessTurn;
 import com.eturn.eturn.enums.Role;
 import com.eturn.eturn.exception.member.NoAccessMemberException;
-import com.eturn.eturn.exception.member.NotFoundMemberException;
 import com.eturn.eturn.exception.turn.*;
 import com.eturn.eturn.notifications.NotificationController;
 import com.eturn.eturn.repository.TurnRepository;
 import com.eturn.eturn.security.HashGenerator;
 import com.eturn.eturn.service.MemberService;
+import com.eturn.eturn.service.PositionService;
 import com.eturn.eturn.service.TurnService;
 import com.eturn.eturn.service.UserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,17 +34,21 @@ public class TurnServiceImpl implements TurnService {
     private final TurnForListMapper turnForListMapper;
     private final GroupMapper groupMapper;
     private final FacultyMapper facultyMapper;
-
     private final NotificationController notificationController;
-
+    private final TurnMapper turnMapper;
+    private final PositionService positionService;
 
     public TurnServiceImpl(
             TurnRepository turnRepository,
             UserService userService,
-            MemberService memberService,
+            @Lazy MemberService memberService,
             TurnCreatingMapper turnCreatingMapper,
             TurnForListMapper turnForListMapper,
-            GroupMapper groupMapper, FacultyMapper facultyMapper, NotificationController notificationController) {
+            GroupMapper groupMapper,
+            FacultyMapper facultyMapper,
+            NotificationController notificationController,
+            TurnMapper turnMapper,
+            @Lazy PositionService positionService) {
         this.turnRepository = turnRepository;
         this.userService = userService;
         this.memberService = memberService;
@@ -57,6 +57,8 @@ public class TurnServiceImpl implements TurnService {
         this.groupMapper = groupMapper;
         this.facultyMapper = facultyMapper;
         this.notificationController = notificationController;
+        this.turnMapper = turnMapper;
+        this.positionService = positionService;
     }
     @Override
     public Turn getTurnFrom(String hash) {
@@ -71,7 +73,7 @@ public class TurnServiceImpl implements TurnService {
     @Transactional
     @Override
     public List<TurnForListDTO> getUserTurns(String login, Map<String, String> params) {
-        User user = userService.findByLogin(login);
+        User user = userService.getUserFromLogin(login);
         String access = params.get("Access");
         List<Object[]> allTurns = new ArrayList<>();
         Date now = new Date();
@@ -92,10 +94,65 @@ public class TurnServiceImpl implements TurnService {
     }
 
     @Override
+    public TurnDTO getTurn(String hash, String login) {
+        User user = userService.getUserFromLogin(login);
+        Turn turn = getTurnFrom(hash);
+        if (turn.getDateEnd().getTime() < new Date().getTime()) {
+            deleteTurn(login, hash);
+            throw new NotFoundTurnException("Turn was deleted");
+        }
+        Optional<Member> m = memberService.getMemberWith(user, turn);
+        String access = null;
+        boolean invited1 = false;
+        String invited2 = "ACCESS_OUT";
+        boolean existsInvited = false;
+        MembersCountDTO membersCountDTO = null;
+        if (m.isPresent()){
+            if (m.get().getAccessMember() == AccessMember.CREATOR || m.get().getAccessMember() == AccessMember.MODERATOR) {
+                existsInvited = memberService.invitedExists(turn);
+                membersCountDTO = new MembersCountDTO(
+                        (int) memberService.getCountModerators(turn),
+                        (int) memberService.getCountMembers(turn),
+                        memberService.countInviteMembers(turn),
+                        memberService.countInviteModerators(turn),
+                        (int) memberService.countBlocked(turn)
+                );
+            }
+            access = m.get().getAccessMember().name();
+            invited1 = m.get().isInvited();
+            invited2 = m.get().getInvitedForTurn().toString();
+        }
+        long count = positionService.countPositionsByTurn(turn);
+        String accessType = "for_link";
+        List<Long> list = new ArrayList<>();
+        if (!turn.getAllowedGroups().isEmpty()){
+            accessType = "groups";
+            for (Group item: turn.getAllowedGroups()){
+                list.add(item.getId());
+            }
+        } else if (!turn.getAllowedFaculties().isEmpty()){
+            accessType = "faculties";
+            for (Faculty f: turn.getAllowedFaculties()) {
+                list.add(f.getId());
+            }
+        }
+        return turnMapper.turnToTurnDTO(
+                turn,
+                access,
+                accessType,
+                invited2,
+                invited1,
+                existsInvited,
+                membersCountDTO,
+                list
+        );
+    }
+
+    @Override
     @Transactional
     public String createTurn(TurnCreatingDTO turnDTO, String login) {
         if (turnDTO.dateEnd().getTime() > turnDTO.dateStart().getTime()) {
-            User user = userService.findByLogin(login);
+            User user = userService.getUserFromLogin(login);
             Date now = new Date();
             long timeDiff = turnDTO.dateEnd().getTime() - turnDTO.dateStart().getTime();
             long year = 1000*60*60*24*365L;
@@ -126,7 +183,6 @@ public class TurnServiceImpl implements TurnService {
             turn.setAccessTags(allowedElements.toString().trim());
             String tags = turn.getName() + " " + turn.getDescription() + allowedElements + user.getName();
             turn.setTags(tags);
-            turn.setCountUsers(0);
             String hash = HashGenerator.generateUniqueCode();
             int count = 0;
             while (turnRepository.existsAllByHash(hash)) {
@@ -137,7 +193,6 @@ public class TurnServiceImpl implements TurnService {
                 }
             }
             if (count>50) {
-                // TODO Создать нормальное исключение
                 throw new InvalidDataTurnException("error");
             }
             turn.setHash(hash);
@@ -154,7 +209,7 @@ public class TurnServiceImpl implements TurnService {
     @Transactional
     public void deleteTurn(String username, String hash) {
         Optional<Turn> turn = turnRepository.findTurnByHash(hash);
-        User user = userService.findByLogin(username);
+        User user = userService.getUserFromLogin(username);
         if (turn.isEmpty()){
             throw new NotFoundTurnException("No turn in database on deleteTurn method (TurnServiceImpl.java)");
         }
@@ -177,8 +232,8 @@ public class TurnServiceImpl implements TurnService {
             throw new NotFoundAllTurnsException("no found");
         }
         Turn turn = t.get();
-        User user = userService.findByLogin(username);
-        Optional<Member> member = memberService.getOptionalMember(user, turn);
+        User user = userService.getUserFromLogin(username);
+        Optional<Member> member = memberService.getMemberWith(user, turn);
         String access;
         access = member.map(value -> value.getAccessMember().toString()).orElse(null);
         List<TurnForListDTO> turnList = new ArrayList<>();
@@ -187,54 +242,9 @@ public class TurnServiceImpl implements TurnService {
     }
 
     @Override
-    public List<MemberDTO> getMemberList(String username, String type, String hash, int page) {
-        User user = userService.findByLogin(username);
-        Optional<Turn> turn = turnRepository.findTurnByHash(hash);
-        if (turn.isEmpty()) {
-            throw new NotFoundTurnException("turn not found in getMember function");
-        }
-        Optional<Member> member = memberService.getOptionalMember(user, turn.get());
-        if (member.isPresent()){
-            AccessMember access = member.get().getAccessMember();
-            if (access == AccessMember.CREATOR || access == AccessMember.MODERATOR){
-                Pageable paging = PageRequest.of(page, 20);
-                return memberService.getMemberList(turn.get(), type, paging);
-            }
-            else{
-                throw new NoAccessMemberException("No access");
-            }
-        }
-        else {
-            throw new NotFoundMemberException("no member");
-        }
-    }
-
-    @Override
-    public List<MemberDTO> getUnconfMemberList(String username, String type, String hash) {
-        User user = userService.findByLogin(username);
-        Optional<Turn> turn = turnRepository.findTurnByHash(hash);
-        if (turn.isEmpty()){
-            throw new NotFoundTurnException("turn not found in getMember function");
-        }
-        Optional<Member> member = memberService.getOptionalMember(user, turn.get());
-        if (member.isPresent()){
-            AccessMember access = member.get().getAccessMember();
-            if (access == AccessMember.CREATOR || access == AccessMember.MODERATOR){
-                return memberService.getUnconfMemberList(turn.get(), type);
-            }
-            else{
-                throw new NoAccessMemberException("No access");
-            }
-        }
-        else {
-            throw new NotFoundMemberException("no member");
-        }
-    }
-
-    @Override
     public void changeTurn(TurnEditDTO turn, String username) {
         Optional<Turn> currentTurn = turnRepository.findTurnByHash(turn.hash());
-        User user = userService.findByLogin(username);
+        User user = userService.getUserFromLogin(username);
         if (currentTurn.isPresent()) {
             Turn newTurn = currentTurn.get();
             if (newTurn.getCreator() == user) {

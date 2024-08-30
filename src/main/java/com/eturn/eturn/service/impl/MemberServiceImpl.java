@@ -6,12 +6,16 @@ import com.eturn.eturn.entity.Member;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
 import com.eturn.eturn.enums.AccessMember;
+import com.eturn.eturn.enums.InvitedStatus;
 import com.eturn.eturn.exception.member.NoAccessMemberException;
 import com.eturn.eturn.exception.member.NotFoundMemberException;
 import com.eturn.eturn.exception.member.UnknownMemberException;
+import com.eturn.eturn.exception.position.NoInviteException;
+import com.eturn.eturn.notifications.NotificationController;
 import com.eturn.eturn.repository.MemberRepository;
-import com.eturn.eturn.service.MemberService;
+import com.eturn.eturn.service.*;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,9 +30,17 @@ import java.util.Optional;
 public class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository;
     private final MemberListMapper memberListMapper;
-    public MemberServiceImpl(MemberRepository memberRepository, MemberListMapper memberListMapper) {
+    private final UserService userService;
+    private final PositionService positionService;
+    private final TurnService turnService;
+    private final NotificationController notificationController;
+    public MemberServiceImpl(MemberRepository memberRepository, MemberListMapper memberListMapper, UserService userService, PositionService positionService, TurnService turnService, NotificationController notificationController) {
         this.memberRepository = memberRepository;
         this.memberListMapper = memberListMapper;
+        this.userService = userService;
+        this.positionService = positionService;
+        this.turnService = turnService;
+        this.notificationController = notificationController;
     }
 
     @Transactional
@@ -39,12 +51,20 @@ public class MemberServiceImpl implements MemberService {
             if (memberOptional.isPresent()){
                 throw new UnknownMemberException("this member already exists");
             }
+            InvitedStatus status;
             AccessMember accessMember = AccessMember.valueOf(access);
+            if (invitedForTurn) {
+                status = InvitedStatus.INVITED;
+            } else if (accessMember == AccessMember.MEMBER_LINK) {
+                status = InvitedStatus.ACCESS_OUT;
+            } else {
+                status = InvitedStatus.ACCESS_IN;
+            }
             Member member = new Member();
             member.setAccessMember(accessMember);
             member.setTurn(turn);
             member.setUser(user);
-            member.setInvitedForTurn(invitedForTurn);
+            member.setInvitedForTurn(status);
             return memberRepository.save(member);
         }
         catch(Exception e){
@@ -53,12 +73,12 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public Optional<Member> getMemberFrom(long id) {
+    public Optional<Member> getMemberWith(long id) {
         return memberRepository.findById(id);
     }
 
     @Override
-    public Optional<Member> getOptionalMember(User user, Turn turn) {
+    public Optional<Member> getMemberWith(User user, Turn turn) {
         return memberRepository.findMemberByUserAndTurn(user, turn);
     }
 
@@ -69,7 +89,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public MemberDTO getMember(User user, Turn turn) {
+    public MemberDTO getMemberDTO(User user, Turn turn) {
         Optional<Member> member = memberRepository.findMemberByUserAndTurn(user, turn);
         if (member.isPresent()){
             Member memberToDTO = member.get();
@@ -81,7 +101,7 @@ public class MemberServiceImpl implements MemberService {
                     memberToDTO.getUser().getGroup().getNumber(),
                     memberToDTO.getAccessMember().toString(),
                     memberToDTO.isInvited(),
-                    memberToDTO.isInvitedForTurn()
+                    memberToDTO.getInvitedForTurn().toString()
             );
         }
         else{
@@ -100,32 +120,13 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public List<MemberDTO> getMemberList(Turn turn, String type, Pageable pageable) {
-        AccessMember accessMember = AccessMember.valueOf(type);
-        Page<Member> members = memberRepository.getMemberByTurnAndAccessMember(turn, accessMember, pageable);
-        return memberListMapper.map(members);
-    }
-
-    @Override
-    public List<MemberDTO> getUnconfMemberList(Turn turn, String type) {
-        AccessMember accessMember = AccessMember.valueOf(type);
-        List<Member> members = null;
-        if (accessMember == AccessMember.MODERATOR) {
-            members = memberRepository.getMemberByTurnAndInvited(turn, true);
-        } else if (accessMember == AccessMember.MEMBER) {
-            members = memberRepository.getMemberByTurnAndAccessMemberAndInvitedForTurn(turn, AccessMember.MEMBER_LINK, true);
-        }
-        return memberListMapper.mapMember(members);
-    }
-
-    @Override
     public int countInviteModerators(Turn turn) {
         return memberRepository.countByTurnAndInvited(turn, true);
     }
 
     @Override
     public int countInviteMembers(Turn turn) {
-        return memberRepository.countByTurnAndInvitedForTurn(turn, true);
+        return memberRepository.countByTurnAndInvitedForTurn(turn, InvitedStatus.INVITED);
     }
 
     @Override
@@ -133,8 +134,10 @@ public class MemberServiceImpl implements MemberService {
         return memberRepository.countByTurnAndAccessMember(turn, AccessMember.BLOCKED);
     }
 
+
     @Override
-    public Member changeMemberStatus(long id, String type, User user) {
+    public Member changeMemberStatus(long id, String type, String username) {
+        User user = userService.getUserFromLogin(username);
         Optional<Member> member = memberRepository.findById(id);
         if (member.isPresent()){
             Member memberGet = member.get();
@@ -181,8 +184,8 @@ public class MemberServiceImpl implements MemberService {
                 if (invitedModerator == 1) memberGet.setInvited(true);
             }
             if (invitedTurn != -1) {
-                if (invitedTurn == 0) memberGet.setInvitedForTurn(false);
-                if (invitedTurn == 1) memberGet.setInvitedForTurn(true);
+                if (invitedTurn == 0) memberGet.setInvitedForTurn(InvitedStatus.ACCESS_IN);
+                if (invitedTurn == 1) memberGet.setInvitedForTurn(InvitedStatus.INVITED);
             }
             AccessMember accessMember = AccessMember.valueOf(type);
             memberGet.setAccessMember(accessMember);
@@ -194,42 +197,8 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public Member deleteMember(long id, User user) {
-        Optional<Member> member = memberRepository.findById(id);
-        if (member.isPresent()){
-            Member memberGet = member.get();
-            if (memberGet.getAccessMember()== AccessMember.CREATOR){
-                throw new NoAccessMemberException("you cannot delete creator of the turn");
-            }
-            Optional<Member> memberUser = memberRepository.findMemberByUserAndTurn(user, memberGet.getTurn());
-            if (memberUser.isPresent()){
-                if (memberUser.get().getAccessMember()== AccessMember.MODERATOR ||
-                        memberUser.get().getAccessMember()== AccessMember.CREATOR || memberGet.getUser()==user){
-                    Member memberDeleted = member.get();
-                    memberRepository.deleteById(id);
-                    return memberDeleted;
-                }
-                else{
-                    throw new NoAccessMemberException("you don't have root for this operation");
-                }
-            }
-            else{
-                throw new NotFoundMemberException("can't delete because your member not found and this is not your member");
-            }
-        }
-        else{
-            throw new NotFoundMemberException("no member what you want to delete");
-        }
-    }
-
-    @Override
-    public void deleteMemberFrom(Turn turn, User user) {
+    public void deleteMemberWith(Turn turn, User user) {
         memberRepository.deleteByTurnAndUser(turn, user);
-    }
-
-    @Override
-    public void deleteMemberFrom(Long id) {
-        memberRepository.deleteById(id);
     }
 
     @Override
@@ -249,6 +218,50 @@ public class MemberServiceImpl implements MemberService {
         }
     }
     @Override
+    public void deleteMemberWith(Long id) {
+        memberRepository.deleteById(id);
+    }
+    @Override
+    public void changeMemberInvite(Long id, boolean status, boolean isModerator) {
+        Optional<Member> memberPresent = getMemberWith(id);
+        if (memberPresent.isPresent()) {
+            Member member = memberPresent.get();
+            boolean isInvited = member.isInvited();
+            InvitedStatus invitedStatus = member.getInvitedForTurn();
+            if (status) {
+                if (isInvited && isModerator) {
+                    changeMemberStatusFrom(id, "MODERATOR", 0, 0);
+                }
+                if (invitedStatus == InvitedStatus.INVITED) {
+                    if (!isModerator) {
+                        if (isInvited) {
+                            changeMemberStatusFrom(id, "MEMBER", 1, 0);
+                        } else {
+                            changeMemberStatusFrom(id, "MEMBER", 0, 0);
+                        }
+                    } else if (!isInvited){
+                        throw new NoInviteException("User not invite to moderator");
+                    }
+                    positionService.createPositionAndSave(member.getUser().getLogin(), member.getTurn().getHash());
+                }
+            } else {
+                if (isInvited && isModerator) {
+                    changeMemberInvite(id, false);
+                }
+                if (invitedStatus == InvitedStatus.INVITED && !isModerator) {
+                    if (isInvited) {
+                        changeMemberStatusFrom(id, "MEMBER_LINK", 1, 0);
+                    } else {
+                        deleteMemberWith(id);
+                    }
+                }
+            }
+
+        } else {
+            throw new NotFoundMemberException("Member not found");
+        }
+    }
+    @Override
     public boolean invitedExists(Turn turn) {
         return memberRepository.getOneInvitedExists(turn, true, true).isPresent();
     }
@@ -263,5 +276,78 @@ public class MemberServiceImpl implements MemberService {
         }
         users.add(creator.getUser());
         return users;
+    }
+    @Override
+    @Transactional
+    public void inviteMember(String hash, String username) {
+        User user = userService.getUserFromLogin(username);
+        Turn turn = turnService.getTurnFrom(hash);
+        if (countInviteModerators(turn) > 20 || getCountModerators(turn) > 20) {
+            throw new NoInviteException("You cant invite");
+        }
+        if (turn.getCreator() == user) {
+            throw new NoAccessMemberException("You are creator");
+        }
+        Optional<Member> memberPresent = getMemberWith(user, turn);
+        if (memberPresent.isPresent()) {
+            if (memberPresent.get().getAccessMember() == AccessMember.BLOCKED) {
+                throw new NoAccessMemberException("You are blocked");
+            }
+            changeMemberInvite(memberPresent.get().getId(), true);
+            notificationController.notifyReceiptRequest(turn.getId(), turn.getName());
+        } else {
+            Member member = createMember(user, turn, "MEMBER_LINK", false);
+            changeMemberInvite(member.getId(), true);
+            notificationController.notifyReceiptRequest(turn.getId(), turn.getName());
+        }
+    }
+    @Override
+    public List<MemberDTO> getMemberList(String username, String type, String hash, int page) {
+        User user = userService.getUserFromLogin(username);
+        Turn turn = turnService.getTurnFrom(hash);
+        Optional<Member> member = getMemberWith(user, turn);
+        if (member.isPresent()){
+            AccessMember access = member.get().getAccessMember();
+            if (access == AccessMember.CREATOR || access == AccessMember.MODERATOR){
+                Pageable paging = PageRequest.of(page, 20);
+                AccessMember accessMember = AccessMember.valueOf(type);
+                Page<Member> members = memberRepository.getMemberByTurnAndAccessMember(turn, accessMember, paging);
+                return memberListMapper.map(members);
+            }
+            else{
+                throw new NoAccessMemberException("No access");
+            }
+        }
+        else {
+            throw new NotFoundMemberException("no member");
+        }
+    }
+
+    @Override
+    public List<MemberDTO> getUnconfirmedMemberList(String username, String type, String hash) {
+        User user = userService.getUserFromLogin(username);
+        Turn turn = turnService.getTurnFrom(hash);
+        Optional<Member> member = getMemberWith(user, turn);
+        if (member.isPresent()){
+            AccessMember access = member.get().getAccessMember();
+            if (access == AccessMember.CREATOR || access == AccessMember.MODERATOR){
+                AccessMember accessMember = AccessMember.valueOf(type);
+                List<Member> members = null;
+                if (accessMember == AccessMember.MODERATOR) {
+                    members = memberRepository.getMemberByTurnAndInvited(turn, true);
+                } else if (accessMember == AccessMember.MEMBER) {
+                    Pageable paging = PageRequest.of(0, 20);
+                    Page<Member> page = memberRepository.getMemberByTurnAndAccessMemberAndInvitedForTurn(turn, AccessMember.MEMBER_LINK, InvitedStatus.INVITED, paging);
+                    members = page.toList();
+                }
+                return memberListMapper.mapMember(members);
+            }
+            else{
+                throw new NoAccessMemberException("No access");
+            }
+        }
+        else {
+            throw new NotFoundMemberException("no member");
+        }
     }
 }

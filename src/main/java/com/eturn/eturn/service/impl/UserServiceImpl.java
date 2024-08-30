@@ -33,7 +33,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO getUser(String login) {
+    public UserDTO getUserDTOFromLogin(String login) {
         Optional<User> u = userRepository.findUserByLogin(login);
         if (u.isPresent()) {
             User user = u.get();
@@ -56,7 +56,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<User> getUser(Long id) {
+    public Optional<User> getOptionalUserFromId(Long id) {
         return userRepository.findById(id);
     }
 
@@ -72,7 +72,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User findByLogin(String login) {
+    public User getUserFromLogin(String login) {
         Optional<User> u = userRepository.findUserByLogin(login);
         if (u.isPresent()){
             return u.get();
@@ -81,7 +81,7 @@ public class UserServiceImpl implements UserService {
     }
     @Override
     public UserDetailsService userDetailsService() {
-        return this::findByLogin;
+        return this::getUserFromLogin;
     }
 
     @Override

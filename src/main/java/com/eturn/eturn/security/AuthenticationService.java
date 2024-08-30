@@ -69,7 +69,7 @@ public class AuthenticationService {
     }
 
     public void createFaculties(String username){
-        User u = userService.findByLogin(username);
+        User u = userService.getUserFromLogin(username);
         if (u.getRole() == Role.ADMIN) {
             HttpHeaders headers = new HttpHeaders();
             HttpEntity<String> entity = new HttpEntity<>(headers);
@@ -122,7 +122,7 @@ public class AuthenticationService {
         EtuIdUser etuIdUser = response.getBody();
         User currentUser;
         if (etuIdUser != null) {
-            Optional<User> user = userService.getUser(etuIdUser.getId());
+            Optional<User> user = userService.getOptionalUserFromId(etuIdUser.getId());
             EtuIdEducation etuIdEducation = etuIdUser.getEducations().get(0);
             EduGroups eduGroups = etuIdEducation.getEduGroups();
             if (user.isPresent()) {
@@ -185,7 +185,7 @@ public class AuthenticationService {
         return new JwtAuthenticationResponse(jwt);
     }
     public JwtAuthenticationResponse signUp(UserCreateDTO userCreateDTO, String username) {
-        User userAdmin = userService.findByLogin(username);
+        User userAdmin = userService.getUserFromLogin(username);
         if (userAdmin.getRole() == Role.ADMIN && userCreateDTO.id() != 1) {
             User user;
             Role r = Role.valueOf(userCreateDTO.role());
@@ -210,7 +210,7 @@ public class AuthenticationService {
                 login,
                 password
         ));
-        User user = userService.findByLogin(login);
+        User user = userService.getUserFromLogin(login);
         String jwt = "Bearer "+jwtService.generateToken(user);
         return new JwtAuthenticationResponse(jwt);
     }

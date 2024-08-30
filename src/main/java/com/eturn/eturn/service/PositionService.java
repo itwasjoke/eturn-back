@@ -14,13 +14,10 @@ public interface PositionService {
     PositionsTurnDTO getPositionList(String hash, String username, int page);
     void update(Long id, String username);
     void delete(Long id, String username);
-    void changeMemberStatus(long id, String type, String username);
     void skipPosition(long id, String username);
     DetailedPositionDTO getFirstUserPosition(String hash, String username);
     DetailedPositionDTO getFirstPosition(String hash, String username);
     Member addTurnToUser(User user, Turn turn);
-    TurnDTO getTurn(String hash, String login);
-    void inviteUser(String hash, String username);
-    void changeMemberInvite(Long id, boolean status, boolean isModerator);
     PositionsNotificationDTO getPositionsForNotify(Long turnId);
+    long countPositionsByTurn(Turn turn);
 }
