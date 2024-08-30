@@ -108,7 +108,8 @@ public class TurnServiceImpl implements TurnService {
         boolean existsInvited = false;
         MembersCountDTO membersCountDTO = null;
         if (m.isPresent()){
-            if (m.get().getAccessMember() == AccessMember.CREATOR || m.get().getAccessMember() == AccessMember.MODERATOR) {
+            Member member = m.get();
+            if (member.getAccessMember() == AccessMember.CREATOR || member.getAccessMember() == AccessMember.MODERATOR) {
                 existsInvited = memberService.invitedExists(turn);
                 membersCountDTO = new MembersCountDTO(
                         (int) memberService.getCountModerators(turn),
@@ -118,9 +119,9 @@ public class TurnServiceImpl implements TurnService {
                         (int) memberService.countBlocked(turn)
                 );
             }
-            access = m.get().getAccessMember().name();
-            invited1 = m.get().isInvited();
-            invited2 = m.get().getInvitedForTurn().toString();
+            access = member.getAccessMember().name();
+            invited1 = member.isInvited();
+            invited2 = member.getInvitedForTurn().toString();
         }
         long count = positionService.countPositionsByTurn(turn);
         String accessType = "for_link";
@@ -144,7 +145,8 @@ public class TurnServiceImpl implements TurnService {
                 invited1,
                 existsInvited,
                 membersCountDTO,
-                list
+                list,
+                count
         );
     }
 

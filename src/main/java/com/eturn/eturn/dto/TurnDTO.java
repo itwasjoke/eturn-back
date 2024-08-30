@@ -19,7 +19,7 @@ public record TurnDTO(
         @Schema(description = "Описание очереди", example="Всем приятного аппетита!")
         String description,
         @Schema(description = "Количество участников", example="1")
-        int countUsers,
+        long countUsers,
         @Schema(description = "Имя создателя", example="Иванов Иван Иванович")
         String creator,
         @Schema(description = "Дата начала очереди", example="2024-08-12T10:40:33.118Z")

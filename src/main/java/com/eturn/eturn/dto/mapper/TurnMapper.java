@@ -25,6 +25,7 @@ public interface TurnMapper {
     @Mapping(target = "existsInvited", source = "existsInvited")
     @Mapping(target = "membersCount", source = "membersCount")
     @Mapping(target = "accessElements", source = "accessElements")
+    @Mapping(target ="countUsers", source = "countUsers")
     TurnDTO turnToTurnDTO(
             Turn turn,
             String access,
@@ -33,6 +34,7 @@ public interface TurnMapper {
             boolean invitedModerator,
             boolean existsInvited,
             MembersCountDTO membersCount,
-            List<Long> accessElements
+            List<Long> accessElements,
+            long countUsers
     );
 }

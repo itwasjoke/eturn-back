@@ -263,7 +263,7 @@ public class MemberServiceImpl implements MemberService {
     }
     @Override
     public boolean invitedExists(Turn turn) {
-        return memberRepository.getOneInvitedExists(turn, true, true).isPresent();
+        return memberRepository.getOneInvitedExists(turn, true, InvitedStatus.INVITED).isPresent();
     }
 
     @Override
