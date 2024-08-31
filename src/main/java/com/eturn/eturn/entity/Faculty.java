@@ -12,6 +12,7 @@ import java.util.Set;
 @Table(name = "faculty")
 public class Faculty {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
     @ManyToMany(mappedBy = "allowedFaculties",fetch = FetchType.LAZY)

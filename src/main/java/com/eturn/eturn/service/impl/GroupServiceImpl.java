@@ -20,28 +20,24 @@ public class GroupServiceImpl implements GroupService {
     }
     @Override
     public void createOptionalGroup(Long id, String number, Integer course, Faculty faculty) {
-        if (groupRepository.existsById(id)){
-            Group groupExisted = groupRepository.getGroupById(id);
+        Optional<Group> group = groupRepository.getGroupByNumber(number);
+        if (group.isPresent()){
+            Group groupExisted = group.get();
             if (
-                    !Objects.equals(groupExisted.getNumber(), number)
-                            || !Objects.equals(groupExisted.getCourse(), course)
-                            || !Objects.equals(groupExisted.getFaculty().getId(), faculty.getId())
+                !Objects.equals(groupExisted.getCourse(), course)
+                || !Objects.equals(groupExisted.getFaculty().getId(), faculty.getId())
             ){
-                Group group = new Group();
-                group.setId(id);
-                group.setFaculty(faculty);
-                group.setNumber(number);
-                group.setCourse(course);
-                groupRepository.save(group);
+                groupExisted.setFaculty(faculty);
+                groupExisted.setCourse(course);
+                groupRepository.save(groupExisted);
             }
         }
         else {
-            Group group = new Group();
-            group.setId(id);
-            group.setFaculty(faculty);
-            group.setNumber(number);
-            group.setCourse(course);
-            groupRepository.save(group);
+            Group newGroup = new Group();
+            newGroup.setFaculty(faculty);
+            newGroup.setNumber(number);
+            newGroup.setCourse(course);
+            groupRepository.save(newGroup);
         }
     }
 }

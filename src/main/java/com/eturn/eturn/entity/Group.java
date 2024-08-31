@@ -10,10 +10,13 @@ import java.util.Set;
 @Getter
 @Setter
 @Entity
-@Table(name = "groups")
+@Table(name = "groups", indexes = {
+        @Index(name = "group_number", columnList = "number", unique = true)
+})
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Group {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String number;
     private Integer course;

@@ -55,7 +55,9 @@ import java.util.Set;
         ),
         columns = @ColumnResult(name = "access_member", type = String.class)
 )
-@Table(name = "turn")
+@Table(name = "turn", indexes = {
+        @Index(name = "hash", columnList = "hash", unique = true)
+})
 public class Turn {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

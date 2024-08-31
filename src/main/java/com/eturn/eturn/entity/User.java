@@ -16,7 +16,9 @@ import java.util.Set;
 @Getter
 @Setter
 @Entity
-@Table(name = "users")
+@Table(name = "users", indexes = {
+        @Index(name = "login", columnList = "login", unique = true)
+})
 public class User implements UserDetails {
     @Id
     private Long id;
