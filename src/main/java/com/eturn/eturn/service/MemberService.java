@@ -25,7 +25,8 @@ public interface MemberService {
     long countBlocked(Turn turn);
     List<MemberDTO> getMemberList(String username, String type, String hash, int page);
     List<MemberDTO> getUnconfirmedMemberList(String username, String type, String hash);
-    Member changeMemberStatus(long id, String type, String username);
+    void changeMemberStatus(long id, String type, String username);
+    Member changeMemberStatus(long id, String type, User user);
     void changeMemberStatusFrom(long id, String type, int invitedModerator, int invitedTurn);
     void changeMemberInvite(Long id, boolean status, boolean isModerator);
     void deleteMemberWith(Turn turn, User user);

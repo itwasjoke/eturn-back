@@ -20,4 +20,7 @@ public interface PositionService {
     Member addTurnToUser(User user, Turn turn);
     PositionsNotificationDTO getPositionsForNotify(Long turnId);
     long countPositionsByTurn(Turn turn);
+
+    boolean existsAllByTurnAndUser(Turn turn, User user);
+    void deleteAllByTurnAndUser(Turn turn, User user);
 }

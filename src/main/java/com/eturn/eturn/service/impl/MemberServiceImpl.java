@@ -6,6 +6,7 @@ import com.eturn.eturn.entity.Member;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
 import com.eturn.eturn.enums.AccessMember;
+import com.eturn.eturn.enums.AccessTurn;
 import com.eturn.eturn.enums.InvitedStatus;
 import com.eturn.eturn.exception.member.NoAccessMemberException;
 import com.eturn.eturn.exception.member.NotFoundMemberException;
@@ -134,10 +135,37 @@ public class MemberServiceImpl implements MemberService {
         return memberRepository.countByTurnAndAccessMember(turn, AccessMember.BLOCKED);
     }
 
+    @Override
+    @Transactional
+    public void changeMemberStatus(long id, String type, String username) {
+        User user = userService.getUserFromLogin(username);
+        if (!Objects.equals(type, "MEMBER") && !Objects.equals(type, "BLOCKED")){
+            throw new NoAccessMemberException("You cant change status on MODERATOR");
+        }
+        Member member = changeMemberStatus(id, type, user);
+        boolean positionExist = positionService.existsAllByTurnAndUser(member.getTurn(), member.getUser());
+        if (member.getAccessMember() == AccessMember.MEMBER){
+            Turn turn = member.getTurn();
+            if (
+                    !positionExist
+                            && turn.getAccessTurnType() == AccessTurn.FOR_ALLOWED_ELEMENTS
+            ){
+                deleteMemberWith(member.getId());
+            } else if (
+                    !positionExist
+                            && turn.getAccessTurnType() == AccessTurn.FOR_LINK
+            ) {
+                member = changeMemberStatus(id, "MEMBER_LINK", user);
+            }
+        }
+        if (type.equals("BLOCKED")) {
+            positionService.deleteAllByTurnAndUser(member.getTurn(), member.getUser());
+        }
+    }
+
 
     @Override
-    public Member changeMemberStatus(long id, String type, String username) {
-        User user = userService.getUserFromLogin(username);
+    public Member changeMemberStatus(long id, String type, User user) {
         Optional<Member> member = memberRepository.findById(id);
         if (member.isPresent()){
             Member memberGet = member.get();
@@ -145,7 +173,7 @@ public class MemberServiceImpl implements MemberService {
             if (memberUser.isPresent()){
                 if (memberUser.get().getAccessMember()== AccessMember.MODERATOR ||
                         memberUser.get().getAccessMember()== AccessMember.CREATOR ){
-                        if (memberGet.getAccessMember()!= AccessMember.CREATOR){
+                        if (memberGet.getAccessMember() != AccessMember.CREATOR){
                             if (!Objects.equals(type, "MEMBER") && !Objects.equals(type, "MODERATOR") && !Objects.equals(type, "BLOCKED") && !Objects.equals(type, "MEMBER_LINK")){
                                 throw new NoAccessMemberException("no access");
                             }

@@ -474,4 +474,14 @@ public class PositionServiceImpl implements PositionService {
     public long countPositionsByTurn(Turn turn) {
         return positionRepository.countByTurn(turn);
     }
+
+    @Override
+    public boolean existsAllByTurnAndUser(Turn turn, User user) {
+        return positionRepository.existsAllByTurnAndUser(turn, user);
+    }
+
+    @Override
+    public void deleteAllByTurnAndUser(Turn turn, User user) {
+        positionRepository.deleteAllByTurnAndUser(turn, user);
+    }
 }
