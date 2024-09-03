@@ -7,6 +7,7 @@ import com.eturn.eturn.dto.mapper.FacultyWithGroupsListMapper;
 import com.eturn.eturn.entity.Faculty;
 import com.eturn.eturn.repository.FacultyRepository;
 import com.eturn.eturn.service.FacultyService;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -43,6 +44,7 @@ public class FacultyServiceImpl implements FacultyService {
     }
 
     @Override
+    @Cacheable(value = "groups", key = "getGroupsCacheEturn")
     public List<FacultyWithGroupsDTO> getGroups() {
         List<Faculty> faculties = facultyRepository.findAll();
         return facultyWithGroupsListMapper.map(faculties);

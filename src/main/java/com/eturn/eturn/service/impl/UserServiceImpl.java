@@ -68,6 +68,7 @@ public class UserServiceImpl implements UserService {
         if (user.getRole() == Role.ADMIN && !user.getLogin().equals(username)){
             throw new UsernameNotFoundException("No user");
         }
+        logger.info("user created");
         return userRepository.save(user);
     }
 

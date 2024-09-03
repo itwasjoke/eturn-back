@@ -24,28 +24,28 @@ public class NotificationController {
     }
 
     public void notifyUserOfTurnPositionChange(Long turnId) {
-        Notification notification = new Notification();
-        notification.setTurnId(turnId);
-        notification.setType(0);
+        NotificationDTO notificationDTO = new NotificationDTO();
+        notificationDTO.setTurnId(turnId);
+        notificationDTO.setType(0);
         logger.info("Notification sent to broker");
-        rabbitTemplate.convertAndSend(EXCHANGE, TOPIC, notification);
+        rabbitTemplate.convertAndSend(EXCHANGE, TOPIC, notificationDTO);
     }
 
     public void notifyTurnCreated(long groupId, String turnName) {
-        Notification notification = new Notification();
-        notification.setType(1);
-        notification.setTurnName(turnName);
-        notification.setGroupId(groupId);
+        NotificationDTO notificationDTO = new NotificationDTO();
+        notificationDTO.setType(1);
+        notificationDTO.setTurnName(turnName);
+        notificationDTO.setGroupId(groupId);
         logger.info("Notification sent to broker");
-        rabbitTemplate.convertAndSend(EXCHANGE, TOPIC, notification);
+        rabbitTemplate.convertAndSend(EXCHANGE, TOPIC, notificationDTO);
     }
 
     public void notifyReceiptRequest(long turnId, String turnName) {
-        Notification notification = new Notification();
-        notification.setType(2);
-        notification.setTurnId(turnId);
-        notification.setTurnName(turnName);
+        NotificationDTO notificationDTO = new NotificationDTO();
+        notificationDTO.setType(2);
+        notificationDTO.setTurnId(turnId);
+        notificationDTO.setTurnName(turnName);
         logger.info("Notification sent to broker");
-        rabbitTemplate.convertAndSend(EXCHANGE, TOPIC, notification);
+        rabbitTemplate.convertAndSend(EXCHANGE, TOPIC, notificationDTO);
     }
 }
