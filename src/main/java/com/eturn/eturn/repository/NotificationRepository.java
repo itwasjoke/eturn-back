@@ -12,5 +12,6 @@ import java.util.Optional;
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification,Long> {
     Optional<Notification> findNotificationByUserIdAndType(Long id, NotifyType type);
-    void deleteAllByCreatedLessThan(Date date);
+    void deleteAllByCreatedBefore(Date date);
+    boolean existsAllByCreatedBefore(Date date);
 }

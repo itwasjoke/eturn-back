@@ -13,6 +13,7 @@ import com.eturn.eturn.service.UserService;
 import com.eturn.eturn.service.impl.notifications.AndroidNotifyServiceImpl;
 import com.eturn.eturn.service.impl.notifications.IOSNotifyServiceImpl;
 import com.eturn.eturn.service.impl.notifications.RuStoreNotifyServiceImpl;
+import jakarta.transaction.Transactional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
+@Transactional
 public class NotificationListener {
     private static final Logger logger = LogManager.getLogger(NotificationListener.class);
     private static final String TURN_EASY = "eturn-queue";
@@ -100,7 +102,9 @@ public class NotificationListener {
         calendar.setTime(currentDate);
         calendar.add(Calendar.MINUTE, -30);
         Date date30MinutesAgo = calendar.getTime();
-        notificationRepository.deleteAllByCreatedLessThan(date30MinutesAgo);
+        if (notificationRepository.existsAllByCreatedBefore(date30MinutesAgo)) {
+            notificationRepository.deleteAllByCreatedBefore(date30MinutesAgo);
+        }
     }
 
     private NotifyType getNotifyType(NotificationDTO notificationDTO) {
