@@ -11,7 +11,7 @@ import java.util.Set;
 @Setter
 @Entity
 @Table(name = "groups", indexes = {
-        @Index(name = "group_number", columnList = "number", unique = true)
+        @Index(name = "group_number_index", columnList = "number", unique = true)
 })
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Group {
