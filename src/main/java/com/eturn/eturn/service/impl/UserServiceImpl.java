@@ -95,4 +95,9 @@ public class UserServiceImpl implements UserService {
         return userRepository.getAllByGroup_Id(groupId);
     }
 
+    @Override
+    public boolean isUserExist(String login) {
+        return userRepository.existsByLogin(login);
+    }
+
 }

@@ -33,13 +33,15 @@ public class EturnApplication {
 	@Bean
 	public CommandLineRunner CommandLineRunnerBean() {
 		return (args) -> {
-			User user = new User();
-			user.setId(1L);
-			user.setName("Admin");
-			user.setPassword(passwordEncoder.encode(password));
-			user.setLogin(username);
-			user.setRole(Role.ADMIN);
-			userService.createUser(user);
+			if (!userService.isUserExist(username)) {
+				User user = new User();
+				user.setId(1L);
+				user.setName("Admin");
+				user.setPassword(passwordEncoder.encode(password));
+				user.setLogin(username);
+				user.setRole(Role.ADMIN);
+				userService.createUser(user);
+			}
 		};
 	}
 }

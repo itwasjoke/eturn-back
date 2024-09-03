@@ -15,4 +15,6 @@ public interface UserService {
     UserDetailsService userDetailsService();
     User updateUser(User user);
     List<User> getGroupUsers(long groupId);
+
+    boolean isUserExist(String login);
 }
