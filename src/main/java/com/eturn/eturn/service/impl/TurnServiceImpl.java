@@ -153,7 +153,6 @@ public class TurnServiceImpl implements TurnService {
     @Override
     @Transactional
     public String createTurn(TurnCreatingDTO turnDTO, String login) {
-        logger.info("Turn creating started");
         if (turnDTO.dateEnd().getTime() > turnDTO.dateStart().getTime()) {
             User user = userService.getUserFromLogin(login);
             Date now = new Date();
@@ -168,7 +167,6 @@ public class TurnServiceImpl implements TurnService {
                 throw new InvalidLengthTurnException("The turn is too long (or short)");
             if (user.getRole() == Role.EMPLOYEE && ((turnDTO.dateStart().getTime() - now.getTime() > month * 3) || (turnDTO.dateStart().getTime() - now.getTime() < -1000*60*2)))
                 throw new InvalidLengthTurnException("The turn is too long (or short)");
-            logger.info("Validation done");
             Turn turn = turnCreatingMapper.turnMoreDTOToTurn(turnDTO, user);
             StringBuilder allowedElements = new StringBuilder(" ");
             if (turn.getAccessTurnType() == AccessTurn.FOR_ALLOWED_ELEMENTS) {
@@ -184,7 +182,6 @@ public class TurnServiceImpl implements TurnService {
                     }
                 }
             }
-            logger.info("Notify done");
             turn.setAccessTags(allowedElements.toString().trim());
             String tags = turn.getName() + " " + turn.getDescription() + allowedElements + user.getName();
             turn.setTags(tags);
@@ -200,15 +197,12 @@ public class TurnServiceImpl implements TurnService {
             if (count>50) {
                 throw new InvalidDataTurnException("error");
             }
-            logger.info("Hash done");
             turn.setHash(hash);
             Turn turnWithHash = turnRepository.save(turn);
-            logger.info("Turn created");
             memberService.createMember(user, turnWithHash, "CREATOR", false);
             return turnWithHash.getHash();
         } else
             throw new InvalidDataTurnException("The dateEnd cannot be earlier than the dateStart on createTurn method (TurnServiceImpl.java)");
-
     }
 
     @Override
