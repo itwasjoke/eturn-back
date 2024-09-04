@@ -2,7 +2,6 @@ package com.eturn.eturn.repository;
 
 import com.eturn.eturn.entity.Notification;
 import com.eturn.eturn.enums.NotifyType;
-import org.aspectj.weaver.ast.Not;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -13,11 +13,11 @@ import com.eturn.eturn.service.UserService;
 import com.eturn.eturn.service.impl.notifications.AndroidNotifyServiceImpl;
 import com.eturn.eturn.service.impl.notifications.IOSNotifyServiceImpl;
 import com.eturn.eturn.service.impl.notifications.RuStoreNotifyServiceImpl;
-import jakarta.transaction.Transactional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -96,7 +96,8 @@ public class NotificationListener {
         }
     }
 
-    private void deleteNotifications(){
+    @Transactional
+    public void deleteNotifications(){
         Date currentDate = new Date();
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(currentDate);
