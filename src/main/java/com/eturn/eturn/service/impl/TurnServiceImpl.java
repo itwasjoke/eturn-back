@@ -237,6 +237,11 @@ public class TurnServiceImpl implements TurnService {
         String access;
         access = member.map(value -> value.getAccessMember().toString()).orElse(null);
         List<TurnForListDTO> turnList = new ArrayList<>();
+        if (access != null) {
+            if (access.equals(AccessMember.BLOCKED.toString())) {
+                return turnList;
+            }
+        }
         turnList.add(turnForListMapper.turnToTurnForListDTO(turn, access));
         return turnList;
     }
