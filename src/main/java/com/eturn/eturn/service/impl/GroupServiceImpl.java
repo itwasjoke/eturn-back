@@ -26,7 +26,7 @@ public class GroupServiceImpl implements GroupService {
             if (
                 !Objects.equals(groupExisted.getCourse(), course)
                 || !Objects.equals(groupExisted.getFaculty().getId(), faculty.getId())
-            ){
+            ) {
                 groupExisted.setFaculty(faculty);
                 groupExisted.setCourse(course);
                 groupRepository.save(groupExisted);

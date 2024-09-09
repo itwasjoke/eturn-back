@@ -196,7 +196,9 @@ public class PositionServiceImpl implements PositionService {
         newPosition.setTurn(turn);
         newPosition.setDateEnd(null);
         newPosition.setMember(currentMember);
-        newPosition.setGroupName(user.getGroup().getNumber());
+        if (user.getGroup() != null) {
+            newPosition.setGroupName(user.getGroup().getNumber());
+        }
         newPosition.setNumber(lastNumberPosition);
         if (turn.getPositionCount() != 0) {
             newPosition.setSkipCount(turn.getPositionCount() / 5);

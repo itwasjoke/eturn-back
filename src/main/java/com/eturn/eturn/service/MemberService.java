@@ -1,6 +1,7 @@
 package com.eturn.eturn.service;
 
 import com.eturn.eturn.dto.MemberDTO;
+import com.eturn.eturn.dto.MemberListDTO;
 import com.eturn.eturn.entity.Member;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
@@ -23,8 +24,8 @@ public interface MemberService {
     int countInviteModerators(Turn turn);
     int countInviteMembers(Turn turn);
     long countBlocked(Turn turn);
-    List<MemberDTO> getMemberList(String username, String type, String hash, int page);
-    List<MemberDTO> getUnconfirmedMemberList(String username, String type, String hash);
+    MemberListDTO getMemberList(String username, String type, String hash, int page);
+    MemberListDTO getUnconfirmedMemberList(String username, String type, String hash);
     void changeMemberStatus(long id, String type, String username);
     Member changeMemberStatus(long id, String type, User user);
     void changeMemberStatusFrom(long id, String type, int invitedModerator, int invitedTurn);

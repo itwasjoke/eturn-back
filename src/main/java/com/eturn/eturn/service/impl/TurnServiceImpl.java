@@ -199,12 +199,10 @@ public class TurnServiceImpl implements TurnService {
             }
             turn.setHash(hash);
             Turn turnWithHash = turnRepository.save(turn);
-            logger.info("Turn created");
             memberService.createMember(user, turnWithHash, "CREATOR", false);
-            return hash;
+            return turnWithHash.getHash();
         } else
             throw new InvalidDataTurnException("The dateEnd cannot be earlier than the dateStart on createTurn method (TurnServiceImpl.java)");
-
     }
 
     @Override

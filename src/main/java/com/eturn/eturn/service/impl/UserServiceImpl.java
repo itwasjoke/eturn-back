@@ -68,6 +68,7 @@ public class UserServiceImpl implements UserService {
         if (user.getRole() == Role.ADMIN && !user.getLogin().equals(username)){
             throw new UsernameNotFoundException("No user");
         }
+        logger.info("user created");
         return userRepository.save(user);
     }
 
@@ -92,6 +93,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> getGroupUsers(long groupId) {
         return userRepository.getAllByGroup_Id(groupId);
+    }
+
+    @Override
+    public boolean isUserExist(String login) {
+        return userRepository.existsByLogin(login);
     }
 
 }

@@ -1,6 +1,7 @@
 package com.eturn.eturn.service.impl;
 
 import com.eturn.eturn.dto.MemberDTO;
+import com.eturn.eturn.dto.MemberListDTO;
 import com.eturn.eturn.dto.mapper.MemberListMapper;
 import com.eturn.eturn.entity.Member;
 import com.eturn.eturn.entity.Turn;
@@ -181,6 +182,10 @@ public class MemberServiceImpl implements MemberService {
                                 throw new NoAccessMemberException("no access");
                             }
                             AccessMember accessMember = AccessMember.valueOf(type);
+                            if (accessMember == AccessMember.BLOCKED) {
+                                memberGet.setInvitedForTurn(InvitedStatus.ACCESS_OUT);
+                                memberGet.setInvited(false);
+                            }
                             memberGet.setAccessMember(accessMember);
                             return memberRepository.save(memberGet);
                         }
@@ -330,7 +335,7 @@ public class MemberServiceImpl implements MemberService {
         }
     }
     @Override
-    public List<MemberDTO> getMemberList(String username, String type, String hash, int page) {
+    public MemberListDTO getMemberList(String username, String type, String hash, int page) {
         User user = userService.getUserFromLogin(username);
         Turn turn = turnService.getTurnFrom(hash);
         Optional<Member> member = getMemberWith(user, turn);
@@ -340,7 +345,8 @@ public class MemberServiceImpl implements MemberService {
                 Pageable paging = PageRequest.of(page, 20);
                 AccessMember accessMember = AccessMember.valueOf(type);
                 Page<Member> members = memberRepository.getMemberByTurnAndAccessMember(turn, accessMember, paging);
-                return memberListMapper.map(members);
+                long count = memberRepository.countByTurnAndAccessMember(turn, accessMember);
+                return new MemberListDTO(memberListMapper.map(members), count);
             }
             else{
                 throw new NoAccessMemberException("No access");
@@ -352,7 +358,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public List<MemberDTO> getUnconfirmedMemberList(String username, String type, String hash) {
+    public MemberListDTO getUnconfirmedMemberList(String username, String type, String hash) {
         User user = userService.getUserFromLogin(username);
         Turn turn = turnService.getTurnFrom(hash);
         Optional<Member> member = getMemberWith(user, turn);
@@ -361,14 +367,17 @@ public class MemberServiceImpl implements MemberService {
             if (access == AccessMember.CREATOR || access == AccessMember.MODERATOR){
                 AccessMember accessMember = AccessMember.valueOf(type);
                 List<Member> members = null;
+                long count = 0L;
                 if (accessMember == AccessMember.MODERATOR) {
                     members = memberRepository.getMemberByTurnAndInvited(turn, true);
+                    count = memberRepository.countByTurnAndInvited(turn, true);
                 } else if (accessMember == AccessMember.MEMBER) {
                     Pageable paging = PageRequest.of(0, 20);
                     Page<Member> page = memberRepository.getMemberByTurnAndAccessMemberAndInvitedForTurn(turn, AccessMember.MEMBER_LINK, InvitedStatus.INVITED, paging);
+                    count = memberRepository.countByTurnAndInvitedForTurn(turn, InvitedStatus.INVITED);
                     members = page.toList();
                 }
-                return memberListMapper.mapMember(members);
+                return new MemberListDTO(memberListMapper.mapMember(members), count);
             }
             else{
                 throw new NoAccessMemberException("No access");

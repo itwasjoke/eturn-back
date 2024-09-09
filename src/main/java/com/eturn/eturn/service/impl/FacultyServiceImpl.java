@@ -7,10 +7,12 @@ import com.eturn.eturn.dto.mapper.FacultyWithGroupsListMapper;
 import com.eturn.eturn.entity.Faculty;
 import com.eturn.eturn.repository.FacultyRepository;
 import com.eturn.eturn.service.FacultyService;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class FacultyServiceImpl implements FacultyService {
@@ -29,23 +31,20 @@ public class FacultyServiceImpl implements FacultyService {
     @Override
     public Faculty createFaculty(FacultyDTO facultyDTO) {
         Faculty f = facultyMapper.dtoToFaculty(facultyDTO);
-        if (facultyRepository.existsById(f.getId())){
-            Faculty existedFaculty = facultyRepository.getFacultyById(f.getId());
-            if (!Objects.equals(existedFaculty.getName(), f.getName())){
-                existedFaculty.setName(f.getName());
-                return facultyRepository.save(existedFaculty);
-            }
-            else{
-                return existedFaculty;
-            }
+        Optional<Faculty> optionalFaculty = facultyRepository.getFacultyByName(f.getName());
+        if (optionalFaculty.isPresent()){
+            Faculty existedFaculty = optionalFaculty.get();
+            return facultyRepository.save(existedFaculty);
         }
         else{
+            f.setId(null);
             return facultyRepository.save(f);
         }
 
     }
 
     @Override
+    @Cacheable(value = "groups", key = "getGroupsCacheEturn")
     public List<FacultyWithGroupsDTO> getGroups() {
         List<Faculty> faculties = facultyRepository.findAll();
         return facultyWithGroupsListMapper.map(faculties);

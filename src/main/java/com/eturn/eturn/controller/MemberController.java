@@ -1,6 +1,7 @@
 package com.eturn.eturn.controller;
 
 import com.eturn.eturn.dto.MemberDTO;
+import com.eturn.eturn.dto.MemberListDTO;
 import com.eturn.eturn.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -69,7 +70,7 @@ public class MemberController {
             summary = "Получение списка участников",
             description = "Выводит список участников (участник/модератор/заблокированный/по ссылке) очереди"
     )
-    public List<MemberDTO> getMemberList(
+    public MemberListDTO getMemberList(
             HttpServletRequest request,
             @RequestParam @Parameter(name = "type", description = "Тип участника MEMBER/MODERATOR/BLOCKED") String type,
             @RequestParam @Parameter(name = "hash", description = "Хэш очереди") String hash,
@@ -85,7 +86,7 @@ public class MemberController {
             summary = "Получение списка неподтверждённых участников",
             description = "Выводит список тех, кто подал заявку (на модератора или в очередь по ссылке), но его пока не подтвердили"
     )
-    public List<MemberDTO> getUnconfirmedMembers(
+    public MemberListDTO getUnconfirmedMembers(
             HttpServletRequest request,
             @RequestParam @Parameter(name = "type", description = "Тип участника MEMBER/MODERATOR") String type,
             @RequestParam @Parameter(name = "hash", description = "Хэш очереди") String hash

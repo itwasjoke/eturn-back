@@ -27,6 +27,7 @@ import com.eturn.eturn.service.UserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -68,6 +69,7 @@ public class AuthenticationService {
         this.authenticationManager = authenticationManager;
     }
 
+    @CacheEvict(value = "groups", allEntries = true)
     public void createFaculties(String username){
         User u = userService.getUserFromLogin(username);
         if (u.getRole() == Role.ADMIN) {

@@ -33,7 +33,6 @@ public record TurnCreatingDTO(
         @Schema(description = "Допустимые факультеты")
         Set<FacultyDTO> allowedFaculties,
         @Schema(description = "Время на то, чтобы войти", example="1")
-        @PositiveOrZero
         @Range(min = 0, max = 20)
         Integer timer,
         @Schema(description = "Количество позиций, через которое можно вставать в очередь", example="1")

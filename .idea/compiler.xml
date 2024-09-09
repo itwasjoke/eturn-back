@@ -25,7 +25,7 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="eturn" options="-parameters" />
+      <module name="eturn" options="-parameters -parameters" />
       <module name="eturn-back" options="-parameters" />
     </option>
   </component>
