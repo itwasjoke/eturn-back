@@ -182,6 +182,10 @@ public class MemberServiceImpl implements MemberService {
                                 throw new NoAccessMemberException("no access");
                             }
                             AccessMember accessMember = AccessMember.valueOf(type);
+                            if (accessMember == AccessMember.BLOCKED) {
+                                memberGet.setInvitedForTurn(InvitedStatus.ACCESS_OUT);
+                                memberGet.setInvited(false);
+                            }
                             memberGet.setAccessMember(accessMember);
                             return memberRepository.save(memberGet);
                         }
