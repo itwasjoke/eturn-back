@@ -14,7 +14,7 @@ public record TurnEditDTO(
         @Size(min = 1, max = 30)
         String name,
         @Schema(description = "Описание очереди", example="Готовим банковские карты. Всем приятного аппетита!")
-        @Size(min = 1, max = 200)
+        @Size(max = 200)
         String description,
         @Schema(description = "Допустимые группы")
         Set<GroupDTO> allowedGroups,
