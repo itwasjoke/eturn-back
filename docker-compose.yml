@@ -46,3 +46,45 @@ services:
       RABBITMQ_VHOST: /
       RABBITMQ_USERNAME: eturnuser
       RABBITMQ_PASSWORD: klbWQFEfeGr4vdv41fs
+  eturn_db_dev:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=eturn_user
+      - POSTGRES_PASSWORD=DfcbkmtdCfvjdfhjd
+      - POSTGRES_DB=eturn_dev
+    volumes:
+      - pg_eturn:/var/lib/postgresql_dev/data
+    ports:
+      - "37213:5432"
+  rabbitmq_dev:
+    image: rabbitmq:3.10.7-management
+    environment:
+      - RABBITMQ_DEFAULT_USER=eturnuser
+      - RABBITMQ_DEFAULT_PASS=klbWQFEfeGr4vdv41fs
+      - RABBITMQ_DEFAULT_VHOST=/dev/
+    volumes:
+      - ./rabbitmq:/var/lib/rabbitmq
+    ports:
+      - "37222:5672"
+      - "37212:15672"
+  eturn_app_dev:
+    restart: always
+    build: .
+    ports:
+      - "37211:37111"
+    depends_on:
+      - eturn_db_dev
+      - rabbitmq_dev
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://eturn_db_dev:5432/eturn_dev"
+      SPRING_DATASOURCE_USERNAME: eturn_user
+      SPRING_DATASOURCE_PASSWORD: DfcbkmtdCfvjdfhjd
+      ETURN_DEFAULTS_USERNAME: adminEturnQFNJLe2FQw345
+      ETURN_DEFAULTS_PASSWORD: JFIOASF__1**FQ3!$4F
+      TOKEN_SIGNING_KEY: 53A73E5F1C4E0A2D3B5F2D784E6A1B423D6F247D1F6E5C3A596D635A75327855
+      RABBITMQ_HOST: rabbitmq_dev
+      RABBITMQ_PORT: 37222
+      RABBITMQ_VHOST: /dev/
+      RABBITMQ_USERNAME: eturnuser
+      RABBITMQ_PASSWORD: klbWQFEfeGr4vdv41fs

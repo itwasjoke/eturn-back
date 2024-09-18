@@ -20,6 +20,10 @@ public class NotificationsConfig {
     private String QUEUE;
     @Value("${eturn.rabbitmq.exchange}")
     private String EXCHANGE;
+    @Value("${spring.rabbitmq.virtual-host}")
+    private String VHOST;
+    @Value("${spring.rabbitmq.host}")
+    private String HOST;
     @Value("${spring.rabbitmq.username}")
     private String USERNAME;
     @Value("${spring.rabbitmq.password}")
@@ -44,8 +48,8 @@ public class NotificationsConfig {
     @Bean
     public ConnectionFactory connectionFactory() {
         CachingConnectionFactory connectionFactory = new CachingConnectionFactory();
-        connectionFactory.setHost("rabbitmq");
-        connectionFactory.setVirtualHost("/");
+        connectionFactory.setHost(HOST);
+        connectionFactory.setVirtualHost(VHOST);
         connectionFactory.setUsername(USERNAME);
         connectionFactory.setPassword(PASSWORD);
         connectionFactory.setPort(5672);
