@@ -6,13 +6,11 @@ import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
 import com.eturn.eturn.notifications.PositionsNotificationDTO;
 
-import java.util.List;
-
 
 public interface PositionService {
     DetailedPositionDTO createPositionAndSave(String login, String hash);
     PositionsTurnDTO getPositionList(String hash, String username, int page);
-    void update(Long id, String username);
+    void update(Long id, String username, String status);
     void delete(Long id, String username);
     void skipPosition(long id, String username);
     DetailedPositionDTO getFirstUserPosition(String hash, String username);

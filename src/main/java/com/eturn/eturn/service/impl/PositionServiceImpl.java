@@ -232,11 +232,14 @@ public class PositionServiceImpl implements PositionService {
 
     @Override
     @Transactional
-    public void update(Long id, String username) {
+    public void update(Long id, String username, String status) {
         User user = userService.getUserFromLogin(username);
         Optional<Position> position = positionRepository.findById(id);
         if (position.isPresent()){
             Position posI = position.get();
+            if (posI.isStart() && status.equals("in")) {
+                return;
+            }
             Turn turn = posI.getTurn();
             if (turn.getDateStart().getTime() > new Date().getTime())
                 throw new DateNotArrivedPosException("The date has not come yet");

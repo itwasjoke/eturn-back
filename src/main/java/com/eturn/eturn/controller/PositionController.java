@@ -49,18 +49,19 @@ public class PositionController {
         return positionService.createPositionAndSave(userDetails.getUsername(), hash);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping()
     @Operation(
             summary = "Изменение статуса позиции",
             description = "Находит позицию и изменяет ее статус из 'вход' на 'выход' и с 'выход' на удаление позиции"
     )
     public void updateStatus(
             HttpServletRequest request,
-            @PathVariable @Parameter(name = "id", description = "Идентификатор позиции") Long id
+            @RequestParam @Parameter(name = "id", description = "ID позиции") Long id,
+            @RequestParam @Parameter(name = "status", description = "Статус (in/out)") String status
     ){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
-        positionService.update(id, userDetails.getUsername());
+        positionService.update(id, userDetails.getUsername(), status);
     }
 
     @PutMapping("/skip/{id}")
