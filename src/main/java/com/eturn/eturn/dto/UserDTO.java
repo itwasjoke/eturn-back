@@ -14,7 +14,9 @@ public record UserDTO(
         @Schema(description = "Факультет", example="ФКТИ")
         String faculty,
         @Schema(description = "Группа", example="2000")
-        String group
+        String group,
+        @Schema(description = "Количество групп, которое может создать пользователь", example="2")
+        int countAvailableTurns
 ) {
 
 }

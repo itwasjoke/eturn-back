@@ -79,7 +79,16 @@ public class TurnServiceImpl implements TurnService {
         Date now = new Date();
         turnRepository.deleteByDateEndIsLessThan(now);
         if (Objects.equals(access, "memberOut")) {
-            allTurns = turnRepository.resultsMemberOut(user.getId(), user.getGroup().getId(), user.getGroup().getFaculty().getId(), params.get("Type"));
+            long facultyId = 0L;
+            long groupId = 0L;
+            Group group = user.getGroup();
+            if (group!=null){
+                groupId = group.getId();
+                if (group.getFaculty()!=null){
+                    facultyId = group.getFaculty().getId();
+                }
+            }
+            allTurns = turnRepository.resultsMemberOut(user.getId(), groupId, facultyId, params.get("Type"));
         } else if (Objects.equals(access, "memberIn")){
             allTurns = turnRepository.resultsMemberIn(user.getId(), params.get("Type"));
         }
@@ -155,6 +164,16 @@ public class TurnServiceImpl implements TurnService {
     public String createTurn(TurnCreatingDTO turnDTO, String login) {
         if (turnDTO.dateEnd().getTime() > turnDTO.dateStart().getTime()) {
             User user = userService.getUserFromLogin(login);
+            Role R = user.getRole();
+            int countAvailable = 0;
+            int countTurns = turnRepository.countAllByCreator(user);
+            switch (R) {
+                case STUDENT -> countAvailable = 5 - countTurns;
+                case EMPLOYEE -> countAvailable = 50 - countTurns;
+            }
+            if (countAvailable<1) {
+                throw new NoCreateTurnException("too many turns");
+            }
             Date now = new Date();
             long timeDiff = turnDTO.dateEnd().getTime() - turnDTO.dateStart().getTime();
             long year = 1000*60*60*24*365L;
@@ -223,6 +242,11 @@ public class TurnServiceImpl implements TurnService {
     @Override
     public void saveTurn(Turn turn) {
         turnRepository.save(turn);
+    }
+
+    @Override
+    public int getCountTurnsOfUser(User user) {
+        return turnRepository.countAllByCreator(user);
     }
 
     @Override
