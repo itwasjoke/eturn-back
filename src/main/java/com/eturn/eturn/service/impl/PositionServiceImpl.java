@@ -103,9 +103,14 @@ public class PositionServiceImpl implements PositionService {
             currentMember = addTurnToUser(user, turn);
         } else {
             currentMember = member.get();
-            if (currentMember.getAccessMember() == AccessMember.MEMBER_LINK && currentMember.getInvitedForTurn() == InvitedStatus.ACCESS_IN){
+            boolean haveAccessToInvitedModerator = true;
+            if (turn.getAccessTurnType() == AccessTurn.FOR_LINK) {
+                haveAccessToInvitedModerator = currentMember.getInvitedForTurn() == InvitedStatus.ACCESS_IN;
+            }
+            if (currentMember.getAccessMember() == AccessMember.MEMBER_LINK && currentMember.getInvitedForTurn() == InvitedStatus.ACCESS_IN || haveAccessToInvitedModerator){
                 memberService.changeMemberStatusFrom(currentMember.getId(), "MEMBER", -1, -1);
             }
+            // TODO Здесь надо проверить, что MEMBER_LINK меняется на MEMBER с ACCESS_IN
         }
         AccessMember access = currentMember.getAccessMember();
     if (access != AccessMember.BLOCKED && currentMember.getInvitedForTurn() == InvitedStatus.ACCESS_IN) {
