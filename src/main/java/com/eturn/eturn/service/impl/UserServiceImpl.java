@@ -6,6 +6,7 @@ import com.eturn.eturn.entity.*;
 import com.eturn.eturn.enums.Role;
 import com.eturn.eturn.exception.user.NotFoundUserException;
 import com.eturn.eturn.repository.UserRepository;
+import com.eturn.eturn.service.TurnService;
 import com.eturn.eturn.service.UserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.context.annotation.Lazy;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,13 +25,15 @@ public class UserServiceImpl implements UserService {
     private static final Logger logger = LogManager.getLogger(UserServiceImpl.class);
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final TurnService turnService;
 
     @Value("${eturn.defaults.username}")
     private String username;
 
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, @Lazy TurnService turnService) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.turnService = turnService;
     }
 
     @Override
@@ -45,11 +49,20 @@ public class UserServiceImpl implements UserService {
             }
             String role = null;
             Role R = user.getRole();
+            int countTurns = turnService.getCountTurnsOfUser(user);
             switch (R) {
                 case STUDENT -> role = "Студент";
                 case EMPLOYEE -> role = "Сотрудник";
             }
-            return userMapper.userToUserDTO(user, faculty, group, role);
+            int countAvailable = 5;
+            switch (R) {
+                case STUDENT -> countAvailable = 5 - countTurns;
+                case EMPLOYEE -> countAvailable = 50 - countTurns;
+            }
+            if (countAvailable < 0) {
+                countAvailable = 0;
+            }
+            return userMapper.userToUserDTO(user, faculty, group, role, countAvailable);
         } else {
             throw new NotFoundUserException("No user in database on getUser method (UserServiceImpl.java");
         }

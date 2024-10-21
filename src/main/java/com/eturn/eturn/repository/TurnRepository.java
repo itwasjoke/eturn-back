@@ -1,6 +1,7 @@
 package com.eturn.eturn.repository;
 
 import com.eturn.eturn.entity.Turn;
+import com.eturn.eturn.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,4 +21,6 @@ public interface TurnRepository extends JpaRepository<Turn, Long> {
     void deleteTurnById(Long id);
     boolean existsAllByHash(String hash);
     Optional<Turn> findTurnByHash(String hash);
+
+    int countAllByCreator(User user);
 }
