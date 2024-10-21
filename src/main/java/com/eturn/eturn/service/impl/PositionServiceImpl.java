@@ -478,7 +478,7 @@ public class PositionServiceImpl implements PositionService {
         List<Position> list = page.toList();
         List<User> users = new ArrayList<>();
         logger.info("The turn is now up to " + list.size() + " values");
-        if (list.size() > 0) {
+        if (!list.isEmpty()) {
             Position p1 = list.get(0);
             users.add(p1.getUser());
             if (list.size() > 4) users.add(list.get(4).getUser());
