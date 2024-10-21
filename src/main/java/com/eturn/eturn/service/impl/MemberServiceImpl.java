@@ -3,9 +3,7 @@ package com.eturn.eturn.service.impl;
 import com.eturn.eturn.dto.MemberDTO;
 import com.eturn.eturn.dto.MemberListDTO;
 import com.eturn.eturn.dto.mapper.MemberListMapper;
-import com.eturn.eturn.entity.Member;
-import com.eturn.eturn.entity.Turn;
-import com.eturn.eturn.entity.User;
+import com.eturn.eturn.entity.*;
 import com.eturn.eturn.enums.AccessMember;
 import com.eturn.eturn.enums.AccessTurn;
 import com.eturn.eturn.enums.InvitedStatus;
@@ -22,10 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 
 @Service
@@ -57,8 +52,20 @@ public class MemberServiceImpl implements MemberService {
             AccessMember accessMember = AccessMember.valueOf(access);
             if (invitedForTurn) {
                 status = InvitedStatus.INVITED;
-            } else if (accessMember == AccessMember.MEMBER_LINK) {
-                status = InvitedStatus.ACCESS_OUT;
+            }
+            else if (accessMember == AccessMember.MEMBER_LINK) {
+                if (turn.getAccessTurnType() == AccessTurn.FOR_ALLOWED_ELEMENTS) {
+                    Set<Group> groups = turn.getAllowedGroups();
+                    Set<Faculty> faculties = turn.getAllowedFaculties();
+                    if (groups.contains(user.getGroup()) || faculties.contains(user.getGroup().getFaculty())) {
+                        status = InvitedStatus.ACCESS_IN;
+                    } else {
+                        status = InvitedStatus.ACCESS_OUT;
+                    }
+                }
+                else {
+                    status = InvitedStatus.ACCESS_OUT;
+                }
             } else {
                 status = InvitedStatus.ACCESS_IN;
             }

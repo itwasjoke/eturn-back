@@ -103,8 +103,23 @@ public class PositionServiceImpl implements PositionService {
             currentMember = addTurnToUser(user, turn);
         } else {
             currentMember = member.get();
-            if (currentMember.getAccessMember() == AccessMember.MEMBER_LINK && currentMember.getInvitedForTurn() == InvitedStatus.ACCESS_IN){
-                memberService.changeMemberStatusFrom(currentMember.getId(), "MEMBER", -1, -1);
+            if (currentMember.getAccessMember() == AccessMember.MEMBER_LINK) {
+                switch (currentMember.getInvitedForTurn()) {
+                    case ACCESS_IN:
+                        memberService.changeMemberStatusFrom(
+                                currentMember.getId(),
+                                "MEMBER",
+                                -1,
+                                -1
+                        );
+                    case ACCESS_OUT:
+                        memberService.changeMemberStatusFrom(
+                                currentMember.getId(),
+                                "MEMBER_LINK",
+                                -1,
+                                1
+                        );
+                }
             }
         }
         AccessMember access = currentMember.getAccessMember();
