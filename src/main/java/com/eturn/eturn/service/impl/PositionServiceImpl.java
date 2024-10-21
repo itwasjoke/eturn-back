@@ -123,7 +123,7 @@ public class PositionServiceImpl implements PositionService {
             }
         }
         AccessMember access = currentMember.getAccessMember();
-    if (access != AccessMember.BLOCKED && currentMember.getInvitedForTurn() == InvitedStatus.ACCESS_IN) {
+        if (access != AccessMember.BLOCKED && currentMember.getInvitedForTurn() == InvitedStatus.ACCESS_IN) {
             deleteOverdueElements(turn);
             // рассчет участников
             if (positionRepository.countAllByTurn(turn) > 0) {
