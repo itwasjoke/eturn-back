@@ -1,2 +1,4 @@
 target
+.idea
+rabbitmq
 target/classes/com/eturn/eturn/EturnApplication.class
