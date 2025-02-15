@@ -3,7 +3,7 @@ FROM maven:3.8.6-eclipse-temurin-17 AS builder
 WORKDIR /opt/app
 COPY mvnw pom.xml ./
 COPY ./src ./src
-RUN mvn clean install -DskipTests
+RUN mvn build -DskipTests
 
 FROM eclipse-temurin:17-jre-jammy
 
