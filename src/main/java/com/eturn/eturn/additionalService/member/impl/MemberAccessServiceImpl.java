@@ -13,6 +13,11 @@ import com.eturn.eturn.exception.position.NoInviteException;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
+
+import static com.eturn.eturn.enums.AccessMember.CREATOR;
+import static com.eturn.eturn.enums.AccessMember.MODERATOR;
+import static com.eturn.eturn.enums.MemberListType.INVITED_MODERATOR;
+
 @Service
 public class MemberAccessServiceImpl implements MemberAccessService {
 
@@ -36,13 +41,13 @@ public class MemberAccessServiceImpl implements MemberAccessService {
             String type
     ) {
         // Проверка, что текущий пользователь имеет права на изменение
-        if (currentUserMember.getAccessMember() != AccessMember.MODERATOR &&
-                currentUserMember.getAccessMember() != AccessMember.CREATOR) {
+        if (currentUserMember.getAccessMember() != MODERATOR &&
+                currentUserMember.getAccessMember() != CREATOR) {
             throw new NoAccessMemberException("you don't have root for this operation");
         }
 
         // Проверка, что целевой участник не является создателем
-        if (targetMember.getAccessMember() == AccessMember.CREATOR) {
+        if (targetMember.getAccessMember() == CREATOR) {
             throw new NoAccessMemberException("you are creator");
         }
 
@@ -69,7 +74,7 @@ public class MemberAccessServiceImpl implements MemberAccessService {
      * Проверяет, превышен ли лимит приглашенных модераторов или модераторов в очереди.
      */
     public boolean isInviteLimitExceeded(Turn turn) {
-        return mbrRepService.getCountMembersWith(turn, MemberListType.INVITED_MODERATOR) > 20
+        return mbrRepService.getCountMembersWith(turn, INVITED_MODERATOR) > 20
                 || mbrRepService.getCountMembersWith(turn, MemberListType.MODERATOR) > 20;
     }
 
@@ -89,8 +94,8 @@ public class MemberAccessServiceImpl implements MemberAccessService {
                 .orElseThrow(() -> new NotFoundMemberException("no member"));
 
         if (
-                member.getAccessMember() != AccessMember.CREATOR
-                        && member.getAccessMember() != AccessMember.MODERATOR
+                member.getAccessMember() != CREATOR
+                        && member.getAccessMember() != MODERATOR
         ) {
             throw new NoAccessMemberException("No access");
         }
@@ -105,8 +110,8 @@ public class MemberAccessServiceImpl implements MemberAccessService {
                 .orElseThrow(() -> new NotFoundMemberException("no member"));
 
         if (
-                member.getAccessMember() != AccessMember.CREATOR
-                        && member.getAccessMember() != AccessMember.MODERATOR
+                member.getAccessMember() != CREATOR
+                        && member.getAccessMember() != MODERATOR
         ) {
             throw new NoAccessMemberException("No access");
         }

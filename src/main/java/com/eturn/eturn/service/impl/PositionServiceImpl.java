@@ -27,7 +27,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.Date;
 
-import static com.eturn.eturn.enums.ChangeMbrAction.ADD_INVITE_STATUS;
+import static com.eturn.eturn.enums.AccessMember.*;
+import static com.eturn.eturn.enums.AccessMember.BLOCKED;
+import static com.eturn.eturn.enums.AccessMember.MODERATOR;
+import static com.eturn.eturn.enums.AccessTurn.FOR_LINK;
+import static com.eturn.eturn.enums.ChangeMbrAction.*;
+import static com.eturn.eturn.enums.InvitedStatus.*;
+import static com.eturn.eturn.enums.MemberListType.*;
+import static com.eturn.eturn.enums.MemberListType.MEMBER;
+
 
 @Service
 public class PositionServiceImpl implements PositionService {
@@ -116,7 +124,7 @@ public class PositionServiceImpl implements PositionService {
             currentMember = addTurnToUser(user, turn);
         } else {
             currentMember = member.get();
-            if (currentMember.getAccessMember() == AccessMember.MEMBER_LINK) {
+            if (currentMember.getAccessMember() == MEMBER_LINK) {
                 switch (currentMember.getInvitedForTurn()) {
                     case ACCESS_IN:
                         mbrStatusService.changeMemberStatusFrom(
@@ -138,11 +146,11 @@ public class PositionServiceImpl implements PositionService {
             }
         }
         AccessMember access = currentMember.getAccessMember();
-        if (access != AccessMember.BLOCKED && currentMember.getInvitedForTurn() == InvitedStatus.ACCESS_IN) {
+        if (access != BLOCKED && currentMember.getInvitedForTurn() == ACCESS_IN) {
             deleteOverdueElements(turn);
             // рассчет участников
             if (positionRepository.countAllByTurn(turn) > 0) {
-                long countPositions = mbrRepService.getCountMembersWith(turn, MemberListType.MEMBER);
+                long countPositions = mbrRepService.getCountMembersWith(turn, MEMBER);
                 boolean isBig = true;
                 // получение своей первой позиции
                 Optional<Position> ourPosition = positionRepository.findFirstByUserAndTurnOrderByIdDesc(user, turn);
@@ -225,7 +233,7 @@ public class PositionServiceImpl implements PositionService {
         if (turn.getPositionCount() != 0) {
             newPosition.setSkipCount(turn.getPositionCount() / 5);
         } else {
-            newPosition.setSkipCount((mbrRepService.getCountMembersWith(turn, MemberListType.MEMBER) / 10));
+            newPosition.setSkipCount((mbrRepService.getCountMembersWith(turn, MEMBER) / 10));
         }
         return positionRepository.save(newPosition);
     }
@@ -268,8 +276,8 @@ public class PositionServiceImpl implements PositionService {
             MemberDTO memberDTO = memberService.getMemberDTO(user, posI.getTurn());
             String access = memberDTO.access();
             if (posI.getUser()==user
-                    || access.equals(AccessMember.CREATOR.toString())
-                    || access.equals(AccessMember.MODERATOR.toString()))
+                    || access.equals(CREATOR.toString())
+                    || access.equals(MODERATOR.toString()))
             {
                 deleteOverdueElements(posI.getTurn());
                 Optional<Position> positionO = positionRepository.findById(id);
@@ -330,7 +338,7 @@ public class PositionServiceImpl implements PositionService {
             }
             Member member = oMember.get();
             AccessMember access = member.getAccessMember();
-            if (access == AccessMember.MEMBER && pos.getUser()==user || access == AccessMember.CREATOR || access == AccessMember.MODERATOR) {
+            if (access == AccessMember.MEMBER && pos.getUser()==user || access == AccessMember.CREATOR || access == MODERATOR) {
                 positionRepository.delete(pos);
                 Optional<Position> p = positionRepository.findFirstByTurnOrderByIdAsc(pos.getTurn());
                 if (p.isPresent()) {
@@ -344,7 +352,7 @@ public class PositionServiceImpl implements PositionService {
                     positionRepository.save(changePosition);
 
                     Optional<Position> pUser = positionRepository.findFirstByUserAndTurnOrderByIdAsc(pos.getUser(), pos.getTurn());
-                    if (pUser.isEmpty() && access == AccessMember.MEMBER && pos.getTurn().getAccessTurnType() == AccessTurn.FOR_LINK) {
+                    if (pUser.isEmpty() && access == AccessMember.MEMBER && pos.getTurn().getAccessTurnType() == FOR_LINK) {
                         mbrStatusService.changeMemberStatusFrom(member.getId(), "MEMBER_LINK", Optional.empty(), Optional.empty());
                     } else if (pUser.isEmpty() && access == AccessMember.MEMBER) {
                         mbrRepService.deleteMemberWith(pos.getTurn(), user);
@@ -448,7 +456,7 @@ public class PositionServiceImpl implements PositionService {
             Optional<Member> optionalMember = mbrRepService.getMemberWith(user, pos.getTurn());
             if (optionalMember.isPresent()) {
                 Member member = optionalMember.get();
-                if (member.getAccessMember() == AccessMember.MODERATOR || member.getAccessMember() == AccessMember.CREATOR) {
+                if (member.getAccessMember() == MODERATOR || member.getAccessMember() == AccessMember.CREATOR) {
                     return detailedPositionMapper.positionMoreInfoToPositionDTO(pos, 0);
                 }
             }
@@ -459,7 +467,7 @@ public class PositionServiceImpl implements PositionService {
     @Override
     public Member addTurnToUser(User user, Turn turn) {
         AccessTurn turnEnum = turn.getAccessTurnType();
-        if (turnEnum == AccessTurn.FOR_LINK) {
+        if (turnEnum == FOR_LINK) {
             notificationController.notifyReceiptRequest(turn.getId(), turn.getName());
             return memberService.createMember(user, turn, "MEMBER_LINK", true);
         } else {

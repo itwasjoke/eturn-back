@@ -26,6 +26,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
+import static com.eturn.eturn.enums.AccessTurn.FOR_ALLOWED_ELEMENTS;
+import static com.eturn.eturn.enums.MemberListType.*;
+import static com.eturn.eturn.enums.Role.*;
+
+
 @Service
 public class TurnServiceImpl implements TurnService {
 
@@ -129,11 +134,11 @@ public class TurnServiceImpl implements TurnService {
             if (member.getAccessMember() == AccessMember.CREATOR || member.getAccessMember() == AccessMember.MODERATOR) {
                 existsInvited = memberService.invitedExists(turn);
                 membersCountDTO = new MembersCountDTO(
-                        mbrRepService.getCountMembersWith(turn, MemberListType.MODERATOR),
-                        mbrRepService.getCountMembersWith(turn, MemberListType.MEMBER),
-                        mbrRepService.getCountMembersWith(turn, MemberListType.INVITED_MEMBER),
-                        mbrRepService.getCountMembersWith(turn, MemberListType.INVITED_MODERATOR),
-                        mbrRepService.getCountMembersWith(turn, MemberListType.BLOCKED)
+                        mbrRepService.getCountMembersWith(turn, MODERATOR),
+                        mbrRepService.getCountMembersWith(turn, MEMBER),
+                        mbrRepService.getCountMembersWith(turn, INVITED_MEMBER),
+                        mbrRepService.getCountMembersWith(turn, INVITED_MODERATOR),
+                        mbrRepService.getCountMembersWith(turn, BLOCKED)
                 );
             }
             access = member.getAccessMember().name();
@@ -186,17 +191,17 @@ public class TurnServiceImpl implements TurnService {
             long timeDiff = turnDTO.dateEnd().getTime() - turnDTO.dateStart().getTime();
             long year = 1000*60*60*24*365L;
             long month = 1000*60*60*24*31L;
-            if (user.getRole() == Role.STUDENT && (timeDiff > 1000*60*60*24*3 || timeDiff < 0))
+            if (user.getRole() == STUDENT && (timeDiff > 1000*60*60*24*3 || timeDiff < 0))
                 throw new InvalidTimeToCreateTurnException("Invalid turn duration");
-            if (user.getRole() == Role.EMPLOYEE && (timeDiff > year || timeDiff < 0))
+            if (user.getRole() == EMPLOYEE && (timeDiff > year || timeDiff < 0))
                 throw new InvalidTimeToCreateTurnException("Invalid turn duration");
-            if (user.getRole() == Role.STUDENT && ((turnDTO.dateStart().getTime() - now.getTime() > month) || (turnDTO.dateStart().getTime() - now.getTime() < -1000*60*2)))
+            if (user.getRole() == STUDENT && ((turnDTO.dateStart().getTime() - now.getTime() > month) || (turnDTO.dateStart().getTime() - now.getTime() < -1000*60*2)))
                 throw new InvalidLengthTurnException("The turn is too long (or short)");
-            if (user.getRole() == Role.EMPLOYEE && ((turnDTO.dateStart().getTime() - now.getTime() > month * 3) || (turnDTO.dateStart().getTime() - now.getTime() < -1000*60*2)))
+            if (user.getRole() == EMPLOYEE && ((turnDTO.dateStart().getTime() - now.getTime() > month * 3) || (turnDTO.dateStart().getTime() - now.getTime() < -1000*60*2)))
                 throw new InvalidLengthTurnException("The turn is too long (or short)");
             Turn turn = turnCreatingMapper.turnMoreDTOToTurn(turnDTO, user);
             StringBuilder allowedElements = new StringBuilder(" ");
-            if (turn.getAccessTurnType() == AccessTurn.FOR_ALLOWED_ELEMENTS) {
+            if (turn.getAccessTurnType() == FOR_ALLOWED_ELEMENTS) {
                 if (turn.getAllowedGroups() != null) {
                     for (Group group : turn.getAllowedGroups()) {
                         allowedElements.append(group.getNumber()).append(" ");
@@ -270,7 +275,7 @@ public class TurnServiceImpl implements TurnService {
         access = member.map(value -> value.getAccessMember().toString()).orElse(null);
         List<TurnForListDTO> turnList = new ArrayList<>();
         if (access != null) {
-            if (access.equals(AccessMember.BLOCKED.toString())) {
+            if (access.equals(BLOCKED.toString())) {
                 return turnList;
             }
         }
@@ -315,7 +320,7 @@ public class TurnServiceImpl implements TurnService {
                 }
                 Set<String> groupsName = new HashSet<>();
                 Set<String> facultiesName = new HashSet<>();
-                if (newTurn.getAccessTurnType() == AccessTurn.FOR_ALLOWED_ELEMENTS) {
+                if (newTurn.getAccessTurnType() == FOR_ALLOWED_ELEMENTS) {
                     if (newTurn.getAllowedGroups() != null) {
                         for (Group group : newTurn.getAllowedGroups()) {
                             groupsName.add(group.getNumber());

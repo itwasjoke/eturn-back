@@ -24,6 +24,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import static com.eturn.eturn.enums.NotifySendType.*;
+import static com.eturn.eturn.enums.NotifyType.*;
+
 @Component
 @Transactional
 public class NotificationListener {
@@ -85,7 +88,7 @@ public class NotificationListener {
     private NotifySendType checkNotification(NotificationDTO notificationDTO, User user) {
         NotifyType notifyType = getNotifyType(notificationDTO);
         if (notifyType == null) {
-            return NotifySendType.NO_ACCESS;
+            return NO_ACCESS;
         }
         deleteNotifications();
         Optional<Notification> existingNotification = notificationRepository.findNotificationByUserIdAndType(user.getId(), notifyType);
@@ -110,9 +113,9 @@ public class NotificationListener {
 
     private NotifyType getNotifyType(NotificationDTO notificationDTO) {
         return switch (notificationDTO.type) {
-            case 0 -> NotifyType.POSITION;
-            case 1 -> NotifyType.GROUPS;
-            case 2 -> NotifyType.INVITED;
+            case 0 -> POSITION;
+            case 1 -> GROUPS;
+            case 2 -> INVITED;
             default -> null;
         };
     }
@@ -121,17 +124,17 @@ public class NotificationListener {
         if (notification.isMany()) {
             if (isNotificationExpired(notification.getCreated())) {
                 updateNotification(notification, false, new Date());
-                return NotifySendType.ONE;
+                return ONE;
             } else {
-                return NotifySendType.NO_ACCESS;
+                return NO_ACCESS;
             }
         } else {
             if (isNotificationExpired(notification.getCreated())) {
                 updateNotification(notification, false, new Date());
-                return NotifySendType.ONE;
+                return ONE;
             } else {
                 updateNotification(notification, true, notification.getCreated());
-                return NotifySendType.MANY;
+                return MANY;
             }
         }
     }
@@ -143,7 +146,7 @@ public class NotificationListener {
         notification.setCreated(new Date());
         notification.setUserId(user.getId());
         notificationRepository.save(notification);
-        return NotifySendType.ONE;
+        return ONE;
     }
 
     private boolean isNotificationExpired(Date createdDate) {
@@ -181,7 +184,7 @@ public class NotificationListener {
         for (User u: userList) {
             if (typeExists(u)) {
                 NotifySendType sendType = checkNotification(notificationDTO, u);
-                if (sendType != NotifySendType.NO_ACCESS) {
+                if (sendType != NO_ACCESS) {
                     logger.info(sendType);
                     NotificationService notificationService = getCurrentService(u.getApplicationType());
                     notificationService.notifyTurnCreated(u.getTokenNotification(), notificationDTO.turnName, sendType);
@@ -195,7 +198,7 @@ public class NotificationListener {
         for (User u: userList) {
             if (typeExists(u)) {
                 NotifySendType sendType = checkNotification(notificationDTO, u);
-                if (sendType != NotifySendType.NO_ACCESS) {
+                if (sendType != NO_ACCESS) {
                     NotificationService notificationService = getCurrentService(u.getApplicationType());
                     notificationService.notifyReceiptRequest(u.getTokenNotification(), notificationDTO.turnName, sendType);
                 }

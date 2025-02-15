@@ -10,6 +10,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import static com.eturn.eturn.enums.Role.ADMIN;
+
 @SpringBootApplication
 public class EturnApplication {
 
@@ -39,7 +41,7 @@ public class EturnApplication {
 				user.setName("Admin");
 				user.setPassword(passwordEncoder.encode(password));
 				user.setLogin(username);
-				user.setRole(Role.ADMIN);
+				user.setRole(ADMIN);
 				userService.createUser(user);
 			}
 		};

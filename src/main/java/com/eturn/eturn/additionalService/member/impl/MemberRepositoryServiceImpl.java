@@ -22,7 +22,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static com.eturn.eturn.enums.AccessMember.BLOCKED;
+import static com.eturn.eturn.enums.AccessMember.*;
+import static com.eturn.eturn.enums.InvitedStatus.INVITED;
 
 @Service
 public class MemberRepositoryServiceImpl implements MemberRepositoryService {
@@ -106,16 +107,16 @@ public class MemberRepositoryServiceImpl implements MemberRepositoryService {
             Turn turn,
             AccessMember accessMember
     ) {
-        if (accessMember == AccessMember.MODERATOR) {
+        if (accessMember == MODERATOR) {
             return memberRepository
                     .getMemberByTurnAndInvitedForModerator(turn, true);
-        } else if (accessMember == AccessMember.MEMBER) {
+        } else if (accessMember == MEMBER) {
             Pageable paging = PageRequest.of(0, 20);
             Page<Member> page = memberRepository
                     .getMemberByTurnAndAccessMemberAndInvitedForTurn(
                             turn,
-                            AccessMember.MEMBER_LINK,
-                            InvitedStatus.INVITED,
+                            MEMBER_LINK,
+                            INVITED,
                             paging
                     );
             return page.toList();
@@ -129,12 +130,12 @@ public class MemberRepositoryServiceImpl implements MemberRepositoryService {
     public long getUnconfirmedMemberCount(
             Turn turn, AccessMember accessMember
     ) {
-        if (accessMember == AccessMember.MODERATOR) {
+        if (accessMember == MODERATOR) {
             return memberRepository
                     .countByTurnAndInvitedForModerator(turn, true);
-        } else if (accessMember == AccessMember.MEMBER) {
+        } else if (accessMember == MEMBER) {
             return memberRepository.countByTurnAndInvitedForTurn(
-                    turn, InvitedStatus.INVITED
+                    turn, INVITED
             );
         }
         return 0L; // Возвращаем 0, если тип доступа не подходит
@@ -155,19 +156,19 @@ public class MemberRepositoryServiceImpl implements MemberRepositoryService {
             case MEMBER -> {
                 return memberRepository.countByTurnAndAccessMember(
                         turn,
-                        AccessMember.MEMBER
+                        MEMBER
                 );
             }
             case MODERATOR -> {
                 return memberRepository.countByTurnAndAccessMember(
                         turn,
-                        AccessMember.MODERATOR
+                        MODERATOR
                 );
             }
             case INVITED_MEMBER -> {
                 return memberRepository.countByTurnAndInvitedForTurn(
                         turn,
-                        InvitedStatus.INVITED
+                        INVITED
                 );
             }
             case INVITED_MODERATOR -> {

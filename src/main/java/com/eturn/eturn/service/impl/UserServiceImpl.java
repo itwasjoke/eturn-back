@@ -19,6 +19,9 @@ import org.springframework.context.annotation.Lazy;
 import java.util.List;
 import java.util.Optional;
 
+import static com.eturn.eturn.enums.Role.ADMIN;
+import static com.eturn.eturn.enums.Role.STUDENT;
+
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -43,7 +46,7 @@ public class UserServiceImpl implements UserService {
             User user = u.get();
             String group = null;
             String faculty = null;
-            if (user.getRole() == Role.STUDENT) {
+            if (user.getRole() == STUDENT) {
                 group = user.getGroup().getNumber();
                 faculty = user.getGroup().getFaculty().getName();
             }
@@ -78,7 +81,7 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByLogin(user.getLogin())){
             throw new UsernameNotFoundException("No user");
         }
-        if (user.getRole() == Role.ADMIN && !user.getLogin().equals(username)){
+        if (user.getRole() == ADMIN && !user.getLogin().equals(username)){
             throw new UsernameNotFoundException("No user");
         }
         logger.info("user created");

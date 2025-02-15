@@ -42,6 +42,8 @@ import org.springframework.web.client.RestTemplate;
 import java.util.List;
 import java.util.Optional;
 
+import static com.eturn.eturn.enums.Role.*;
+
 @Service
 public class AuthenticationService {
     private static final Logger logger = LogManager.getLogger(AuthenticationService.class);
@@ -72,7 +74,7 @@ public class AuthenticationService {
     @CacheEvict(value = "groups", allEntries = true)
     public void createFaculties(String username){
         User u = userService.getUserFromLogin(username);
-        if (u.getRole() == Role.ADMIN) {
+        if (u.getRole() == ADMIN) {
             HttpHeaders headers = new HttpHeaders();
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
@@ -171,10 +173,10 @@ public class AuthenticationService {
                 Role role;
                 switch (etuIdUser.getPosition()) {
                     case "Сотрудник":
-                        role = Role.EMPLOYEE;
+                        role = EMPLOYEE;
                         break;
                     default:
-                        role = Role.STUDENT;
+                        role = STUDENT;
                 }
                 newUser.setRole(role);
                 currentUser = userService.createUser(newUser);
@@ -188,7 +190,7 @@ public class AuthenticationService {
     }
     public JwtAuthenticationResponse signUp(UserCreateDTO userCreateDTO, String username) {
         User userAdmin = userService.getUserFromLogin(username);
-        if (userAdmin.getRole() == Role.ADMIN && userCreateDTO.id() != 1) {
+        if (userAdmin.getRole() == ADMIN && userCreateDTO.id() != 1) {
             User user;
             Role r = Role.valueOf(userCreateDTO.role());
             if (userCreateDTO.appType().equals("IOS") || userCreateDTO.appType().equals("ANDROID") || userCreateDTO.appType().equals("RUSTORE")) {

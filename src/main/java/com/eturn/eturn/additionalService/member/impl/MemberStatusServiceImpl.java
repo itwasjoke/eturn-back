@@ -16,8 +16,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-import static com.eturn.eturn.enums.AccessMember.BLOCKED;
-import static com.eturn.eturn.enums.ChangeMbrAction.ADD_INVITE_STATUS;
+import static com.eturn.eturn.enums.AccessMember.*;
+import static com.eturn.eturn.enums.AccessTurn.FOR_ALLOWED_ELEMENTS;
+import static com.eturn.eturn.enums.ChangeMbrAction.*;
+import static com.eturn.eturn.enums.InvitedStatus.*;
 
 @Service
 public class MemberStatusServiceImpl implements MemberStatusService {
@@ -46,25 +48,25 @@ public class MemberStatusServiceImpl implements MemberStatusService {
             AccessMember newAccessMember
     ) {
         AccessMember currentAccessMember = member.getAccessMember();
-        InvitedStatus invitedStatus = InvitedStatus.ACCESS_OUT;
+        InvitedStatus invitedStatus = ACCESS_OUT;
 
         // Если мы разблокируем пользователя
         if (
                 currentAccessMember == BLOCKED
-                        && newAccessMember == AccessMember.MEMBER
+                        && newAccessMember == MEMBER
         ) {
             AccessTurn accessType = member.getTurn().getAccessTurnType();
-            if (accessType == AccessTurn.FOR_ALLOWED_ELEMENTS) {
+            if (accessType == FOR_ALLOWED_ELEMENTS) {
                 memberRepository.deleteById(member.getId());
                 return false;
             } else {
-                invitedStatus = InvitedStatus.ACCESS_IN;
-                newAccessMember = AccessMember.MEMBER_LINK;
+                invitedStatus = ACCESS_IN;
+                newAccessMember = MEMBER_LINK;
             }
 
             // Если мы блокируем пользователя
         } else if (
-                currentAccessMember == AccessMember.MEMBER
+                currentAccessMember == MEMBER
                         && newAccessMember == BLOCKED
         ) {
             positionService.deleteAllByTurnAndUser(member.getTurn(), member.getUser());
@@ -105,22 +107,22 @@ public class MemberStatusServiceImpl implements MemberStatusService {
             changeMemberStatusFrom(
                     member.getId(),
                     "MODERATOR",
-                    Optional.of(ChangeMbrAction.DELETE_INVITE_STATUS),
-                    Optional.of(ChangeMbrAction.ADD_ACCESS_TURN)
+                    Optional.of(DELETE_INVITE_STATUS),
+                    Optional.of(ADD_ACCESS_TURN)
             );
-            if (invitedStatusForTurn == InvitedStatus.INVITED){
+            if (invitedStatusForTurn == INVITED){
                 positionService.createPositionAndSave(
                         member.getUser().getLogin(),
                         member.getTurn().getHash()
                 );
             }
             // подтверждение заявки участника
-        } else if (invitedStatusForTurn == InvitedStatus.INVITED && !isModerator) {
+        } else if (invitedStatusForTurn == INVITED && !isModerator) {
             changeMemberStatusFrom(
                     member.getId(),
                     "MEMBER",
                     Optional.empty(),
-                    Optional.of(ChangeMbrAction.ADD_ACCESS_TURN)
+                    Optional.of(ADD_ACCESS_TURN)
             );
             positionService.createPositionAndSave(
                     member.getUser().getLogin(),
@@ -145,12 +147,12 @@ public class MemberStatusServiceImpl implements MemberStatusService {
             changeMemberStatusFrom(
                     member.getId(),
                     null,
-                    Optional.of(ChangeMbrAction.DELETE_INVITE_STATUS),
+                    Optional.of(DELETE_INVITE_STATUS),
                     Optional.empty()
             );
 
             // отказ от участника
-        } else if (invitedForTurn == InvitedStatus.INVITED && !isModerator) {
+        } else if (invitedForTurn == INVITED && !isModerator) {
             if (invitedForModerator) {
                 changeMemberStatusFrom(
                         member.getId(),
@@ -173,7 +175,7 @@ public class MemberStatusServiceImpl implements MemberStatusService {
         changeMemberStatusFrom(
                 member.getId(),
                 null,
-                Optional.of(ChangeMbrAction.ADD_INVITE_STATUS),
+                Optional.of(ADD_INVITE_STATUS),
                 Optional.empty()
         );
     }
@@ -206,8 +208,8 @@ public class MemberStatusServiceImpl implements MemberStatusService {
             // Установка доступов для очереди
             if (actionTurn.isPresent()) {
                 switch (actionTurn.get()){
-                    case ADD_ACCESS_TURN -> memberGet.setInvitedForTurn(InvitedStatus.ACCESS_IN);
-                    case ADD_INVITE_STATUS -> memberGet.setInvitedForTurn(InvitedStatus.INVITED);
+                    case ADD_ACCESS_TURN -> memberGet.setInvitedForTurn(ACCESS_IN);
+                    case ADD_INVITE_STATUS -> memberGet.setInvitedForTurn(INVITED);
                 }
             }
             if (type != null) {

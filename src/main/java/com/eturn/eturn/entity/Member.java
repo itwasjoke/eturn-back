@@ -8,6 +8,8 @@ import lombok.Setter;
 
 import java.util.Set;
 
+import static com.eturn.eturn.enums.InvitedStatus.ACCESS_OUT;
+
 @Getter
 @Setter
 @Entity
@@ -34,5 +36,5 @@ public class Member {
     private boolean invitedForModerator = false;
 
     @Enumerated(EnumType.STRING)
-    private InvitedStatus invitedForTurn = InvitedStatus.ACCESS_OUT;
+    private InvitedStatus invitedForTurn = ACCESS_OUT;
 }

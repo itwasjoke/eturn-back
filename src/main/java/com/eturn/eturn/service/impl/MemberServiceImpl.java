@@ -21,6 +21,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.eturn.eturn.enums.AccessMember.*;
+import static com.eturn.eturn.enums.AccessTurn.FOR_ALLOWED_ELEMENTS;
+import static com.eturn.eturn.enums.InvitedStatus.*;
+
 /**
  * Работа с участниками очередей
  */
@@ -80,28 +84,28 @@ public class MemberServiceImpl implements MemberService {
         InvitedStatus status;
         AccessMember accessMember = AccessMember.valueOf(access);
         if (invitedForTurn) {
-            status = InvitedStatus.INVITED;
-        } else if (accessMember == AccessMember.MEMBER_LINK) {
+            status = INVITED;
+        } else if (accessMember == MEMBER_LINK) {
             // если участник не стоит сейчас в очереди, то определяется формат доступа
             // по допустимым группам и факультетам
             if (turn.getAccessTurnType() ==
-                    AccessTurn.FOR_ALLOWED_ELEMENTS) {
+                    FOR_ALLOWED_ELEMENTS) {
                 Set<Group> groups = turn.getAllowedGroups();
                 Set<Faculty> faculties = turn.getAllowedFaculties();
                 if (
                         groups.contains(user.getGroup())
                                 || faculties.contains(user.getGroup().getFaculty())
                 ) {
-                    status = InvitedStatus.ACCESS_IN;
+                    status = ACCESS_IN;
                 } else {
-                    status = InvitedStatus.ACCESS_OUT;
+                    status = ACCESS_OUT;
                 }
             }
             else {
-                status = InvitedStatus.ACCESS_OUT;
+                status = ACCESS_OUT;
             }
         } else {
-            status = InvitedStatus.ACCESS_IN;
+            status = ACCESS_IN;
         }
         Member member = new Member();
         member.setAccessMember(accessMember);
@@ -239,7 +243,7 @@ public class MemberServiceImpl implements MemberService {
         return memberRepository.getOneInvitedExists(
                 turn,
                 true,
-                InvitedStatus.INVITED
+                INVITED
         ).isPresent();
     }
 
@@ -253,7 +257,7 @@ public class MemberServiceImpl implements MemberService {
         List<Member> members =
                 memberRepository.getAllByTurn_IdAndAccessMember(
                         turnId,
-                        AccessMember.MODERATOR
+                        MODERATOR
                 );
         Member creator
                 = memberRepository.getMemberByTurn_IdAndAccessMember(
@@ -314,7 +318,7 @@ public class MemberServiceImpl implements MemberService {
         return mbrRepService.getMemberWith(user, turn)
                 .map(member -> {
                     // Если участник заблокирован, выбрасываем исключение
-                    if (member.getAccessMember() == AccessMember.BLOCKED) {
+                    if (member.getAccessMember() == BLOCKED) {
                         throw new NoAccessMemberException("You are blocked");
                     }
                     return member;
