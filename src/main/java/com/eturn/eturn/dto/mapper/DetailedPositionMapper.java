@@ -21,6 +21,7 @@ public interface DetailedPositionMapper {
     @Mapping(target = "start", source = "position.start")
     @Mapping(target = "dateEnd", source = "position.dateEnd")
     @Mapping(target = "difference", source = "dif")
+    @Mapping(target = "number", source = "dif")
     @Mapping(target = "isLast", ignore = true)
     DetailedPositionDTO positionMoreInfoToPositionDTO(Position position, int dif);
     @Mapping(target="id", source="position.id")
@@ -30,6 +31,7 @@ public interface DetailedPositionMapper {
     @Mapping(target = "start", source = "position.start")
     @Mapping(target = "dateEnd", source = "position.dateEnd")
     @Mapping(target = "difference", source = "dif")
+    @Mapping(target = "number", source = "dif")
     @Mapping(target = "isLast", source = "isLast")
     DetailedPositionDTO positionMoreUserToPositionDTO(Position position, int dif, boolean isLast);
 }
