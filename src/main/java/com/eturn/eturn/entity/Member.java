@@ -31,7 +31,7 @@ public class Member {
     @Enumerated(EnumType.STRING)
     private AccessMember accessMember;
 
-    private boolean invited = false;
+    private boolean invitedForModerator = false;
 
     @Enumerated(EnumType.STRING)
     private InvitedStatus invitedForTurn = InvitedStatus.ACCESS_OUT;

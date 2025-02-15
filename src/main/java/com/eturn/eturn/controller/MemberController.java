@@ -1,6 +1,5 @@
 package com.eturn.eturn.controller;
 
-import com.eturn.eturn.dto.MemberDTO;
 import com.eturn.eturn.dto.MemberListDTO;
 import com.eturn.eturn.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,8 +9,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping(value = "/member", produces = "application/json; charset=utf-8")
@@ -26,17 +23,17 @@ public class MemberController {
 
     @PutMapping()
     @Operation(
-            summary = "Изменение типа доступа участника",
+            summary = "Блокировка или разблокировка пользователя",
             description = "Изменяет тип доступа участника (MEMBER/BLOCKED) по id"
     )
-    public void changeMemberAccess(
+    public void setBlockStatus(
             HttpServletRequest request,
             @RequestParam @Parameter(name = "id", description = "Идентификатор участника") Long id,
             @RequestParam @Parameter(name = "type", description = "Тип доступа (MEMBER/BLOCKED)") String type
     ){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
-        memberService.changeMemberStatus(id, type, userDetails.getUsername());
+        memberService.setBlockStatus(id, type, userDetails.getUsername());
     }
 
     @PutMapping("/invite")
@@ -50,7 +47,7 @@ public class MemberController {
     ) {
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
-        memberService.inviteMember(hash, userDetails.getUsername());
+        memberService.setInviteForMember(hash, userDetails.getUsername());
     }
     @PutMapping("/accept")
     @Operation(

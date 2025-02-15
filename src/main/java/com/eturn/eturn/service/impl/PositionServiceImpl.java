@@ -4,9 +4,7 @@ import com.eturn.eturn.dto.*;
 import com.eturn.eturn.dto.mapper.DetailedPositionMapper;
 import com.eturn.eturn.dto.mapper.PositionListMapper;
 import com.eturn.eturn.entity.*;
-import com.eturn.eturn.enums.AccessMember;
-import com.eturn.eturn.enums.AccessTurn;
-import com.eturn.eturn.enums.InvitedStatus;
+import com.eturn.eturn.enums.*;
 import com.eturn.eturn.exception.member.NoAccessMemberException;
 import com.eturn.eturn.exception.position.*;
 import com.eturn.eturn.notifications.NotificationController;
@@ -109,16 +107,16 @@ public class PositionServiceImpl implements PositionService {
                         memberService.changeMemberStatusFrom(
                                 currentMember.getId(),
                                 "MEMBER",
-                                -1,
-                                -1
+                                Optional.empty(),
+                                Optional.empty()
                         );
                         break;
                     case ACCESS_OUT:
                         memberService.changeMemberStatusFrom(
                                 currentMember.getId(),
                                 "MEMBER_LINK",
-                                -1,
-                                1
+                                Optional.empty(),
+                                Optional.of(ChangeMbrAction.SET_INVITE_STATUS)
                         );
                         break;
                 }
@@ -129,7 +127,7 @@ public class PositionServiceImpl implements PositionService {
             deleteOverdueElements(turn);
             // рассчет участников
             if (positionRepository.countAllByTurn(turn) > 0) {
-                long countPositions = memberService.getCountMembers(turn);
+                long countPositions = memberService.getCountMembersWith(turn, MemberListType.MEMBER);
                 boolean isBig = true;
                 // получение своей первой позиции
                 Optional<Position> ourPosition = positionRepository.findFirstByUserAndTurnOrderByIdDesc(user, turn);
@@ -212,7 +210,7 @@ public class PositionServiceImpl implements PositionService {
         if (turn.getPositionCount() != 0) {
             newPosition.setSkipCount(turn.getPositionCount() / 5);
         } else {
-            newPosition.setSkipCount((int)(memberService.getCountMembers(turn) / 10));
+            newPosition.setSkipCount((memberService.getCountMembersWith(turn, MemberListType.MEMBER) / 10));
         }
         return positionRepository.save(newPosition);
     }
@@ -332,7 +330,7 @@ public class PositionServiceImpl implements PositionService {
 
                     Optional<Position> pUser = positionRepository.findFirstByUserAndTurnOrderByIdAsc(pos.getUser(), pos.getTurn());
                     if (pUser.isEmpty() && access == AccessMember.MEMBER && pos.getTurn().getAccessTurnType() == AccessTurn.FOR_LINK) {
-                        memberService.changeMemberStatusFrom(member.getId(), "MEMBER_LINK", -1, -1);
+                        memberService.changeMemberStatusFrom(member.getId(), "MEMBER_LINK", Optional.empty(), Optional.empty());
                     } else if (pUser.isEmpty() && access == AccessMember.MEMBER) {
                         memberService.deleteMemberWith(pos.getTurn(), user);
                     }

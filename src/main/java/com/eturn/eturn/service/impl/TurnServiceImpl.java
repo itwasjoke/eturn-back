@@ -5,6 +5,7 @@ import com.eturn.eturn.dto.mapper.*;
 import com.eturn.eturn.entity.*;
 import com.eturn.eturn.enums.AccessMember;
 import com.eturn.eturn.enums.AccessTurn;
+import com.eturn.eturn.enums.MemberListType;
 import com.eturn.eturn.enums.Role;
 import com.eturn.eturn.exception.member.NoAccessMemberException;
 import com.eturn.eturn.exception.turn.*;
@@ -121,15 +122,15 @@ public class TurnServiceImpl implements TurnService {
             if (member.getAccessMember() == AccessMember.CREATOR || member.getAccessMember() == AccessMember.MODERATOR) {
                 existsInvited = memberService.invitedExists(turn);
                 membersCountDTO = new MembersCountDTO(
-                        (int) memberService.getCountModerators(turn),
-                        (int) memberService.getCountMembers(turn),
-                        memberService.countInviteMembers(turn),
-                        memberService.countInviteModerators(turn),
-                        (int) memberService.countBlocked(turn)
+                        memberService.getCountMembersWith(turn, MemberListType.MODERATOR),
+                        memberService.getCountMembersWith(turn, MemberListType.MEMBER),
+                        memberService.getCountMembersWith(turn, MemberListType.INVITED_MEMBER),
+                        memberService.getCountMembersWith(turn, MemberListType.INVITED_MODERATOR),
+                        memberService.getCountMembersWith(turn, MemberListType.BLOCKED)
                 );
             }
             access = member.getAccessMember().name();
-            invited1 = member.isInvited();
+            invited1 = member.isInvitedForModerator();
             invited2 = member.getInvitedForTurn().toString();
         }
         long count = positionService.countPositionsByTurn(turn);
