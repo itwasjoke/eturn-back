@@ -112,6 +112,7 @@ public class PositionServiceImpl implements PositionService {
                                 -1,
                                 -1
                         );
+                        break;
                     case ACCESS_OUT:
                         memberService.changeMemberStatusFrom(
                                 currentMember.getId(),
@@ -119,6 +120,7 @@ public class PositionServiceImpl implements PositionService {
                                 -1,
                                 1
                         );
+                        break;
                 }
             }
         }
