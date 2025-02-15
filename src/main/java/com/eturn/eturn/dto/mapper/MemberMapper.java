@@ -20,7 +20,7 @@ public interface MemberMapper {
     @Mapping(target = "userName", source = "member.user.name")
     @Mapping(target = "group", source = "member.user.group.number")
     @Mapping(target = "access", source = "member.accessMember")
-    @Mapping(target = "invited", source = "member.invited")
+    @Mapping(target = "invitedForModerator", source = "member.invitedForModerator")
     @Mapping(target = "invitedForTurn", source = "member.invitedForTurn")
     MemberDTO memberToMemberDTO(Member member);
 

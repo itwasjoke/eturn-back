@@ -19,6 +19,8 @@ import java.util.Optional;
 @Repository
 public interface MemberRepository extends JpaRepository<Member,Long> {
     Optional<Member> findMemberByUserAndTurn(User user, Turn turn);
+
+    Optional<Member> getMemberById(long id);
     Page<Member> getMemberByTurnAndAccessMember(Turn turn, AccessMember accessMember, Pageable pageable);
     List<Member> getMemberByTurnAndInvitedForModerator(Turn turn, boolean invited);
     Page<Member> getMemberByTurnAndAccessMemberAndInvitedForTurn(Turn turn, AccessMember accessMember, InvitedStatus invitedStatus, Pageable pageable);

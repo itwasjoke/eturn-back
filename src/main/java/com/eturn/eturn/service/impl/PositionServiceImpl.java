@@ -1,5 +1,9 @@
 package com.eturn.eturn.service.impl;
 
+import com.eturn.eturn.additionalService.member.MemberAccessService;
+import com.eturn.eturn.additionalService.member.MemberNotificationService;
+import com.eturn.eturn.additionalService.member.MemberRepositoryService;
+import com.eturn.eturn.additionalService.member.MemberStatusService;
 import com.eturn.eturn.dto.*;
 import com.eturn.eturn.dto.mapper.DetailedPositionMapper;
 import com.eturn.eturn.dto.mapper.PositionListMapper;
@@ -23,9 +27,14 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.Date;
 
+import static com.eturn.eturn.enums.ChangeMbrAction.ADD_INVITE_STATUS;
+
 @Service
 public class PositionServiceImpl implements PositionService {
     private static final Logger logger = LogManager.getLogger(PositionServiceImpl.class);
+
+    private final MemberRepositoryService mbrRepService;
+    private final MemberStatusService mbrStatusService;
     private final PositionRepository positionRepository;
     private final UserService userService;
     private final PositionListMapper positionListMapper;
@@ -34,13 +43,19 @@ public class PositionServiceImpl implements PositionService {
     private final DetailedPositionMapper detailedPositionMapper;
     private final MemberService memberService;
 
-    public PositionServiceImpl(PositionRepository positionRepository,
-                               UserService userService,
-                               PositionListMapper positionListMapper,
-                               TurnService turnService,
-                               NotificationController notificationController,
-                               DetailedPositionMapper detailedPositionMapper,
-                               @Lazy MemberService memberService) {
+    public PositionServiceImpl(
+            MemberRepositoryService mbrRepService,
+            MemberStatusService mbrStatusService,
+            PositionRepository positionRepository,
+           UserService userService,
+           PositionListMapper positionListMapper,
+           TurnService turnService,
+           NotificationController notificationController,
+           DetailedPositionMapper detailedPositionMapper,
+           @Lazy MemberService memberService
+    ) {
+        this.mbrRepService = mbrRepService;
+        this.mbrStatusService = mbrStatusService;
         this.positionRepository = positionRepository;
         this.userService = userService;
         this.positionListMapper = positionListMapper;
@@ -94,7 +109,7 @@ public class PositionServiceImpl implements PositionService {
     public DetailedPositionDTO createPositionAndSave(String login, String hash) {
         Turn turn = turnService.getTurnFrom(hash);
         User user = userService.getUserFromLogin(login);
-        Optional<Member> member = memberService.getMemberWith(user, turn);
+        Optional<Member> member = mbrRepService.getMemberWith(user, turn);
         Optional<Position> lastPos = positionRepository.findFirstByTurnOrderByIdDesc(turn);
         Member currentMember;
         if (member.isEmpty()) {
@@ -104,7 +119,7 @@ public class PositionServiceImpl implements PositionService {
             if (currentMember.getAccessMember() == AccessMember.MEMBER_LINK) {
                 switch (currentMember.getInvitedForTurn()) {
                     case ACCESS_IN:
-                        memberService.changeMemberStatusFrom(
+                        mbrStatusService.changeMemberStatusFrom(
                                 currentMember.getId(),
                                 "MEMBER",
                                 Optional.empty(),
@@ -112,11 +127,11 @@ public class PositionServiceImpl implements PositionService {
                         );
                         break;
                     case ACCESS_OUT:
-                        memberService.changeMemberStatusFrom(
+                        mbrStatusService.changeMemberStatusFrom(
                                 currentMember.getId(),
                                 "MEMBER_LINK",
                                 Optional.empty(),
-                                Optional.of(ChangeMbrAction.SET_INVITE_STATUS)
+                                Optional.of(ADD_INVITE_STATUS)
                         );
                         break;
                 }
@@ -127,7 +142,7 @@ public class PositionServiceImpl implements PositionService {
             deleteOverdueElements(turn);
             // рассчет участников
             if (positionRepository.countAllByTurn(turn) > 0) {
-                long countPositions = memberService.getCountMembersWith(turn, MemberListType.MEMBER);
+                long countPositions = mbrRepService.getCountMembersWith(turn, MemberListType.MEMBER);
                 boolean isBig = true;
                 // получение своей первой позиции
                 Optional<Position> ourPosition = positionRepository.findFirstByUserAndTurnOrderByIdDesc(user, turn);
@@ -210,7 +225,7 @@ public class PositionServiceImpl implements PositionService {
         if (turn.getPositionCount() != 0) {
             newPosition.setSkipCount(turn.getPositionCount() / 5);
         } else {
-            newPosition.setSkipCount((memberService.getCountMembersWith(turn, MemberListType.MEMBER) / 10));
+            newPosition.setSkipCount((mbrRepService.getCountMembersWith(turn, MemberListType.MEMBER) / 10));
         }
         return positionRepository.save(newPosition);
     }
@@ -309,7 +324,7 @@ public class PositionServiceImpl implements PositionService {
         Optional<Position> position = positionRepository.findById(id);
         if (position.isPresent()) {
             Position pos = position.get();
-            Optional<Member> oMember= memberService.getMemberWith(user, pos.getTurn());
+            Optional<Member> oMember= mbrRepService.getMemberWith(user, pos.getTurn());
             if (oMember.isEmpty()){
                 throw new NoAccessMemberException("you are not member");
             }
@@ -330,9 +345,9 @@ public class PositionServiceImpl implements PositionService {
 
                     Optional<Position> pUser = positionRepository.findFirstByUserAndTurnOrderByIdAsc(pos.getUser(), pos.getTurn());
                     if (pUser.isEmpty() && access == AccessMember.MEMBER && pos.getTurn().getAccessTurnType() == AccessTurn.FOR_LINK) {
-                        memberService.changeMemberStatusFrom(member.getId(), "MEMBER_LINK", Optional.empty(), Optional.empty());
+                        mbrStatusService.changeMemberStatusFrom(member.getId(), "MEMBER_LINK", Optional.empty(), Optional.empty());
                     } else if (pUser.isEmpty() && access == AccessMember.MEMBER) {
-                        memberService.deleteMemberWith(pos.getTurn(), user);
+                        mbrRepService.deleteMemberWith(pos.getTurn(), user);
                     }
                 }
             }
@@ -430,7 +445,7 @@ public class PositionServiceImpl implements PositionService {
         Optional<Position> pInTurn = positionRepository.findFirstByTurnOrderByIdAsc(turn);
         if (pInTurn.isPresent()){
             Position pos = pInTurn.get();
-            Optional<Member> optionalMember = memberService.getMemberWith(user, pos.getTurn());
+            Optional<Member> optionalMember = mbrRepService.getMemberWith(user, pos.getTurn());
             if (optionalMember.isPresent()) {
                 Member member = optionalMember.get();
                 if (member.getAccessMember() == AccessMember.MODERATOR || member.getAccessMember() == AccessMember.CREATOR) {

@@ -1,5 +1,7 @@
 package com.eturn.eturn.service.impl;
 
+import com.eturn.eturn.additionalService.member.MemberRepositoryService;
+import com.eturn.eturn.additionalService.member.MemberStatusService;
 import com.eturn.eturn.dto.*;
 import com.eturn.eturn.dto.mapper.*;
 import com.eturn.eturn.entity.*;
@@ -39,6 +41,8 @@ public class TurnServiceImpl implements TurnService {
     private final TurnMapper turnMapper;
     private final PositionService positionService;
 
+    private final MemberRepositoryService mbrRepService;
+
     public TurnServiceImpl(
             TurnRepository turnRepository,
             UserService userService,
@@ -49,7 +53,9 @@ public class TurnServiceImpl implements TurnService {
             FacultyMapper facultyMapper,
             NotificationController notificationController,
             TurnMapper turnMapper,
-            @Lazy PositionService positionService) {
+            @Lazy PositionService positionService,
+            MemberRepositoryService mbrRepService
+    ) {
         this.turnRepository = turnRepository;
         this.userService = userService;
         this.memberService = memberService;
@@ -60,6 +66,7 @@ public class TurnServiceImpl implements TurnService {
         this.notificationController = notificationController;
         this.turnMapper = turnMapper;
         this.positionService = positionService;
+        this.mbrRepService = mbrRepService;
     }
     @Override
     public Turn getTurnFrom(String hash) {
@@ -111,7 +118,7 @@ public class TurnServiceImpl implements TurnService {
             deleteTurn(login, hash);
             throw new NotFoundTurnException("Turn was deleted");
         }
-        Optional<Member> m = memberService.getMemberWith(user, turn);
+        Optional<Member> m = mbrRepService.getMemberWith(user, turn);
         String access = null;
         boolean invited1 = false;
         String invited2 = "ACCESS_OUT";
@@ -122,11 +129,11 @@ public class TurnServiceImpl implements TurnService {
             if (member.getAccessMember() == AccessMember.CREATOR || member.getAccessMember() == AccessMember.MODERATOR) {
                 existsInvited = memberService.invitedExists(turn);
                 membersCountDTO = new MembersCountDTO(
-                        memberService.getCountMembersWith(turn, MemberListType.MODERATOR),
-                        memberService.getCountMembersWith(turn, MemberListType.MEMBER),
-                        memberService.getCountMembersWith(turn, MemberListType.INVITED_MEMBER),
-                        memberService.getCountMembersWith(turn, MemberListType.INVITED_MODERATOR),
-                        memberService.getCountMembersWith(turn, MemberListType.BLOCKED)
+                        mbrRepService.getCountMembersWith(turn, MemberListType.MODERATOR),
+                        mbrRepService.getCountMembersWith(turn, MemberListType.MEMBER),
+                        mbrRepService.getCountMembersWith(turn, MemberListType.INVITED_MEMBER),
+                        mbrRepService.getCountMembersWith(turn, MemberListType.INVITED_MODERATOR),
+                        mbrRepService.getCountMembersWith(turn, MemberListType.BLOCKED)
                 );
             }
             access = member.getAccessMember().name();
@@ -258,7 +265,7 @@ public class TurnServiceImpl implements TurnService {
         }
         Turn turn = t.get();
         User user = userService.getUserFromLogin(username);
-        Optional<Member> member = memberService.getMemberWith(user, turn);
+        Optional<Member> member = mbrRepService.getMemberWith(user, turn);
         String access;
         access = member.map(value -> value.getAccessMember().toString()).orElse(null);
         List<TurnForListDTO> turnList = new ArrayList<>();

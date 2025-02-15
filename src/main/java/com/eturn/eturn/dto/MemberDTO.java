@@ -18,7 +18,7 @@ public record MemberDTO(
         @Schema(description = "Доступ участника", example="MEMBER")
         String access,
         @Schema(description = "Есть ли заявка на модерацию", example="true")
-        boolean invited,
+        boolean invitedForModerator,
         @Schema(description = "Есть ли заявка на вступление в очередь", example="true")
         String invitedForTurn
 ) {
