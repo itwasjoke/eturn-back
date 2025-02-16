@@ -1,13 +1,10 @@
 package com.eturn.eturn.service.impl;
 
 import com.eturn.eturn.additionalService.member.MemberRepositoryService;
-import com.eturn.eturn.additionalService.member.MemberStatusService;
 import com.eturn.eturn.dto.*;
 import com.eturn.eturn.dto.mapper.*;
 import com.eturn.eturn.entity.*;
 import com.eturn.eturn.enums.AccessMember;
-import com.eturn.eturn.enums.AccessTurn;
-import com.eturn.eturn.enums.MemberListType;
 import com.eturn.eturn.enums.Role;
 import com.eturn.eturn.exception.member.NoAccessMemberException;
 import com.eturn.eturn.exception.turn.*;
@@ -20,6 +17,7 @@ import com.eturn.eturn.service.TurnService;
 import com.eturn.eturn.service.UserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,43 +34,56 @@ public class TurnServiceImpl implements TurnService {
 
     private static Logger logger = LogManager.getLogger(TurnServiceImpl.class);
     private final TurnRepository turnRepository;
-    private final UserService userService;
-    private final MemberService memberService;
+    private UserService userService;
+    private MemberService memberService;
     private final TurnCreatingMapper turnCreatingMapper;
     private final TurnForListMapper turnForListMapper;
     private final GroupMapper groupMapper;
     private final FacultyMapper facultyMapper;
     private final NotificationController notificationController;
     private final TurnMapper turnMapper;
-    private final PositionService positionService;
+    private PositionService positionService;
 
-    private final MemberRepositoryService mbrRepService;
+    private MemberRepositoryService mbrRepService;
 
     public TurnServiceImpl(
             TurnRepository turnRepository,
-            UserService userService,
-            @Lazy MemberService memberService,
             TurnCreatingMapper turnCreatingMapper,
             TurnForListMapper turnForListMapper,
             GroupMapper groupMapper,
             FacultyMapper facultyMapper,
             NotificationController notificationController,
-            TurnMapper turnMapper,
-            @Lazy PositionService positionService,
-            MemberRepositoryService mbrRepService
+            TurnMapper turnMapper
     ) {
         this.turnRepository = turnRepository;
-        this.userService = userService;
-        this.memberService = memberService;
         this.turnCreatingMapper = turnCreatingMapper;
         this.turnForListMapper = turnForListMapper;
         this.groupMapper = groupMapper;
         this.facultyMapper = facultyMapper;
         this.notificationController = notificationController;
         this.turnMapper = turnMapper;
-        this.positionService = positionService;
+    }
+
+    @Autowired
+    public void setMbrRepService(MemberRepositoryService mbrRepService){
         this.mbrRepService = mbrRepService;
     }
+
+    @Autowired
+    public void setUserService(UserService userService){
+        this.userService = userService;
+    }
+
+    @Autowired
+    public void setMemberService(MemberService memberService){
+        this.memberService = memberService;
+    }
+
+    @Autowired
+    public void setPositionService(PositionService positionService){
+        this.positionService = positionService;
+    }
+
     @Override
     public Turn getTurnFrom(String hash) {
         Optional<Turn> turn = turnRepository.findTurnByHash(hash);

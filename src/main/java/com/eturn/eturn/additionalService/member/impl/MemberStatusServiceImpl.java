@@ -11,6 +11,7 @@ import com.eturn.eturn.exception.member.NotFoundMemberException;
 import com.eturn.eturn.exception.position.NoInviteException;
 import com.eturn.eturn.repository.MemberRepository;
 import com.eturn.eturn.service.PositionService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -27,13 +28,16 @@ public class MemberStatusServiceImpl implements MemberStatusService {
 
 
     private final MemberRepository memberRepository;
-    private final PositionService positionService;
+    private PositionService positionService;
 
     public MemberStatusServiceImpl(
-            MemberRepository memberRepository,
-            @Lazy PositionService positionService
+            MemberRepository memberRepository
     ) {
         this.memberRepository = memberRepository;
+    }
+
+    @Autowired
+    public void setPositionService(PositionService positionService){
         this.positionService = positionService;
     }
 

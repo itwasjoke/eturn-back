@@ -10,6 +10,7 @@ import com.eturn.eturn.service.TurnService;
 import com.eturn.eturn.service.UserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -28,14 +29,21 @@ public class UserServiceImpl implements UserService {
     private static final Logger logger = LogManager.getLogger(UserServiceImpl.class);
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    private final TurnService turnService;
+    private TurnService turnService;
 
     @Value("${eturn.defaults.username}")
     private String username;
 
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, @Lazy TurnService turnService) {
+    public UserServiceImpl(
+            UserRepository userRepository,
+            UserMapper userMapper
+    ) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+    }
+
+    @Autowired
+    public void setTurnService(TurnService turnService){
         this.turnService = turnService;
     }
 

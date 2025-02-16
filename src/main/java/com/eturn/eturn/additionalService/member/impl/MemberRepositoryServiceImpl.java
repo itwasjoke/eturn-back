@@ -1,5 +1,6 @@
 package com.eturn.eturn.additionalService.member.impl;
 
+import com.eturn.eturn.additionalService.member.MemberAccessService;
 import com.eturn.eturn.additionalService.member.MemberRepositoryService;
 import com.eturn.eturn.dto.MemberListDTO;
 import com.eturn.eturn.dto.mapper.MemberListMapper;
@@ -12,6 +13,7 @@ import com.eturn.eturn.enums.MemberListType;
 import com.eturn.eturn.repository.MemberRepository;
 import com.eturn.eturn.service.TurnService;
 import com.eturn.eturn.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,21 +32,28 @@ public class MemberRepositoryServiceImpl implements MemberRepositoryService {
 
     private final MemberRepository memberRepository;
     private final UserService userService;
-    private final TurnService turnService;
+    private TurnService turnService;
     private final MemberListMapper memberListMapper;
 
-    private final MemberAccessServiceImpl memberAccessService;
+    private MemberAccessService memberAccessService;
 
     public MemberRepositoryServiceImpl(
             MemberRepository memberRepository,
             UserService userService,
-            @Lazy TurnService turnService,
-            MemberListMapper memberListMapper,
-            @Lazy MemberAccessServiceImpl memberAccessService) {
+            MemberListMapper memberListMapper
+    ) {
         this.memberRepository = memberRepository;
         this.userService = userService;
-        this.turnService = turnService;
         this.memberListMapper = memberListMapper;
+    }
+
+    @Autowired
+    public void setTurnService(TurnService turnService){
+        this.turnService = turnService;
+    }
+
+    @Autowired
+    public void setMemberAccessService(MemberAccessService memberAccessService){
         this.memberAccessService = memberAccessService;
     }
 

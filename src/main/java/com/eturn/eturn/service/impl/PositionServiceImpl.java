@@ -4,6 +4,7 @@ import com.eturn.eturn.additionalService.member.MemberAccessService;
 import com.eturn.eturn.additionalService.member.MemberNotificationService;
 import com.eturn.eturn.additionalService.member.MemberRepositoryService;
 import com.eturn.eturn.additionalService.member.MemberStatusService;
+import com.eturn.eturn.additionalService.member.impl.MemberStatusServiceImpl;
 import com.eturn.eturn.dto.*;
 import com.eturn.eturn.dto.mapper.DetailedPositionMapper;
 import com.eturn.eturn.dto.mapper.PositionListMapper;
@@ -17,6 +18,7 @@ import com.eturn.eturn.repository.PositionRepository;
 import com.eturn.eturn.service.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -42,34 +44,40 @@ public class PositionServiceImpl implements PositionService {
     private static final Logger logger = LogManager.getLogger(PositionServiceImpl.class);
 
     private final MemberRepositoryService mbrRepService;
-    private final MemberStatusService mbrStatusService;
+    private MemberStatusService mbrStatusService;
     private final PositionRepository positionRepository;
     private final UserService userService;
     private final PositionListMapper positionListMapper;
     private final TurnService turnService;
     private final NotificationController notificationController;
     private final DetailedPositionMapper detailedPositionMapper;
-    private final MemberService memberService;
+    private MemberService memberService;
 
     public PositionServiceImpl(
             MemberRepositoryService mbrRepService,
-            MemberStatusService mbrStatusService,
             PositionRepository positionRepository,
            UserService userService,
            PositionListMapper positionListMapper,
            TurnService turnService,
            NotificationController notificationController,
-           DetailedPositionMapper detailedPositionMapper,
-           @Lazy MemberService memberService
+           DetailedPositionMapper detailedPositionMapper
     ) {
         this.mbrRepService = mbrRepService;
-        this.mbrStatusService = mbrStatusService;
         this.positionRepository = positionRepository;
         this.userService = userService;
         this.positionListMapper = positionListMapper;
         this.turnService = turnService;
         this.notificationController = notificationController;
         this.detailedPositionMapper = detailedPositionMapper;
+    }
+
+    @Autowired
+    public void setMemberStatusService(MemberStatusService mbrStatusService){
+        this.mbrStatusService = mbrStatusService;
+    }
+
+    @Autowired
+    public void setMemberService(MemberService memberService){
         this.memberService = memberService;
     }
 

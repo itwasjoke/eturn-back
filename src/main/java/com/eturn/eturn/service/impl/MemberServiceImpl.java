@@ -14,6 +14,7 @@ import com.eturn.eturn.exception.member.NotFoundMemberException;
 import com.eturn.eturn.exception.member.UnknownMemberException;
 import com.eturn.eturn.repository.MemberRepository;
 import com.eturn.eturn.service.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,33 +32,45 @@ import static com.eturn.eturn.enums.InvitedStatus.*;
 @Service
 public class MemberServiceImpl implements MemberService {
 
-    private final MemberRepositoryService mbrRepService;
-    private final MemberAccessService mbrAccessService;
+    private MemberRepositoryService mbrRepService;
+    private MemberAccessService mbrAccessService;
     private final MemberNotificationService mbrNotifyService;
-    private final MemberStatusService mbrStatusService;
+    private MemberStatusService mbrStatusService;
     private final MemberRepository memberRepository;
     private final MemberListMapper memberListMapper;
     private final UserService userService;
-    private final TurnService turnService;
+    private TurnService turnService;
 
     public MemberServiceImpl(
-            MemberRepositoryService mbrRepService,
-            MemberAccessService mbrAccessService,
             MemberNotificationService mbrNotifyService,
-            MemberStatusService mbrStatusService,
             MemberRepository memberRepository,
             MemberListMapper memberListMapper,
-            UserService userService,
-            TurnService turnService
+            UserService userService
             ) {
-        this.mbrRepService = mbrRepService;
-        this.mbrAccessService = mbrAccessService;
         this.mbrNotifyService = mbrNotifyService;
-        this.mbrStatusService = mbrStatusService;
         this.memberRepository = memberRepository;
         this.memberListMapper = memberListMapper;
         this.userService = userService;
+    }
+
+    @Autowired
+    public void setTurnService(TurnService turnService){
         this.turnService = turnService;
+    }
+
+    @Autowired
+    public void setMbrRepService(MemberRepositoryService memberRepositoryService){
+        this.mbrRepService = memberRepositoryService;
+    }
+
+    @Autowired
+    public void setMbrAccessService(MemberAccessService memberAccessService){
+        this.mbrAccessService = memberAccessService;
+    }
+
+    @Autowired
+    public void setMbrStatusService(MemberStatusService memberStatusService){
+        this.mbrStatusService = memberStatusService;
     }
 
     /**

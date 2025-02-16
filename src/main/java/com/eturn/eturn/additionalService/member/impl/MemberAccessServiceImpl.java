@@ -10,6 +10,7 @@ import com.eturn.eturn.enums.MemberListType;
 import com.eturn.eturn.exception.member.NoAccessMemberException;
 import com.eturn.eturn.exception.member.NotFoundMemberException;
 import com.eturn.eturn.exception.position.NoInviteException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
@@ -21,11 +22,10 @@ import static com.eturn.eturn.enums.MemberListType.INVITED_MODERATOR;
 @Service
 public class MemberAccessServiceImpl implements MemberAccessService {
 
-    private final MemberRepositoryService mbrRepService;
+    private MemberRepositoryService mbrRepService;
 
-    public MemberAccessServiceImpl(
-            MemberRepositoryService mbrRepService
-    ) {
+    @Autowired
+    public void setMbrRepService(MemberRepositoryService mbrRepService){
         this.mbrRepService = mbrRepService;
     }
 
