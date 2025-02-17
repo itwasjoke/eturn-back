@@ -24,7 +24,7 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
     @Query(name = "getPositionForDelete")
     Position resultsPositionDelete(@Param("turn") Long turn, @Param("count") int count);
     @Query(name = "getPositionForDeleteOverdueElements")
-    Position resultsPositionDeleteOverdueElements(@Param("turn") Long turn, @Param("count") int count);
+    Optional<Position> resultsPositionDeleteOverdueElements(@Param("turn") Long turn, @Param("count") int count);
     Optional<Position> findFirstByTurnOrderByIdAsc(Turn turn);
     Optional<Position> findTopByTurnAndUserOrderByIdAsc(Turn turn, User user);
     long countByTurn(Turn turn);
