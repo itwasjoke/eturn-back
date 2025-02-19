@@ -74,6 +74,145 @@ public class MemberServiceImpl implements MemberService {
     }
 
     /**
+     * Приглашение пользователя на модерацию
+     * @param hash хэш очереди
+     * @param username имя пользователя
+     */
+    @Override
+    @Transactional
+    public void setInviteForMember(String hash, String username) {
+        User user = userService.getUserFromLogin(username);
+        Turn turn = turnService.getTurnFrom(hash);
+
+        // Проверяем условия для приглашения
+        // (ограничения на количество участников и проверка, что пользователь не создатель)
+        mbrAccessService.validateInviteConditions(user, turn);
+
+        // Получаем существующего участника или создаем нового, если он не существует
+        Member member = getOrCreateMember(user, turn);
+
+        // Обновляем статус участника, чтобы добавить приглашение
+        mbrStatusService.updateMemberInviteStatus(member);
+
+        // Отправляем уведомление о запросе на участие
+        mbrNotifyService.notifyReceiptRequest(turn);
+    }
+
+    /**
+     * Блокировка/разблокировка пользователя
+     * @param id идентификатор
+     * @param access тип участника
+     * @param username имя пользователя
+     */
+    @Override
+    @Transactional
+    public void setBlockStatus(
+            long id,
+            String access,
+            String username
+    ) {
+        User user = userService.getUserFromLogin(username);
+        // Проверка наличия участника
+        Member memberToUpdate = memberRepository.findById(id)
+                .orElseThrow(() -> new NotFoundMemberException(
+                        "no member what you want to update"
+                ));
+
+        // Проверка прав текущего пользователя
+        Member currentUserMember =
+                memberRepository.findMemberByUserAndTurn(
+                                user,
+                                memberToUpdate.getTurn()
+                        )
+                        .orElseThrow(() -> new NotFoundMemberException(
+                                "can't change member status because your member not found"
+                        ));
+
+        // Проверка доступа текущего пользователя
+        mbrAccessService.validateAccess(currentUserMember, memberToUpdate, access);
+
+        // Обработка изменения статуса
+        AccessMember newAccessMember = AccessMember.valueOf(access);
+        if (mbrStatusService.handleStatusChange(memberToUpdate, newAccessMember)) {
+            memberRepository.save(memberToUpdate);
+        }
+    }
+
+    /**
+     * Подтверждение или отказ заявки участника
+     * @param id идентификатор
+     * @param status одобрено/отказано
+     * @param isModerator модератор/участник
+     */
+    @Override
+    public void changeMemberInvite(
+            Long id,
+            boolean status,
+            boolean isModerator
+    ) {
+        Member member = mbrRepService.getMemberWith(id)
+                .orElseThrow(() -> new NotFoundMemberException("Member not found"));
+
+        if (status) {
+            mbrStatusService.handleInviteActivation(member, isModerator);
+        } else {
+            mbrStatusService.handleInviteDeactivation(member, isModerator);
+        }
+    }
+
+    /**
+     * Получение списка участников
+     * @param username имя текущего пользователя
+     * @param type участник/модератор/блок
+     * @param hash хэш очереди
+     * @param page страница
+     * @return список участников
+     */
+    @Override
+    public MemberListDTO getMemberList(
+            String username,
+            String type,
+            String hash,
+            int page
+    ) {
+        User user = userService.getUserFromLogin(username);
+        Turn turn = turnService.getTurnFrom(hash);
+
+        // Проверяем, есть ли у пользователя доступ к списку участников
+        mbrAccessService.validateMemberAccess(user, turn);
+
+        // Получаем список участников и их количество
+        AccessMember accessMember = AccessMember.valueOf(type);
+        Page<Member> members = mbrRepService.getMembersByAccess(turn, accessMember, page);
+        long count = mbrRepService.getMemberCountByAccess(turn, accessMember);
+
+        // Преобразуем результат в DTO и возвращаем
+        return new MemberListDTO(memberListMapper.map(members), count);
+    }
+
+    /**
+     * Получение списка неподтвержденных участников
+     * @param username текущий пользователь
+     * @param type модератор/участники
+     * @param hash хэш очереди
+     * @return список участников
+     */
+    @Override
+    public MemberListDTO getUnconfirmedMemberList(
+            String username,
+            String type,
+            String hash
+    ) {
+        return mbrRepService.getUnconfirmedMemberList(
+                username,
+                type,
+                hash);
+    }
+
+    // ---
+    // ---
+
+    /**
      * Создание участника
      * @param user пользователь, который вступает в очередь
      * @param turn сама очередь
@@ -174,76 +313,12 @@ public class MemberServiceImpl implements MemberService {
     }
 
     /**
-     * Блокировка/разблокировка пользователя
-     * @param id идентификатор
-     * @param access тип участника
-     * @param username имя пользователя
-     */
-    @Override
-    @Transactional
-    public void setBlockStatus(
-            long id,
-            String access,
-            String username
-    ) {
-        User user = userService.getUserFromLogin(username);
-        // Проверка наличия участника
-        Member memberToUpdate = memberRepository.findById(id)
-                .orElseThrow(() -> new NotFoundMemberException(
-                        "no member what you want to update"
-                ));
-
-        // Проверка прав текущего пользователя
-        Member currentUserMember =
-                memberRepository.findMemberByUserAndTurn(
-                        user,
-                        memberToUpdate.getTurn()
-                )
-                .orElseThrow(() -> new NotFoundMemberException(
-                        "can't change member status because your member not found"
-                ));
-
-        // Проверка доступа текущего пользователя
-        mbrAccessService.validateAccess(currentUserMember, memberToUpdate, access);
-
-        // Обработка изменения статуса
-        AccessMember newAccessMember = AccessMember.valueOf(access);
-        if (mbrStatusService.handleStatusChange(memberToUpdate, newAccessMember)) {
-            memberRepository.save(memberToUpdate);
-        }
-    }
-
-
-
-    /**
      * Удаление участников без позиций
      * @param turn по очереди
      */
     @Override
     public void deleteMembersWithoutPositions(Turn turn) {
         memberRepository.deleteMembersWithoutPositions(turn);
-    }
-
-    /**
-     * Подтверждение или отказ заявки участника
-     * @param id идентификатор
-     * @param status одобрено/отказано
-     * @param isModerator модератор/участник
-     */
-    @Override
-    public void changeMemberInvite(
-            Long id,
-            boolean status,
-            boolean isModerator
-    ) {
-        Member member = mbrRepService.getMemberWith(id)
-                .orElseThrow(() -> new NotFoundMemberException("Member not found"));
-
-        if (status) {
-            mbrStatusService.handleInviteActivation(member, isModerator);
-        } else {
-            mbrStatusService.handleInviteDeactivation(member, isModerator);
-        }
     }
 
     /**
@@ -285,44 +360,6 @@ public class MemberServiceImpl implements MemberService {
         return users;
     }
 
-    @Override
-    public MemberListDTO getUnconfirmedMemberList(
-            String username,
-            String type,
-            String hash
-    ) {
-        return mbrRepService.getUnconfirmedMemberList(
-                username,
-                type,
-                hash);
-    }
-
-
-    /**
-     * Приглашение пользователя на модерацию
-     * @param hash хэш очереди
-     * @param username имя пользователя
-     */
-    @Override
-    @Transactional
-    public void setInviteForMember(String hash, String username) {
-        User user = userService.getUserFromLogin(username);
-        Turn turn = turnService.getTurnFrom(hash);
-
-        // Проверяем условия для приглашения
-        // (ограничения на количество участников и проверка, что пользователь не создатель)
-        mbrAccessService.validateInviteConditions(user, turn);
-
-        // Получаем существующего участника или создаем нового, если он не существует
-        Member member = getOrCreateMember(user, turn);
-
-        // Обновляем статус участника, чтобы добавить приглашение
-        mbrStatusService.updateMemberInviteStatus(member);
-
-        // Отправляем уведомление о запросе на участие
-        mbrNotifyService.notifyReceiptRequest(turn);
-    }
-
     /**
      * Получает существующего участника или создает нового, если он не существует.
      * Если участник заблокирован, выбрасывает исключение.
@@ -343,40 +380,4 @@ public class MemberServiceImpl implements MemberService {
                         false
                 )); // Создаем нового участника, если он не существует
     }
-
-
-
-    /**
-     * Получение списка участников
-     * @param username имя текущего пользователя
-     * @param type участник/модератор/блок
-     * @param hash хэш очереди
-     * @param page страница
-     * @return список участников
-     */
-    @Override
-    public MemberListDTO getMemberList(
-            String username,
-            String type,
-            String hash,
-            int page
-    ) {
-        User user = userService.getUserFromLogin(username);
-        Turn turn = turnService.getTurnFrom(hash);
-
-        // Проверяем, есть ли у пользователя доступ к списку участников
-        mbrAccessService.validateMemberAccess(user, turn);
-
-        // Получаем список участников и их количество
-        AccessMember accessMember = AccessMember.valueOf(type);
-        Page<Member> members = mbrRepService.getMembersByAccess(turn, accessMember, page);
-        long count = mbrRepService.getMemberCountByAccess(turn, accessMember);
-
-        // Преобразуем результат в DTO и возвращаем
-        return new MemberListDTO(memberListMapper.map(members), count);
-    }
-
-
-
-
 }

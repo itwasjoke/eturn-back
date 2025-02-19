@@ -15,10 +15,8 @@ public interface PositionService {
     void skipPosition(long id, String username);
     DetailedPositionDTO getFirstUserPosition(String hash, String username);
     DetailedPositionDTO getFirstPosition(String hash, String username);
-    Member addTurnToUser(User user, Turn turn);
     PositionsNotificationDTO getPositionsForNotify(Long turnId);
     long countPositionsByTurn(Turn turn);
-
     boolean existsAllByTurnAndUser(Turn turn, User user);
     void deleteAllByTurnAndUser(Turn turn, User user);
 }

@@ -10,6 +10,7 @@ import com.eturn.eturn.entity.User;
 import com.eturn.eturn.enums.AccessMember;
 import com.eturn.eturn.enums.InvitedStatus;
 import com.eturn.eturn.enums.MemberListType;
+import com.eturn.eturn.exception.member.NoAccessMemberException;
 import com.eturn.eturn.repository.MemberRepository;
 import com.eturn.eturn.service.TurnService;
 import com.eturn.eturn.service.UserService;
@@ -237,4 +238,5 @@ public class MemberRepositoryServiceImpl implements MemberRepositoryService {
     public Optional<Member> getMemberWith(long id) {
         return memberRepository.findById(id);
     }
+
 }

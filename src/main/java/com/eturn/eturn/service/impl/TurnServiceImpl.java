@@ -43,7 +43,6 @@ public class TurnServiceImpl implements TurnService {
     private final NotificationController notificationController;
     private final TurnMapper turnMapper;
     private PositionService positionService;
-
     private MemberRepositoryService mbrRepService;
 
     public TurnServiceImpl(
