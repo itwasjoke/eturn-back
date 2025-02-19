@@ -15,7 +15,6 @@ import java.util.Optional;
 
 public interface MemberService {
     void setInviteForMember(String hash, String username);
-    Member createMember(User user, Turn turn, String access, boolean invitedForTurn);
     MemberDTO getMemberDTO(User user, Turn turn);
     AccessMember getAccess(User user, Turn turn);
     MemberListDTO getMemberList(String username, String type, String hash, int page);
@@ -23,11 +22,17 @@ public interface MemberService {
     void changeMemberInvite(Long id, boolean status, boolean isModerator);
     void deleteMembersWithoutPositions(Turn turn);
     boolean invitedExists(Turn turn);
-    List<User> getModeratorsOfTurn(long turnId);
 
     MemberListDTO getUnconfirmedMemberList(
             String username,
             String type,
             String hash
     );
+    Member createMember(
+            User user,
+            Turn turn,
+            String access,
+            boolean invitedForTurn
+    );
+    List<User> getModeratorsOfTurn(long turnId);
 }

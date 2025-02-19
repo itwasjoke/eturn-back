@@ -4,13 +4,12 @@ import com.eturn.eturn.additionalService.member.MemberAccessService;
 import com.eturn.eturn.additionalService.member.MemberRepositoryService;
 import com.eturn.eturn.dto.MemberListDTO;
 import com.eturn.eturn.dto.mapper.MemberListMapper;
-import com.eturn.eturn.entity.Member;
-import com.eturn.eturn.entity.Turn;
-import com.eturn.eturn.entity.User;
+import com.eturn.eturn.entity.*;
 import com.eturn.eturn.enums.AccessMember;
 import com.eturn.eturn.enums.InvitedStatus;
 import com.eturn.eturn.enums.MemberListType;
 import com.eturn.eturn.exception.member.NoAccessMemberException;
+import com.eturn.eturn.exception.member.UnknownMemberException;
 import com.eturn.eturn.repository.MemberRepository;
 import com.eturn.eturn.service.TurnService;
 import com.eturn.eturn.service.UserService;
@@ -20,13 +19,17 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.eturn.eturn.enums.AccessMember.*;
-import static com.eturn.eturn.enums.InvitedStatus.INVITED;
+import static com.eturn.eturn.enums.AccessTurn.FOR_ALLOWED_ELEMENTS;
+import static com.eturn.eturn.enums.InvitedStatus.*;
 
 @Service
 public class MemberRepositoryServiceImpl implements MemberRepositoryService {
@@ -239,4 +242,103 @@ public class MemberRepositoryServiceImpl implements MemberRepositoryService {
         return memberRepository.findById(id);
     }
 
+    /**
+     * Получает существующего участника или создает нового, если он не существует.
+     * Если участник заблокирован, выбрасывает исключение.
+     */
+    public Member getOrCreateMember(User user, Turn turn) {
+        return getMemberWith(user, turn)
+                .map(member -> {
+                    // Если участник заблокирован, выбрасываем исключение
+                    if (member.getAccessMember() == BLOCKED) {
+                        throw new NoAccessMemberException("You are blocked");
+                    }
+                    return member;
+                })
+                .orElseGet(() -> createMember(
+                        user,
+                        turn,
+                        "MEMBER_LINK",
+                        false
+                )); // Создаем нового участника, если он не существует
+    }
+
+    /**
+     * Создание участника
+     * @param user пользователь, который вступает в очередь
+     * @param turn сама очередь
+     * @param access тип доступа, который получает пользователь
+     * @param invitedForTurn Нужно ли поставить статус приглашенного для данной очереди
+     * @return участник
+     */
+    @Transactional
+    @Override
+    public Member createMember(
+            User user,
+            Turn turn,
+            String access,
+            boolean invitedForTurn
+    ) {
+        Optional<Member> memberOptional =
+                memberRepository.findMemberByUserAndTurn(user,turn);
+        if (memberOptional.isPresent()){
+            throw new UnknownMemberException("this member already exists");
+        }
+        InvitedStatus status;
+        AccessMember accessMember = AccessMember.valueOf(access);
+        if (invitedForTurn) {
+            status = INVITED;
+        } else if (accessMember == MEMBER_LINK) {
+            // если участник не стоит сейчас в очереди, то определяется формат доступа
+            // по допустимым группам и факультетам
+            if (turn.getAccessTurnType() ==
+                    FOR_ALLOWED_ELEMENTS) {
+                Set<Group> groups = turn.getAllowedGroups();
+                Set<Faculty> faculties = turn.getAllowedFaculties();
+                if (
+                        groups.contains(user.getGroup())
+                                || faculties.contains(user.getGroup().getFaculty())
+                ) {
+                    status = ACCESS_IN;
+                } else {
+                    status = ACCESS_OUT;
+                }
+            }
+            else {
+                status = ACCESS_OUT;
+            }
+        } else {
+            status = ACCESS_IN;
+        }
+        Member member = new Member();
+        member.setAccessMember(accessMember);
+        member.setTurn(turn);
+        member.setUser(user);
+        member.setInvitedForTurn(status);
+        return memberRepository.save(member);
+    }
+    /**
+     * Получение списка модераторов
+     * @param turnId идентификатор очереди
+     * @return список пользователей
+     */
+    @Override
+    public List<User> getModeratorsOfTurn(long turnId) {
+        List<Member> members =
+                memberRepository.getAllByTurn_IdAndAccessMember(
+                        turnId,
+                        MODERATOR
+                );
+        Member creator
+                = memberRepository.getMemberByTurn_IdAndAccessMember(
+                turnId,
+                AccessMember.CREATOR
+        );
+        List<User> users = members.stream()
+                .map(Member::getUser)
+                .collect(Collectors.toList());
+
+        users.add(creator.getUser());
+        return users;
+    }
 }

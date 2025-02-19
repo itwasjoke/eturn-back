@@ -27,4 +27,13 @@ public interface MemberRepositoryService {
     void deleteMemberWith(Turn turn, User user);
     void deleteMemberWith(Long id);
     Optional<Member> getMemberWith(long id);
+
+    List<User> getModeratorsOfTurn(long turnId);
+    Member createMember(
+            User user,
+            Turn turn,
+            String access,
+            boolean invitedForTurn
+    );
+    Member getOrCreateMember(User user, Turn turn);
 }

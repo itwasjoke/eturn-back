@@ -89,7 +89,7 @@ public class MemberServiceImpl implements MemberService {
         mbrAccessService.validateInviteConditions(user, turn);
 
         // Получаем существующего участника или создаем нового, если он не существует
-        Member member = getOrCreateMember(user, turn);
+        Member member = mbrRepService.getOrCreateMember(user, turn);
 
         // Обновляем статус участника, чтобы добавить приглашение
         mbrStatusService.updateMemberInviteStatus(member);
@@ -209,65 +209,28 @@ public class MemberServiceImpl implements MemberService {
                 hash);
     }
 
-    // ---
-    // ---
-
     /**
      * Создание участника
-     * @param user пользователь, который вступает в очередь
-     * @param turn сама очередь
-     * @param access тип доступа, который получает пользователь
-     * @param invitedForTurn Нужно ли поставить статус приглашенного для данной очереди
+     * @param user пользователь
+     * @param turn очередь
+     * @param access тип доступа
+     * @param invitedForTurn приглашен ли в очередь
      * @return участник
      */
-    @Transactional
     @Override
-    public Member createMember(
-            User user,
-            Turn turn,
-            String access,
-            boolean invitedForTurn
-    ) {
-        Optional<Member> memberOptional =
-                memberRepository.findMemberByUserAndTurn(user,turn);
-        if (memberOptional.isPresent()){
-            throw new UnknownMemberException("this member already exists");
-        }
-        InvitedStatus status;
-        AccessMember accessMember = AccessMember.valueOf(access);
-        if (invitedForTurn) {
-            status = INVITED;
-        } else if (accessMember == MEMBER_LINK) {
-            // если участник не стоит сейчас в очереди, то определяется формат доступа
-            // по допустимым группам и факультетам
-            if (turn.getAccessTurnType() ==
-                    FOR_ALLOWED_ELEMENTS) {
-                Set<Group> groups = turn.getAllowedGroups();
-                Set<Faculty> faculties = turn.getAllowedFaculties();
-                if (
-                        groups.contains(user.getGroup())
-                                || faculties.contains(user.getGroup().getFaculty())
-                ) {
-                    status = ACCESS_IN;
-                } else {
-                    status = ACCESS_OUT;
-                }
-            }
-            else {
-                status = ACCESS_OUT;
-            }
-        } else {
-            status = ACCESS_IN;
-        }
-        Member member = new Member();
-        member.setAccessMember(accessMember);
-        member.setTurn(turn);
-        member.setUser(user);
-        member.setInvitedForTurn(status);
-        return memberRepository.save(member);
+    public Member createMember(User user, Turn turn, String access, boolean invitedForTurn) {
+        return mbrRepService.createMember(user,turn,access,invitedForTurn);
     }
 
-
+    /**
+     * Получение списка модераторов
+     * @param turnId ID очереди
+     * @return список пользователей
+     */
+    @Override
+    public List<User> getModeratorsOfTurn(long turnId) {
+        return mbrRepService.getModeratorsOfTurn(turnId);
+    }
 
     /**
      * Получение типа доступа к очереди
@@ -333,51 +296,5 @@ public class MemberServiceImpl implements MemberService {
                 true,
                 INVITED
         ).isPresent();
-    }
-
-    /**
-     * Получение списка модераторов
-     * @param turnId идентификатор очереди
-     * @return список пользователей
-     */
-    @Override
-    public List<User> getModeratorsOfTurn(long turnId) {
-        List<Member> members =
-                memberRepository.getAllByTurn_IdAndAccessMember(
-                        turnId,
-                        MODERATOR
-                );
-        Member creator
-                = memberRepository.getMemberByTurn_IdAndAccessMember(
-                turnId,
-                AccessMember.CREATOR
-        );
-        List<User> users = members.stream()
-                .map(Member::getUser)
-                .collect(Collectors.toList());
-
-        users.add(creator.getUser());
-        return users;
-    }
-
-    /**
-     * Получает существующего участника или создает нового, если он не существует.
-     * Если участник заблокирован, выбрасывает исключение.
-     */
-    private Member getOrCreateMember(User user, Turn turn) {
-        return mbrRepService.getMemberWith(user, turn)
-                .map(member -> {
-                    // Если участник заблокирован, выбрасываем исключение
-                    if (member.getAccessMember() == BLOCKED) {
-                        throw new NoAccessMemberException("You are blocked");
-                    }
-                    return member;
-                })
-                .orElseGet(() -> createMember(
-                        user,
-                        turn,
-                        "MEMBER_LINK",
-                        false
-                )); // Создаем нового участника, если он не существует
     }
 }
