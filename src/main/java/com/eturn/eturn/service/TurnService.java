@@ -13,7 +13,6 @@ public interface TurnService {
     void deleteTurn(String username, String hash);
     TurnDTO getTurn(String hash, String login);
     void saveTurn(Turn turn);
-
     int getCountTurnsOfUser(User user);
     List<TurnForListDTO> getLinkedTurn(String hash, String username);
     void changeTurn(TurnEditDTO turn, String username);
