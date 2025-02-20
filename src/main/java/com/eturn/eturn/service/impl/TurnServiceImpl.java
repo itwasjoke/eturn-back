@@ -1,27 +1,26 @@
 package com.eturn.eturn.service.impl;
 
-import com.eturn.eturn.additionalService.member.MemberRepositoryService;
 import com.eturn.eturn.additionalService.turn.TurnCreationService;
 import com.eturn.eturn.additionalService.turn.TurnRepositoryService;
 import com.eturn.eturn.additionalService.turn.TurnUpdateService;
-import com.eturn.eturn.additionalService.turn.impl.TurnCreationServiceImpl;
-import com.eturn.eturn.dto.*;
-import com.eturn.eturn.dto.mapper.*;
-import com.eturn.eturn.entity.*;
-import com.eturn.eturn.enums.AccessMember;
-import com.eturn.eturn.exception.turn.*;
+import com.eturn.eturn.dto.TurnCreatingDTO;
+import com.eturn.eturn.dto.TurnDTO;
+import com.eturn.eturn.dto.TurnEditDTO;
+import com.eturn.eturn.dto.TurnForListDTO;
+import com.eturn.eturn.entity.Turn;
+import com.eturn.eturn.entity.User;
+import com.eturn.eturn.exception.turn.LocalNotFoundTurnException;
 import com.eturn.eturn.repository.TurnRepository;
-import com.eturn.eturn.service.MemberService;
 import com.eturn.eturn.service.TurnService;
-import com.eturn.eturn.service.UserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 
 @Service

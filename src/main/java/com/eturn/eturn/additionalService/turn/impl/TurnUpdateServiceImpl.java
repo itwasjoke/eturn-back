@@ -10,7 +10,6 @@ import com.eturn.eturn.entity.Faculty;
 import com.eturn.eturn.entity.Group;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
-import com.eturn.eturn.enums.AccessMember;
 import com.eturn.eturn.exception.member.NoAccessMemberException;
 import com.eturn.eturn.exception.turn.NoAccessDeleteTurnException;
 import com.eturn.eturn.exception.turn.NotFoundTurnException;

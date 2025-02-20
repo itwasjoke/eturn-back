@@ -5,7 +5,6 @@ import com.eturn.eturn.notifications.NotificationMessages;
 import com.eturn.eturn.service.NotificationService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.aspectj.weaver.ast.Not;
 import org.springframework.stereotype.Service;
 
 @Service

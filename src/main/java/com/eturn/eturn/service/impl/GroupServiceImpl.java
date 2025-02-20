@@ -6,7 +6,8 @@ import com.eturn.eturn.repository.GroupRepository;
 import com.eturn.eturn.service.GroupService;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Работа с учебными группами

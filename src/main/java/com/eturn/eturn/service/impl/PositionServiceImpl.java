@@ -1,10 +1,12 @@
 package com.eturn.eturn.service.impl;
 
 import com.eturn.eturn.additionalService.position.*;
-import com.eturn.eturn.dto.*;
-import com.eturn.eturn.entity.*;
+import com.eturn.eturn.dto.DetailedPositionDTO;
+import com.eturn.eturn.dto.PositionsTurnDTO;
+import com.eturn.eturn.entity.Turn;
+import com.eturn.eturn.entity.User;
 import com.eturn.eturn.notifications.PositionsNotificationDTO;
-import com.eturn.eturn.service.*;
+import com.eturn.eturn.service.PositionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

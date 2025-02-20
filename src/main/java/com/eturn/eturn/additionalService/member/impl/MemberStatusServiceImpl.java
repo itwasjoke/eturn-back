@@ -1,6 +1,5 @@
 package com.eturn.eturn.additionalService.member.impl;
 
-import com.eturn.eturn.additionalService.member.MemberRepositoryService;
 import com.eturn.eturn.additionalService.member.MemberStatusService;
 import com.eturn.eturn.entity.Member;
 import com.eturn.eturn.enums.AccessMember;
@@ -12,7 +11,6 @@ import com.eturn.eturn.exception.position.NoInviteException;
 import com.eturn.eturn.repository.MemberRepository;
 import com.eturn.eturn.service.PositionService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;

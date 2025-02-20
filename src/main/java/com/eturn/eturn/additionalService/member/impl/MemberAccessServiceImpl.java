@@ -5,7 +5,6 @@ import com.eturn.eturn.additionalService.member.MemberRepositoryService;
 import com.eturn.eturn.entity.Member;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
-import com.eturn.eturn.enums.AccessMember;
 import com.eturn.eturn.enums.MemberListType;
 import com.eturn.eturn.exception.member.NoAccessMemberException;
 import com.eturn.eturn.exception.member.NotFoundMemberException;

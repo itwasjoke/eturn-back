@@ -7,24 +7,24 @@ import com.eturn.eturn.additionalService.member.MemberStatusService;
 import com.eturn.eturn.dto.MemberDTO;
 import com.eturn.eturn.dto.MemberListDTO;
 import com.eturn.eturn.dto.mapper.MemberListMapper;
-import com.eturn.eturn.entity.*;
-import com.eturn.eturn.enums.*;
-import com.eturn.eturn.exception.member.NoAccessMemberException;
+import com.eturn.eturn.entity.Member;
+import com.eturn.eturn.entity.Turn;
+import com.eturn.eturn.entity.User;
+import com.eturn.eturn.enums.AccessMember;
 import com.eturn.eturn.exception.member.NotFoundMemberException;
-import com.eturn.eturn.exception.member.UnknownMemberException;
 import com.eturn.eturn.repository.MemberRepository;
-import com.eturn.eturn.service.*;
+import com.eturn.eturn.service.MemberService;
+import com.eturn.eturn.service.TurnService;
+import com.eturn.eturn.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Optional;
 
-import static com.eturn.eturn.enums.AccessMember.*;
-import static com.eturn.eturn.enums.AccessTurn.FOR_ALLOWED_ELEMENTS;
-import static com.eturn.eturn.enums.InvitedStatus.*;
+import static com.eturn.eturn.enums.InvitedStatus.INVITED;
 
 /**
  * Работа с участниками очередей

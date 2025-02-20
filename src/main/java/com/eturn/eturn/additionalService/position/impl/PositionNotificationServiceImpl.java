@@ -3,7 +3,6 @@ package com.eturn.eturn.additionalService.position.impl;
 import com.eturn.eturn.additionalService.position.PositionNotificationService;
 import com.eturn.eturn.entity.Position;
 import com.eturn.eturn.entity.User;
-import com.eturn.eturn.notifications.NotificationListener;
 import com.eturn.eturn.notifications.PositionsNotificationDTO;
 import com.eturn.eturn.repository.PositionRepository;
 import org.apache.logging.log4j.LogManager;
