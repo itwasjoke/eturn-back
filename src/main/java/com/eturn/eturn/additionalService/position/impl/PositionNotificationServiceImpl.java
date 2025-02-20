@@ -21,7 +21,9 @@ public class PositionNotificationServiceImpl implements PositionNotificationServ
     private static final Logger logger = LogManager.getLogger(PositionNotificationServiceImpl.class);
     private final PositionRepository positionRepository;
 
-    public PositionNotificationServiceImpl(PositionRepository positionRepository) {
+    public PositionNotificationServiceImpl(
+            PositionRepository positionRepository
+    ) {
         this.positionRepository = positionRepository;
     }
 
@@ -33,11 +35,17 @@ public class PositionNotificationServiceImpl implements PositionNotificationServ
      * @return Список пользователей и название очереди
      */
     @Override
-    public PositionsNotificationDTO getPositionsForNotify(Long turnId) {
+    public PositionsNotificationDTO getPositionsForNotify(
+            Long turnId
+    ) {
 
         // получение последних 10 позиций из очереди
         Pageable paging = PageRequest.of(0, 10);
-        Page<Position> page = positionRepository.findAllByTurn_IdOrderByIdAsc(turnId,paging);
+        Page<Position> page = positionRepository.
+                findAllByTurn_IdOrderByIdAsc(
+                        turnId,
+                        paging
+                );
         List<Position> list = page.toList();
         logger.info("The turn is now up to " + list.size() + " values");
 
@@ -48,7 +56,10 @@ public class PositionNotificationServiceImpl implements PositionNotificationServ
             users.add(p1.getUser());
             if (list.size() > 4) users.add(list.get(4).getUser());
             if (list.size() > 9) users.add(list.get(9).getUser());
-            return new PositionsNotificationDTO(users, p1.getTurn().getName());
+            return new PositionsNotificationDTO(
+                    users,
+                    p1.getTurn().getName()
+            );
         } else {
             logger.warn("No notifications will send for "+ turnId +" turn");
             return new PositionsNotificationDTO(null, null);

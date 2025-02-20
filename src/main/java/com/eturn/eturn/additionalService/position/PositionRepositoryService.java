@@ -6,9 +6,18 @@ import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
 
 public interface PositionRepositoryService {
-    DetailedPositionDTO getFirstUserPosition(String hash, String username);
-    DetailedPositionDTO getFirstPosition(String hash, String username);
-    PositionsTurnDTO getPositionList(String hash, String username, int page);
-    boolean existsAllByTurnAndUser(Turn turn, User user);
+    DetailedPositionDTO getFirstUserPosition(
+            String hash,
+            String username
+    );
+    DetailedPositionDTO getFirstPosition(
+            String hash,
+            String username
+    );
+    PositionsTurnDTO getPositionList(
+            String hash,
+            String username,
+            int page
+    );
     long countPositionsByTurn(Turn turn);
 }

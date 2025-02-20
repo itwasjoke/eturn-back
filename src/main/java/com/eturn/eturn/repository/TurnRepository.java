@@ -13,11 +13,21 @@ import java.util.Optional;
 
 @Repository
 public interface TurnRepository extends JpaRepository<Turn, Long> {
-    void deleteByDateEndIsLessThan(Date d);
+    void deleteByDateEndIsLessThan(
+            Date d
+    );
     @Query(name = "getMemberOutTurns")
-    List<Object[]> resultsMemberOut(@Param("userId") Long userId, @Param("groupId") Long groupId, @Param("facultyId") Long facultyId, @Param("turnType") String turnType);
+    List<Object[]> resultsMemberOut(
+            @Param("userId") Long userId,
+            @Param("groupId") Long groupId,
+            @Param("facultyId") Long facultyId,
+            @Param("turnType") String turnType
+    );
     @Query(name = "getMemberInTurns")
-    List<Object[]> resultsMemberIn(@Param("userId") Long userId, @Param("turnType") String turnType);
+    List<Object[]> resultsMemberIn(
+            @Param("userId") Long userId,
+            @Param("turnType") String turnType
+    );
     void deleteTurnById(Long id);
     boolean existsAllByHash(String hash);
     Optional<Turn> findTurnByHash(String hash);

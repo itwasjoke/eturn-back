@@ -14,12 +14,30 @@ import java.util.Optional;
 
 
 public interface MemberService {
-    void setInviteForMember(String hash, String username);
-    MemberDTO getMemberDTO(User user, Turn turn);
-    AccessMember getAccess(User user, Turn turn);
-    MemberListDTO getMemberList(String username, String type, String hash, int page);
-    void setBlockStatus(long id, String type, String username);
-    void changeMemberInvite(Long id, boolean status, boolean isModerator);
+    void setInviteForMember(
+            String hash,
+            String username
+    );
+    MemberDTO getMemberDTO(
+            User user,
+            Turn turn
+    );
+    MemberListDTO getMemberList(
+            String username,
+            String type,
+            String hash,
+            int page
+    );
+    void setBlockStatus(
+            long id,
+            String type,
+            String username
+    );
+    void changeMemberInvite(
+            Long id,
+            boolean status,
+            boolean isModerator
+    );
     void deleteMembersWithoutPositions(Turn turn);
     boolean invitedExists(Turn turn);
 

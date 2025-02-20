@@ -9,7 +9,6 @@ import java.util.Optional;
 @Repository
 public interface GroupRepository extends JpaRepository<Group,Long> {
 
-    boolean existsById(Long idGroup);
     Optional<Group> getGroupByNumber(String number);
 
 }

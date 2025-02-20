@@ -9,5 +9,4 @@ import java.util.Optional;
 @Repository
 public interface FacultyRepository extends JpaRepository<Faculty,Long> {
  Optional<Faculty> getFacultyByName(String name);
- Faculty getFacultyById(Long id);
 }

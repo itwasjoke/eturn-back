@@ -32,7 +32,13 @@ public class PositionDeletionServiceImpl implements PositionDeletionService {
     private final NotificationController notificationController;
     private final MemberStatusService mbrStatusService;
 
-    public PositionDeletionServiceImpl(PositionRepository positionRepository, UserService userService, MemberRepositoryService mbrRepService, NotificationController notificationController, MemberStatusService mbrStatusService) {
+    public PositionDeletionServiceImpl(
+            PositionRepository positionRepository,
+            UserService userService,
+            MemberRepositoryService mbrRepService,
+            NotificationController notificationController,
+            MemberStatusService mbrStatusService
+    ) {
         this.positionRepository = positionRepository;
         this.userService = userService;
         this.mbrRepService = mbrRepService;
@@ -67,7 +73,11 @@ public class PositionDeletionServiceImpl implements PositionDeletionService {
         positionRepository.delete(position);
 
         // Обновляем следующую позицию и обрабатываем статус участника
-        updateNextPositionAndMemberStatus(position, member, user);
+        updateNextPositionAndMemberStatus(
+                position,
+                member,
+                user
+        );
     }
 
     /**
@@ -89,7 +99,10 @@ public class PositionDeletionServiceImpl implements PositionDeletionService {
      * @return Участник (Member)
      * @throws NoAccessMemberException Если пользователь не является участником очереди
      */
-    private Member getMember(User user, Turn turn) {
+    private Member getMember(
+            User user,
+            Turn turn
+    ) {
         return mbrRepService.getMemberWith(user, turn)
                 .orElseThrow(() -> new NoAccessMemberException("You are not a member"));
     }
@@ -100,11 +113,13 @@ public class PositionDeletionServiceImpl implements PositionDeletionService {
      * @param position Позиция
      * @throws NoAccessPosException Если пользователь не имеет доступа для удаления позиции
      */
-    private void checkDeleteAccess(Member member, Position position) {
+    private void checkDeleteAccess(
+            Member member,
+            Position position
+    ) {
         AccessMember access = member.getAccessMember();
-        if (!(access == AccessMember.MEMBER && position.getUser().getId().equals(member.getUser().getId())
-                && access != AccessMember.CREATOR
-                && access != MODERATOR)) {
+        if (!(access == AccessMember.MEMBER
+                && position.getUser().getId().equals(member.getUser().getId()))) {
             throw new NoAccessPosException("No access");
         }
     }
@@ -115,19 +130,35 @@ public class PositionDeletionServiceImpl implements PositionDeletionService {
      * @param member Участник (Member)
      * @param user Пользователь
      */
-    private void updateNextPositionAndMemberStatus(Position position, Member member, User user) {
+    private void updateNextPositionAndMemberStatus(
+            Position position,
+            Member member,
+            User user
+    ) {
         // Находим следующую позицию в очереди
-        positionRepository.findFirstByTurnOrderByIdAsc(position.getTurn()).ifPresent(nextPosition -> {
+        positionRepository.
+                findFirstByTurnOrderByIdAsc(
+                        position.getTurn()
+                ).ifPresent(nextPosition -> {
             // Уведомляем пользователей об изменении позиции
-            notificationController.notifyUserOfTurnPositionChange(nextPosition.getTurn().getId());
+            notificationController.
+                    notifyUserOfTurnPositionChange(
+                            nextPosition.getTurn().getId()
+                    );
 
             // Устанавливаем новое время окончания для следующей позиции
-            Date newEndDate = calculateNewEndDate(nextPosition.getTurn().getTimer());
+            Date newEndDate = calculateNewEndDate(
+                    nextPosition.getTurn().getTimer()
+            );
             nextPosition.setDateEnd(newEndDate);
             positionRepository.save(nextPosition);
 
             // Обрабатываем статус участника, если это необходимо
-            handleMemberStatusAfterDeletion(position, member, user);
+            handleMemberStatusAfterDeletion(
+                    position,
+                    member,
+                    user
+            );
         });
     }
 
@@ -149,13 +180,32 @@ public class PositionDeletionServiceImpl implements PositionDeletionService {
      * @param member Участник (Member)
      * @param user Пользователь
      */
-    private void handleMemberStatusAfterDeletion(Position position, Member member, User user) {
-        Optional<Position> userPosition = positionRepository.findFirstByUserAndTurnOrderByIdAsc(user, position.getTurn());
+    private void handleMemberStatusAfterDeletion(
+            Position position,
+            Member member,
+            User user
+    ) {
+        Optional<Position> userPosition =
+                positionRepository.
+                        findFirstByUserAndTurnOrderByIdAsc(
+                                user,
+                                position.getTurn()
+                        );
         if (userPosition.isEmpty()) {
-            if (member.getAccessMember() == AccessMember.MEMBER && position.getTurn().getAccessTurnType() == FOR_LINK) {
-                mbrStatusService.changeMemberStatusFrom(member.getId(), "MEMBER_LINK", Optional.empty(), Optional.empty());
+            if (member.getAccessMember() == AccessMember.MEMBER
+                    && position.getTurn().getAccessTurnType() == FOR_LINK
+            ) {
+                mbrStatusService.changeMemberStatusFrom(
+                        member.getId(),
+                        "MEMBER_LINK",
+                        Optional.empty(),
+                        Optional.empty()
+                );
             } else if (member.getAccessMember() == AccessMember.MEMBER) {
-                mbrRepService.deleteMemberWith(position.getTurn(), user);
+                mbrRepService.deleteMemberWith(
+                        position.getTurn(),
+                        user
+                );
             }
         }
     }
@@ -166,8 +216,14 @@ public class PositionDeletionServiceImpl implements PositionDeletionService {
      * @param user пользователь
      */
     @Override
-    public void deleteAllByTurnAndUser(Turn turn, User user) {
-        positionRepository.deleteAllByTurnAndUser(turn, user);
+    public void deleteAllByTurnAndUser(
+            Turn turn,
+            User user
+    ) {
+        positionRepository.deleteAllByTurnAndUser(
+                turn,
+                user
+        );
     }
 
 }

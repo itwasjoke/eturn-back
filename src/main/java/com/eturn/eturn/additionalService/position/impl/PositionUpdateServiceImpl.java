@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Objects;
 
 import static com.eturn.eturn.enums.AccessMember.CREATOR;
 import static com.eturn.eturn.enums.AccessMember.MODERATOR;
@@ -56,7 +57,11 @@ public class PositionUpdateServiceImpl implements PositionUpdateService {
      */
     @Override
     @Transactional
-    public void update(Long id, String username, String status) {
+    public void update(
+            Long id,
+            String username,
+            String status
+    ) {
         // Получаем пользователя и позицию
         User user = userService.getUserFromLogin(username);
         Position position = getPositionById(id);
@@ -73,7 +78,10 @@ public class PositionUpdateServiceImpl implements PositionUpdateService {
         checkUserAccess(user, position);
 
         // Удаляем просроченные элементы очереди
-        positionTimerService.deleteOverdueElements(position.getTurn());
+        positionTimerService.
+                deleteOverdueElements(
+                        position.getTurn()
+                );
 
         // Обновляем позицию
         updatePosition(position, user);
@@ -93,13 +101,19 @@ public class PositionUpdateServiceImpl implements PositionUpdateService {
         Position position = getPositionById(id);
 
         // Удаляем просроченные элементы очереди
-        positionTimerService.deleteOverdueElements(position.getTurn());
+        positionTimerService.
+                deleteOverdueElements(position.getTurn());
 
         // Получаем текущую позицию в очереди
-        Position currentPosition = getCurrentPosition(position.getTurn());
+        Position currentPosition =
+                getCurrentPosition(position.getTurn());
 
         // Пропускаем позицию, если это возможно
-        skipPositionIfAllowed(position, user, currentPosition);
+        skipPositionIfAllowed(
+                position,
+                user,
+                currentPosition
+        );
     }
 
     /**
@@ -119,7 +133,10 @@ public class PositionUpdateServiceImpl implements PositionUpdateService {
      * @param status Статус
      * @return true, если обновление не требуется, иначе false
      */
-    private boolean isUpdateNotRequired(Position position, String status) {
+    private boolean isUpdateNotRequired(
+            Position position,
+            String status
+    ) {
         return position.isStart() && status.equals("in");
     }
 
@@ -140,10 +157,20 @@ public class PositionUpdateServiceImpl implements PositionUpdateService {
      * @param position Позиция
      * @throws NoAccessPosException Если доступ запрещен
      */
-    private void checkUserAccess(User user, Position position) {
-        MemberDTO memberDTO = memberService.getMemberDTO(user, position.getTurn());
+    private void checkUserAccess(
+            User user,
+            Position position
+    ) {
+        MemberDTO memberDTO = memberService.getMemberDTO(
+                user,
+                position.getTurn()
+        );
         String access = memberDTO.access();
-        if (!position.getUser().equals(user) && !access.equals(CREATOR.toString()) && !access.equals(MODERATOR.toString())) {
+        if (
+                !position.getUser().equals(user)
+                && !access.equals(CREATOR.toString())
+                && !access.equals(MODERATOR.toString())
+        ) {
             throw new NoAccessPosException("No access");
         }
     }
@@ -153,7 +180,10 @@ public class PositionUpdateServiceImpl implements PositionUpdateService {
      * @param position Позиция
      * @param user Пользователь
      */
-    private void updatePosition(Position position, User user) {
+    private void updatePosition(
+            Position position,
+            User user
+    ) {
         if (position.isStart()) {
             deletePositionAndUpdateTurn(position, user);
         } else {
@@ -166,9 +196,18 @@ public class PositionUpdateServiceImpl implements PositionUpdateService {
      * @param position Позиция
      * @param user Пользователь
      */
-    private void deletePositionAndUpdateTurn(Position position, User user) {
-        positionDeletionService.delete(position.getId(), user.getUsername());
-        updateTurnStatistics(position.getTurn(), position.getDateStart());
+    private void deletePositionAndUpdateTurn(
+            Position position,
+            User user
+    ) {
+        positionDeletionService.delete(
+                position.getId(),
+                user.getUsername()
+        );
+        updateTurnStatistics(
+                position.getTurn(),
+                position.getDateStart()
+        );
     }
 
     /**
@@ -176,8 +215,12 @@ public class PositionUpdateServiceImpl implements PositionUpdateService {
      * @param turn Очередь
      * @param startDate Дата начала позиции
      */
-    private void updateTurnStatistics(Turn turn, Date startDate) {
-        long time = System.currentTimeMillis() - startDate.getTime();
+    private void updateTurnStatistics(
+            Turn turn,
+            Date startDate
+    ) {
+        long time = System.currentTimeMillis()
+                - startDate.getTime();
         int countPositions = turn.getCountPositionsLeft();
         if (countPositions == 0) {
             turn.setCountPositionsLeft(1);
@@ -186,9 +229,12 @@ public class PositionUpdateServiceImpl implements PositionUpdateService {
             turn.setSmoothedValue((double) time);
         } else {
             countPositions++;
-            double smoothedValue = 0.99 * time + (1 - 0.99) * turn.getSmoothedValue();
-            long totalTime = turn.getTotalTime() + (long) smoothedValue;
-            int averageTime = (int) (totalTime / countPositions);
+            double smoothedValue =
+                    0.99 * time + (1 - 0.99) * turn.getSmoothedValue();
+            long totalTime =
+                    turn.getTotalTime() + (long) smoothedValue;
+            int averageTime =
+                    (int) (totalTime / countPositions);
             turn.setSmoothedValue(smoothedValue);
             turn.setCountPositionsLeft(countPositions);
             turn.setAverageTime(averageTime);
@@ -233,7 +279,11 @@ public class PositionUpdateServiceImpl implements PositionUpdateService {
      * @param user Пользователь, выполняющий пропуск
      * @param currentPosition Текущая позиция в очереди
      */
-    private void skipPositionIfAllowed(Position position, User user, Position currentPosition) {
+    private void skipPositionIfAllowed(
+            Position position,
+            User user,
+            Position currentPosition
+    ) {
         if (isSkipAllowed(position, user)) {
             Position nextPosition = getNextPosition(position);
             if (nextPosition != null) {
@@ -248,8 +298,12 @@ public class PositionUpdateServiceImpl implements PositionUpdateService {
      * @param user Пользователь, выполняющий пропуск
      * @return true, если пропуск разрешен, иначе false
      */
-    private boolean isSkipAllowed(Position position, User user) {
-        return position.getUser().equals(user) && position.getSkipCount() > 0;
+    private boolean isSkipAllowed(
+            Position position,
+            User user
+    ) {
+        return position.getUser().equals(user)
+                && position.getSkipCount() > 0;
     }
 
     /**
@@ -258,7 +312,11 @@ public class PositionUpdateServiceImpl implements PositionUpdateService {
      * @return Следующая позиция
      */
     private Position getNextPosition(Position position) {
-        return positionRepository.findFirstByTurnAndIdGreaterThanOrderByIdAsc(position.getTurn(), position.getId())
+        return positionRepository
+                .findFirstByTurnAndIdGreaterThanOrderByIdAsc(
+                        position.getTurn(),
+                        position.getId()
+                )
                 .orElse(null);
     }
 
@@ -268,21 +326,37 @@ public class PositionUpdateServiceImpl implements PositionUpdateService {
      * @param nextPosition Следующая позиция
      * @param currentPosition Текущая позиция в очереди
      */
-    private void handleSkip(Position position, Position nextPosition, Position currentPosition) {
+    private void handleSkip(
+            Position position,
+            Position nextPosition,
+            Position currentPosition
+    ) {
         // Проверяем, не является ли следующая позиция также позицией пользователя
-        if (isNextPositionAlsoUserPosition(position, nextPosition)) {
+        if (isNextPositionAlsoUserPosition(
+                position,
+                nextPosition
+        )) {
             positionRepository.delete(position);
             return;
         }
 
         // Удаляем предыдущую позицию, если она принадлежит тому же пользователю
-        deletePreviousPositionIfSameUser(position, nextPosition);
+        deletePreviousPositionIfSameUser(
+                position,
+                nextPosition
+        );
 
         // Обновляем таймеры, если текущая позиция активна
-        updateTimersIfCurrent(position, nextPosition, currentPosition);
+        updateTimersIfCurrent(
+                position,
+                nextPosition,
+                currentPosition
+        );
 
         // Уменьшаем счетчик пропусков
-        position.setSkipCount(position.getSkipCount() - 1);
+        position.setSkipCount(
+                position.getSkipCount() - 1
+        );
 
         // Меняем местами пользователей
         User nextPositionUser = position.getUser();
@@ -299,10 +373,19 @@ public class PositionUpdateServiceImpl implements PositionUpdateService {
      * @param nextPosition Следующая позиция
      * @return true, если следующая позиция также принадлежит пользователю, иначе false
      */
-    private boolean isNextPositionAlsoUserPosition(Position position, Position nextPosition) {
-        Position nextNextPosition = positionRepository.findFirstByTurnAndIdGreaterThanOrderByIdAsc(nextPosition.getTurn(), nextPosition.getId())
+    private boolean isNextPositionAlsoUserPosition(
+            Position position,
+            Position nextPosition
+    ) {
+        Position nextNextPosition =
+                positionRepository.
+                        findFirstByTurnAndIdGreaterThanOrderByIdAsc(
+                                nextPosition.getTurn(),
+                                nextPosition.getId()
+                        )
                 .orElse(null);
-        return nextNextPosition != null && nextNextPosition.getUser().equals(position.getUser());
+        return nextNextPosition != null
+                && nextNextPosition.getUser().equals(position.getUser());
     }
 
     /**
@@ -310,10 +393,19 @@ public class PositionUpdateServiceImpl implements PositionUpdateService {
      * @param position Текущая позиция
      * @param nextPosition Следующая позиция
      */
-    private void deletePreviousPositionIfSameUser(Position position, Position nextPosition) {
-        positionRepository.findFirstByTurnAndIdLessThanOrderByIdDesc(position.getTurn(), position.getId())
+    private void deletePreviousPositionIfSameUser(
+            Position position,
+            Position nextPosition
+    ) {
+        positionRepository.
+                findFirstByTurnAndIdLessThanOrderByIdDesc(
+                        position.getTurn(),
+                        position.getId()
+                )
                 .ifPresent(previousPosition -> {
-                    if (previousPosition.getUser().equals(nextPosition.getUser())) {
+                    if (previousPosition.getUser().equals(
+                            nextPosition.getUser())
+                    ) {
                         positionRepository.delete(previousPosition);
                     }
                 });
@@ -325,8 +417,19 @@ public class PositionUpdateServiceImpl implements PositionUpdateService {
      * @param nextPosition Следующая позиция
      * @param currentPosition Активная позиция в очереди
      */
-    private void updateTimersIfCurrent(Position position, Position nextPosition, Position currentPosition) {
-        if (position.getTurn().getDateStart().getTime() <= System.currentTimeMillis() && position.getId() == currentPosition.getId()) {
+    private void updateTimersIfCurrent(
+            Position position,
+            Position nextPosition,
+            Position currentPosition
+    ) {
+        if (
+                position.getTurn().getDateStart().getTime()
+                        <= System.currentTimeMillis()
+                && Objects.equals(
+                        position.getId(),
+                        currentPosition.getId()
+                    )
+        ) {
             position.setDateEnd(null);
             Date newEndDate = calculateNewEndDate(nextPosition.getTurn().getTimer());
             nextPosition.setDateEnd(newEndDate);

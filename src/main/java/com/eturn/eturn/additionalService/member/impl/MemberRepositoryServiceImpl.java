@@ -223,15 +223,6 @@ public class MemberRepositoryServiceImpl implements MemberRepositoryService {
     }
 
     /**
-     * Удалить участника
-     * @param id идентификатор
-     */
-    @Override
-    public void deleteMemberWith(Long id) {
-        memberRepository.deleteById(id);
-    }
-
-    /**
      * Получение опционального участника по индексу
      * @param id идентификатор
      * @return участник

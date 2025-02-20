@@ -232,17 +232,6 @@ public class MemberServiceImpl implements MemberService {
         return mbrRepService.getModeratorsOfTurn(turnId);
     }
 
-    /**
-     * Получение типа доступа к очереди
-     * @param user пользователь
-     * @param turn очередь
-     * @return Тип доступа
-     */
-    @Override
-    public AccessMember getAccess(User user, Turn turn) {
-        Optional<Member> m = memberRepository.findMemberByUserAndTurn(user, turn);
-        return m.map(Member::getAccessMember).orElse(null);
-    }
 
 
     /**

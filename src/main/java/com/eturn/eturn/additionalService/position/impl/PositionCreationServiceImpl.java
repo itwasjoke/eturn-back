@@ -70,7 +70,10 @@ public class PositionCreationServiceImpl implements PositionCreationService {
      */
     @Override
     @Transactional
-    public DetailedPositionDTO createPositionAndSave(String login, String hash) {
+    public DetailedPositionDTO createPositionAndSave(
+            String login,
+            String hash
+    ) {
         // Получаем очередь и пользователя
         Turn turn = turnService.getTurnFrom(hash);
         User user = userService.getUserFromLogin(login);
@@ -84,7 +87,11 @@ public class PositionCreationServiceImpl implements PositionCreationService {
             positionTimerService.deleteOverdueElements(turn);
 
             // Создаем новую позицию или выбрасываем исключение, если это невозможно
-            return createOrHandlePosition(currentMember, turn, user);
+            return createOrHandlePosition(
+                    currentMember,
+                    turn,
+                    user
+            );
         }
 
         // Если участник заблокирован или не имеет доступа, возвращаем null
@@ -98,20 +105,37 @@ public class PositionCreationServiceImpl implements PositionCreationService {
      * @return Созданный участник
      */
     @Override
-    public Member createMemberForPosition(User user, Turn turn) {
+    public Member createMemberForPosition(
+            User user,
+            Turn turn
+    ) {
 
         // Проверяем тип очереди
         AccessTurn turnEnum = turn.getAccessTurnType();
         if (turnEnum == FOR_LINK) {
             // Отправляем уведомление о новой заявки в очередь
-            notificationController.notifyReceiptRequest(turn.getId(), turn.getName());
-            return memberService.createMember(user, turn, "MEMBER_LINK", true);
+            notificationController.notifyReceiptRequest(
+                    turn.getId(),
+                    turn.getName()
+            );
+            return memberService.createMember(
+                    user,
+                    turn,
+                    "MEMBER_LINK",
+                    true
+            );
         } else {
             // проверяем, что есть доступ к добавлению
             Set<Group> groups = turn.getAllowedGroups();
             Set<Faculty> faculties = turn.getAllowedFaculties();
-            if (groups.contains(user.getGroup()) || faculties.contains(user.getGroup().getFaculty())) {
-                return memberService.createMember(user, turn, "MEMBER", false);
+            if (groups.contains(user.getGroup())
+                    || faculties.contains(user.getGroup().getFaculty())) {
+                return memberService.createMember(
+                        user,
+                        turn,
+                        "MEMBER",
+                        false
+                );
             }
             else {
                 throw new NoAccessMemberException("You are not this user!");
@@ -125,8 +149,12 @@ public class PositionCreationServiceImpl implements PositionCreationService {
      * @param turn Очередь
      * @return Существующий или новый участник (Member)
      */
-    private Member getOrCreateMember(User user, Turn turn) {
-        Optional<Member> member = mbrRepService.getMemberWith(user, turn);
+    private Member getOrCreateMember(
+            User user,
+            Turn turn
+    ) {
+        Optional<Member> member =
+                mbrRepService.getMemberWith(user, turn);
         if (member.isEmpty()) {
             return createMemberForPosition(user, turn);
         } else {
@@ -165,7 +193,8 @@ public class PositionCreationServiceImpl implements PositionCreationService {
      * @return true, если участник не заблокирован и имеет доступ, иначе false
      */
     private boolean isMemberAllowedToCreatePosition(Member member) {
-        return member.getAccessMember() != BLOCKED && member.getInvitedForTurn() == ACCESS_IN;
+        return member.getAccessMember() != BLOCKED
+                && member.getInvitedForTurn() == ACCESS_IN;
     }
 
     /**
@@ -176,25 +205,55 @@ public class PositionCreationServiceImpl implements PositionCreationService {
      * @return DTO с информацией о позиции
      * @throws NoCreatePosException Если создание позиции невозможно
      */
-    private DetailedPositionDTO createOrHandlePosition(Member member, Turn turn, User user) {
+    private DetailedPositionDTO createOrHandlePosition(
+            Member member,
+            Turn turn,
+            User user
+    ) {
         // Если в очереди уже есть позиции
         if (positionRepository.countAllByTurn(turn) > 0) {
-            long countPositions = mbrRepService.getCountMembersWith(turn, MEMBER);
-            int permittedCount = calculatePermittedCount(turn, countPositions);
+            long countPositions =
+                    mbrRepService.getCountMembersWith(turn, MEMBER);
+            int permittedCount =
+                    calculatePermittedCount(turn, countPositions);
 
             // Проверяем, может ли пользователь создать новую позицию
-            if (isPositionCreationAllowed(turn, user, countPositions, permittedCount)) {
+            if (isPositionCreationAllowed(
+                    turn,
+                    user,
+                    countPositions,
+                    permittedCount
+            )) {
                 Position newPosition = createNewPosition(member);
-                int differenceForUser = calculatePositionDifference(newPosition, turn, user);
-                return detailedPositionMapper.positionMoreInfoToPositionDTO(newPosition, differenceForUser);
+                int differenceForUser =
+                        calculatePositionDifference(
+                                newPosition,
+                                turn,
+                                user
+                        );
+                return detailedPositionMapper.
+                        positionMoreInfoToPositionDTO(
+                                newPosition,
+                                differenceForUser
+                        );
             } else {
                 // Если создание позиции невозможно, выбрасываем исключение
-                throw new NoCreatePosException(String.valueOf(calculateExceptionDifference(turn, user, permittedCount)));
+                throw new NoCreatePosException(
+                        String.valueOf(
+                                calculateExceptionDifference(
+                                        turn,
+                                        user,
+                                        permittedCount
+                                )
+                        )
+                );
             }
         } else {
             // Если очередь пуста, создаем новую позицию
-            Position newPosition = createNewPosition(member);
-            return detailedPositionMapper.positionMoreInfoToPositionDTO(newPosition, 0);
+            Position newPosition =
+                    createNewPosition(member);
+            return detailedPositionMapper.
+                    positionMoreInfoToPositionDTO(newPosition, 0);
         }
     }
 
@@ -204,12 +263,16 @@ public class PositionCreationServiceImpl implements PositionCreationService {
      * @param countPositions Текущее количество позиций
      * @return Допустимое количество позиций
      */
-    private int calculatePermittedCount(Turn turn, long countPositions) {
+    private int calculatePermittedCount(
+            Turn turn,
+            long countPositions
+    ) {
         int permittedCount = turn.getPositionCount();
         if (permittedCount == -1) {
             throw new NoCreatePosException(String.valueOf(-1));
         } else if (permittedCount == 0) {
-            permittedCount = countPositions >= 20 ? (int) (countPositions * 0.8) : 0;
+            permittedCount =
+                    countPositions >= 20 ? (int) (countPositions * 0.8) : 0;
         }
         return permittedCount;
     }
@@ -222,12 +285,15 @@ public class PositionCreationServiceImpl implements PositionCreationService {
      * @param permittedCount Допустимое количество позиций
      * @return true, если создание позиции разрешено, иначе false
      */
-    private boolean isPositionCreationAllowed(Turn turn, User user, long countPositions, int permittedCount) {
-        Optional<Position> ourPosition = positionRepository.findFirstByUserAndTurnOrderByIdDesc(user, turn);
-        if (countPositions < permittedCount && ourPosition.isPresent()) {
-            return false;
-        }
-        return true;
+    private boolean isPositionCreationAllowed(
+            Turn turn,
+            User user,
+            long countPositions,
+            int permittedCount
+    ) {
+        Optional<Position> ourPosition =
+                positionRepository.findFirstByUserAndTurnOrderByIdDesc(user, turn);
+        return countPositions >= permittedCount || ourPosition.isEmpty();
     }
 
     /**
@@ -237,9 +303,21 @@ public class PositionCreationServiceImpl implements PositionCreationService {
      * @param user Пользователь
      * @return Разница для позиции
      */
-    private int calculatePositionDifference(Position newPosition, Turn turn, User user) {
-        Optional<Position> ourPosition = positionRepository.findFirstByUserAndTurnOrderByIdDesc(user, turn);
-        return ourPosition.isEmpty() ? (int) positionRepository.countIdLeft(newPosition.getId(), turn) : -1;
+    private int calculatePositionDifference(
+            Position newPosition,
+            Turn turn,
+            User user
+    ) {
+        Optional<Position> ourPosition =
+                positionRepository.findFirstByUserAndTurnOrderByIdDesc(
+                        user,
+                        turn
+                );
+        return ourPosition.isEmpty()
+                ? (int) positionRepository.countIdLeft(
+                        newPosition.getId(),
+                        turn
+                ) : -1;
     }
 
     /**
@@ -249,13 +327,33 @@ public class PositionCreationServiceImpl implements PositionCreationService {
      * @param permittedCount Допустимое количество позиций
      * @return Разница для исключения
      */
-    private int calculateExceptionDifference(Turn turn, User user, int permittedCount) {
-        Optional<Position> lastPos = positionRepository.findFirstByTurnOrderByIdDesc(turn);
-        Position positionDelete = positionRepository.resultsPositionDelete(turn.getId(), permittedCount);
+    private int calculateExceptionDifference(
+            Turn turn,
+            User user,
+            int permittedCount
+    ) {
+        Optional<Position> lastPos =
+                positionRepository.findFirstByTurnOrderByIdDesc(turn);
+        Position positionDelete =
+                positionRepository.resultsPositionDelete(
+                        turn.getId(),
+                        permittedCount
+                );
         if (positionDelete != null) {
-            Optional<Position> positionOfUser = positionRepository.findFirstByTurnAndUserAndIdGreaterThanOrderByIdDesc(turn, user, positionDelete.getId());
+            Optional<Position> positionOfUser =
+                    positionRepository.
+                            findFirstByTurnAndUserAndIdGreaterThanOrderByIdDesc(
+                                    turn,
+                                    user,
+                                    positionDelete.getId()
+                            );
             if (positionOfUser.isPresent() && lastPos.isPresent()) {
-                return permittedCount - positionRepository.countAllByTurnAndIdBetween(turn, positionOfUser.get().getId(), lastPos.get().getId()) + 1;
+                return permittedCount - positionRepository.
+                        countAllByTurnAndIdBetween(
+                                turn,
+                                positionOfUser.get().getId(),
+                                lastPos.get().getId()
+                        ) + 1;
             }
         }
         return 0;
@@ -281,7 +379,9 @@ public class PositionCreationServiceImpl implements PositionCreationService {
         if (turn.getPositionCount() != 0) {
             newPosition.setSkipCount(turn.getPositionCount() / 5);
         } else {
-            newPosition.setSkipCount((mbrRepService.getCountMembersWith(turn, MEMBER) / 10));
+            newPosition.setSkipCount(
+                    mbrRepService.getCountMembersWith(turn, MEMBER) / 10
+            );
         }
         return positionRepository.save(newPosition);
     }

@@ -68,7 +68,11 @@ public class PositionRepositoryServiceImpl implements PositionRepositoryService 
      */
     @Override
     @Transactional
-    public PositionsTurnDTO getPositionList(String hash, String username, int page) {
+    public PositionsTurnDTO getPositionList(
+            String hash,
+            String username,
+            int page
+    ) {
         Turn turn = turnService.getTurnFrom(hash);
         positionTimerService.deleteOverdueElements(turn);
         long sizePositions = positionRepository.countAllByTurn(turn);
@@ -77,14 +81,26 @@ public class PositionRepositoryServiceImpl implements PositionRepositoryService 
 
         if (size > 0) {
             Pageable paging = PageRequest.of(page, size);
-            Page<Position> positions = positionRepository.findAllByTurnOrderByIdAsc(turn, paging);
-            allPositions = positions.isEmpty() ? null : positionListMapper.map(positions);
+            Page<Position> positions =
+                    positionRepository.findAllByTurnOrderByIdAsc(
+                            turn,
+                            paging
+                    );
+            allPositions = positions.isEmpty()
+                    ? null
+                    : positionListMapper.map(positions);
         } else {
             allPositions = null;
         }
-        DetailedPositionDTO userPosition = getFirstUserPosition(hash, username);
-        DetailedPositionDTO turnPosition = getFirstPosition(hash, username);
-        return new PositionsTurnDTO(userPosition, turnPosition, allPositions);
+        DetailedPositionDTO userPosition =
+                getFirstUserPosition(hash, username);
+        DetailedPositionDTO turnPosition =
+                getFirstPosition(hash, username);
+        return new PositionsTurnDTO(
+                userPosition,
+                turnPosition,
+                allPositions
+        );
 
     }
 
@@ -97,22 +113,42 @@ public class PositionRepositoryServiceImpl implements PositionRepositoryService 
      */
     @Override
     @Transactional
-    public DetailedPositionDTO getFirstUserPosition(String hash, String username) {
+    public DetailedPositionDTO getFirstUserPosition(
+            String hash,
+            String username
+    ) {
         User user = userService.getUserFromLogin(username);
         Turn turn = turnService.getTurnFrom(hash);
 
         // Получаем первую позицию пользователя в очереди
-        Optional<Position> userPosition = positionRepository.findTopByTurnAndUserOrderByIdAsc(turn, user);
+        Optional<Position> userPosition =
+                positionRepository.findTopByTurnAndUserOrderByIdAsc(
+                        turn,
+                        user
+                );
 
         // Получаем первую и последнюю позиции в очереди
-        Optional<Position> firstPositionInTurn = positionRepository.findFirstByTurnOrderByIdAsc(turn);
-        Optional<Position> lastPositionInTurn = positionRepository.findFirstByTurnOrderByIdDesc(turn);
+        Optional<Position> firstPositionInTurn =
+                positionRepository.
+                        findFirstByTurnOrderByIdAsc(turn);
+        Optional<Position> lastPositionInTurn =
+                positionRepository.
+                        findFirstByTurnOrderByIdDesc(turn);
 
         // Проверяем, является ли позиция пользователя последней в очереди
-        boolean isLast = isUserPositionLast(userPosition, lastPositionInTurn);
+        boolean isLast = isUserPositionLast(
+                userPosition,
+                lastPositionInTurn
+        );
 
         // Возвращаем DTO с информацией о позиции пользователя
-        return userPosition.map(position -> createUserPositionDTO(position, firstPositionInTurn, turn, isLast))
+        return userPosition.map(position ->
+                        createUserPositionDTO(
+                                position,
+                                firstPositionInTurn,
+                                turn,
+                                isLast
+                        ))
                 .orElse(null);
     }
 
@@ -123,15 +159,24 @@ public class PositionRepositoryServiceImpl implements PositionRepositoryService 
      * @return DTO с информацией о первой позиции
      */
     @Override
-    public DetailedPositionDTO getFirstPosition(String hash, String username) {
+    public DetailedPositionDTO getFirstPosition(
+            String hash,
+            String username
+    ) {
         User user = userService.getUserFromLogin(username);
         Turn turn = turnService.getTurnFrom(hash);
 
         // Получаем первую позицию в очереди
-        Optional<Position> firstPositionInTurn = positionRepository.findFirstByTurnOrderByIdAsc(turn);
+        Optional<Position> firstPositionInTurn =
+                positionRepository.
+                        findFirstByTurnOrderByIdAsc(turn);
 
         // Проверяем доступ пользователя и возвращаем DTO
-        return firstPositionInTurn.map(position -> createFirstPositionDTO(position, user))
+        return firstPositionInTurn.map(position ->
+                        createFirstPositionDTO(
+                                position,
+                                user
+                        ))
                 .orElse(null);
     }
 
@@ -141,7 +186,10 @@ public class PositionRepositoryServiceImpl implements PositionRepositoryService 
      * @param lastPositionInTurn Последняя позиция в очереди
      * @return true, если позиция пользователя последняя, иначе false
      */
-    private boolean isUserPositionLast(Optional<Position> userPosition, Optional<Position> lastPositionInTurn) {
+    private boolean isUserPositionLast(
+            Optional<Position> userPosition,
+            Optional<Position> lastPositionInTurn
+    ) {
         return userPosition.isPresent() && lastPositionInTurn.isPresent() &&
                 userPosition.get().getId().equals(lastPositionInTurn.get().getId());
     }
@@ -154,10 +202,26 @@ public class PositionRepositoryServiceImpl implements PositionRepositoryService 
      * @param isLast Является ли позиция последней
      * @return DTO с информацией о позиции
      */
-    private DetailedPositionDTO createUserPositionDTO(Position position, Optional<Position> firstPositionInTurn, Turn turn, boolean isLast) {
-        int difference = firstPositionInTurn.map(firstPos -> calculatePositionDifference(position, firstPos, turn))
+    private DetailedPositionDTO createUserPositionDTO(
+            Position position,
+            Optional<Position> firstPositionInTurn,
+            Turn turn,
+            boolean isLast
+    ) {
+        int difference =
+                firstPositionInTurn.map(firstPos ->
+                                calculatePositionDifference(
+                                        position,
+                                        firstPos,
+                                        turn
+                                ))
                 .orElse(0);
-        return detailedPositionMapper.positionMoreUserToPositionDTO(position, difference, isLast);
+        return detailedPositionMapper.
+                positionMoreUserToPositionDTO(
+                        position,
+                        difference,
+                        isLast
+                );
     }
 
     /**
@@ -168,7 +232,12 @@ public class PositionRepositoryServiceImpl implements PositionRepositoryService 
      * @return Разница в позициях
      */
     private int calculatePositionDifference(Position position, Position firstPosition, Turn turn) {
-        return firstPosition.getId().equals(position.getId()) ? 0 : (int) positionRepository.countIdLeft(position.getId(), turn);
+        return firstPosition.getId().equals(position.getId())
+                ? 0
+                : (int) positionRepository.countIdLeft(
+                            position.getId(),
+                            turn
+                        );
     }
 
     /**
@@ -177,10 +246,23 @@ public class PositionRepositoryServiceImpl implements PositionRepositoryService 
      * @param user Пользователь
      * @return DTO с информацией о позиции
      */
-    private DetailedPositionDTO createFirstPositionDTO(Position position, User user) {
-        Optional<Member> member = mbrRepService.getMemberWith(user, position.getTurn());
-        if (member.isPresent() && (member.get().getAccessMember() == MODERATOR || member.get().getAccessMember() == AccessMember.CREATOR)) {
-            return detailedPositionMapper.positionMoreInfoToPositionDTO(position, 0);
+    private DetailedPositionDTO createFirstPositionDTO(
+            Position position,
+            User user
+    ) {
+        Optional<Member> member =
+                mbrRepService.getMemberWith(
+                        user,
+                        position.getTurn()
+                );
+        if (member.isPresent()
+                && (member.get().getAccessMember() == MODERATOR
+                || member.get().getAccessMember() == AccessMember.CREATOR)) {
+            return detailedPositionMapper.
+                    positionMoreInfoToPositionDTO(
+                            position,
+                            0
+                    );
         }
         return null;
     }
@@ -195,14 +277,4 @@ public class PositionRepositoryServiceImpl implements PositionRepositoryService 
         return positionRepository.countByTurn(turn);
     }
 
-    /**
-     * Проверка, что позиции существуют
-     * @param turn по очереди
-     * @param user и по пользователю
-     * @return да/нет
-     */
-    @Override
-    public boolean existsAllByTurnAndUser(Turn turn, User user) {
-        return positionRepository.existsAllByTurnAndUser(turn, user);
-    }
 }

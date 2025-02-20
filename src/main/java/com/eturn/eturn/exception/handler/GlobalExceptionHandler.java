@@ -29,231 +29,179 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    //
-    // TURNS
-    //
-    @ExceptionHandler(LocalNotFoundTurnException.class)
-    public ResponseEntity<Object> handleUnknownException(LocalNotFoundTurnException e, WebRequest request) {
-        log.error("Error with this message: " + e.getMessage());
-        String body = "Ошибка. Не можем выполнить запрос, потому что Вы хотите использовать очередь, которой не существует. Обновите страницу или сообщите в техническую поддержку.";
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
+    private ResponseEntity<Object> buildResponse(
+            Exception e,
+            String body,
+            HttpStatus status,
+            WebRequest request
+    ) {
+        log.error("Error with this message: {}", e.getMessage());
+        return handleExceptionInternal(
+                e,
+                body,
+                new HttpHeaders(),
+                status,
+                request
+        );
     }
 
-    @ExceptionHandler(NotFoundTurnException.class)
-    public ResponseEntity<Object> handleTurnNotFoundException(NotFoundTurnException e, WebRequest request) {
-        log.error("Error with this message: " + e.getMessage());
-        String body = "Очередь не найдена.";
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+    // Универсальный обработчик для исключений с разными сообщениями и статусами
+    private ResponseEntity<Object> handleException(
+            Exception e,
+            WebRequest request,
+            String body,
+            HttpStatus status
+    ) {
+        return buildResponse(e, body, status, request);
     }
 
-    @ExceptionHandler(NotFoundAllTurnsException.class)
-    public ResponseEntity<Object> handleTurnNotFoundException(NotFoundAllTurnsException e, WebRequest request) {
-        log.error("Error with this message: " + e.getMessage());
-        String body = "Очереди не найдены.";
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+    // Примеры использования
+    @ExceptionHandler({
+            LocalNotFoundTurnException.class,
+            LocalNotFoundUserException.class
+    })
+    public ResponseEntity<Object> handleBadRequestExceptions(
+            Exception e,
+            WebRequest request
+    ) {
+        return handleException(
+                e,
+                request,
+                "Ошибка 400. Проверьте данные или авторизуйтесь заново.",
+                HttpStatus.BAD_REQUEST
+        );
     }
 
-    @ExceptionHandler(InvalidTypeTurnException.class)
-    public ResponseEntity<Object> handleInvalidTypeTurnException(InvalidTypeTurnException e, WebRequest request) {
-        log.error("Error with this message: " + e.getMessage());
-        String body = "Ошибка 400. Сообщите в техническую поддержку о проблеме.";
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    @ExceptionHandler({
+            NotFoundTurnException.class,
+            NotFoundAllTurnsException.class,
+            NotFoundUserException.class,
+            NotFoundPosException.class,
+            NotFoundMemberException.class,
+            NotFoundGroupException.class,
+            NotFoundFacultyException.class,
+            NotFoundCourseException.class
+    })
+    public ResponseEntity<Object> handleNotFoundExceptions(
+            Exception e,
+            WebRequest request
+    ) {
+        return handleException(
+                e,
+                request,
+                "Ресурс не найден.",
+                HttpStatus.NOT_FOUND
+        );
     }
 
-    @ExceptionHandler(NoAccessUpdateTurnException.class)
-    public ResponseEntity<Object> handleNoAccessUpdateTurnException(NoAccessUpdateTurnException e, WebRequest request) {
-        log.error("Error with this message: " + e.getMessage());
-        String body = "Нет прав для обновления информации об очереди.";
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.METHOD_NOT_ALLOWED, request);
+    @ExceptionHandler({
+            NoAccessUpdateTurnException.class,
+            NoAccessDeleteTurnException.class,
+            NoAccessPosException.class,
+            NoAccessMemberException.class
+    })
+    public ResponseEntity<Object> handleAccessDeniedExceptions(
+            Exception e, WebRequest request
+    ) {
+        return handleException(
+                e,
+                request,
+                "Нет прав для выполнения этого действия.",
+                HttpStatus.METHOD_NOT_ALLOWED
+        );
     }
 
-    @ExceptionHandler(NoAccessDeleteTurnException.class)
-    public ResponseEntity<Object> handleNoAccessDeleteTurnException(NoAccessDeleteTurnException e, WebRequest request) {
-        log.error("Error with this message: " + e.getMessage());
-        String body = "Нет прав для удаления очереди. Удалить очередь может лишь создатель.";
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.METHOD_NOT_ALLOWED, request);
+    @ExceptionHandler({
+            InvalidTypeTurnException.class,
+            InvalidDataTurnException.class,
+            InvalidTimeToCreateTurnException.class,
+            InvalidLengthTurnException.class,
+            NoSkipPositionException.class,
+            NoInviteException.class,
+            NoCreateTurnException.class
+    })
+    public ResponseEntity<Object> handleBadRequestValidationExceptions(
+            Exception e,
+            WebRequest request
+    ) {
+        return handleException(
+                e,
+                request,
+                "Некорректные данные запроса.",
+                HttpStatus.BAD_REQUEST
+        );
     }
 
-    @ExceptionHandler(InvalidDataTurnException.class)
-    public ResponseEntity<Object> handleInvalidDataTurnException(InvalidDataTurnException e, WebRequest request) {
-        log.error("Error with this message: " + e.getMessage());
-        String body = "Дата начала очереди больше даты конца";
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    @ExceptionHandler({ AuthPasswordException.class })
+    public ResponseEntity<Object> handleAuthPasswordException(
+            AuthPasswordException e,
+            WebRequest request
+    ) {
+        return handleException(
+                e,
+                request,
+                "Пароль введен неверно.",
+                HttpStatus.NOT_FOUND
+        );
     }
 
-    @ExceptionHandler(InvalidTimeToCreateTurnException.class)
-    public ResponseEntity<Object> handleInvalidTimeToCreateTurnException(InvalidTimeToCreateTurnException e, WebRequest request) {
-        log.error("Error with this message: " + e.getMessage());
-        String body = "Время жизни очереди слишком большое (или маленькое)";
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    @ExceptionHandler({ AccessException.class })
+    public ResponseEntity<Object> handleAccessException(
+            AccessException e,
+            WebRequest request
+    ) {
+        return handleException(
+                e,
+                request,
+                "Нет доступа к этому ресурсу.",
+                HttpStatus.FORBIDDEN
+        );
     }
 
-    @ExceptionHandler(InvalidLengthTurnException.class)
-    public ResponseEntity<Object> handleInvalidLengthTurnException(InvalidLengthTurnException e, WebRequest request) {
-        log.error("Error with this message: " + e.getMessage());
-        String body = "Очередь слишком длинная (или дата начала уже прошла)";
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    @ExceptionHandler({
+            AlreadyExistGroupException.class,
+            AlreadyExistFacultyException.class,
+            AlreadyExistCourseException.class
+    })
+    public ResponseEntity<Object> handleAlreadyExistExceptions(
+            Exception e,
+            WebRequest request
+    ) {
+        return handleException(
+                e,
+                request,
+                "Такой ресурс уже существует.",
+                HttpStatus.BAD_REQUEST
+        );
     }
 
-    //
-    // USERS
-    //
-    @ExceptionHandler(NotFoundUserException.class)
-    public ResponseEntity<Object> handleNotFoundUserException(NotFoundUserException e, WebRequest request) {
-        log.error("Error with this message: " + e.getMessage());
-        String body = "Пользователь не найден.";
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+    @ExceptionHandler({ UnknownMemberException.class })
+    public ResponseEntity<Object> handleUnknownMemberException(
+            UnknownMemberException e,
+            WebRequest request
+    ) {
+        return handleException(
+                e,
+                request,
+                "Непредвиденная ошибка.",
+                HttpStatus.INTERNAL_SERVER_ERROR
+        );
     }
 
-    @ExceptionHandler(LocalNotFoundUserException.class)
-    public ResponseEntity<Object> handleLocalNotFoundUserException(LocalNotFoundUserException e, WebRequest request) {
-        log.error("Error with this message: " + e.getMessage());
-        String body = "Ошибка 400. Не можем выполнить запрос, потому что Вы хотите использовать пользователя, которого не существует. Пройдите авторизацию заново.";
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    @ExceptionHandler({
+            ValidationException.class,
+            NoCreatePosException.class
+    })
+    public ResponseEntity<Object> handleValidationException(
+            ValidationException e,
+            WebRequest request
+    ) {
+        return buildResponse(
+                e,
+                e.getMessage(),
+                HttpStatus.BAD_REQUEST,
+                request
+        );
     }
 
-    @ExceptionHandler(AuthPasswordException.class)
-    public ResponseEntity<Object> handleAuthPasswordException(AuthPasswordException e, WebRequest request) {
-        log.error("Error with this message: " + e.getMessage());
-        String body = "Пароль введен неверно.";
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
-    }
-    @ExceptionHandler(NoCreateTurnException.class)
-    public ResponseEntity<Object> handleInvalidCreateTurn(NoCreateTurnException e, WebRequest request) {
-        log.error("Error with this message: " + e.getMessage());
-        String body = "Вы не можете создать так много очередей";
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
-    }
-
-    @ExceptionHandler(AccessException.class)
-    public ResponseEntity<Object> handleInvalidCreateTurn(AccessException e, WebRequest request) {
-        log.error("Error with this message: " + e.getMessage());
-        String body = "Нет доступа к этому ресурсу";
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
-    }
-
-    //
-    // POSITIONS
-    //
-
-    @ExceptionHandler(NoCreatePosException.class)
-    public ResponseEntity<Object> handleNoCreatePosException(NoCreatePosException e, WebRequest request) {
-        String body = e.getMessage();
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
-    }
-
-    @ExceptionHandler(NotFoundPosException.class)
-    public ResponseEntity<Object> handleNotFoundPosException(NotFoundPosException e, WebRequest request) {
-        String body = "Позиции не найдены.";
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
-    }
-
-    @ExceptionHandler(NoAccessPosException.class)
-    public ResponseEntity<Object> handleNoAccessPosException(NoAccessPosException e, WebRequest request) {
-        String body = "Нет доступа к информации по этой позиции.";
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.METHOD_NOT_ALLOWED, request);
-    }
-
-    @ExceptionHandler(DateNotArrivedPosException.class)
-    public ResponseEntity<Object> handleDateNotArrivedPosException(DateNotArrivedPosException e, WebRequest request) {
-        String body = "Дата начала очереди ещё не наступила.";
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
-    }
-
-    @ExceptionHandler(NoSkipPositionException.class)
-    public ResponseEntity<Object> handleNoSkipPositionException(NoSkipPositionException e, WebRequest request) {
-        String body = "Вы не можете пропустить позицию";
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
-    }
-    @ExceptionHandler(NoInviteException.class)
-    public ResponseEntity<Object> handleNoInviteException(NoInviteException e, WebRequest request) {
-        String body = "Вы не можете подать заявку";
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
-    }
-    //
-    // MEMBER
-    //
-
-    @ExceptionHandler(NotFoundMemberException.class)
-    public ResponseEntity<Object> handleNotFoundMemberException(NotFoundMemberException e, WebRequest request) {
-        String body = "Участник очереди не найден.";
-        log.error("Error with this message: " + e.getMessage());
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
-    }
-
-    @ExceptionHandler(NoAccessMemberException.class)
-    public ResponseEntity<Object> handleNoAccessPosException(NoAccessMemberException e, WebRequest request) {
-        String body = "Ваш статус участника не соотвествует операции.";
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.METHOD_NOT_ALLOWED, request);
-    }
-
-    @ExceptionHandler(UnknownMemberException.class)
-    public ResponseEntity<Object> handleUnknownMemberException(UnknownMemberException e, WebRequest request) {
-        String body = "Непредвиденная ошибка.";
-        log.error("Error with this message: " + e.getMessage());
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
-    }
-
-    //
-    // GROUP
-    //
-
-    @ExceptionHandler(NotFoundGroupException.class)
-    public ResponseEntity<Object> handleNotFoundGroupException(NotFoundGroupException e, WebRequest request) {
-        String body = "Группа не найдена.";
-        log.error("Error with this message: " + e.getMessage());
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
-    }
-
-    @ExceptionHandler(AlreadyExistGroupException.class)
-    public ResponseEntity<Object> handleAlreadyExistGroupException(AlreadyExistGroupException e, WebRequest request) {
-        String body = "Такая группа уже существует.";
-        log.error("Error with this message: " + e.getMessage());
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
-    }
-
-    //
-    // FACULTY
-    //
-
-    @ExceptionHandler(NotFoundFacultyException.class)
-    public ResponseEntity<Object> handleNotFoundFacultyException(NotFoundFacultyException e, WebRequest request) {
-        String body = "Факультет не найден.";
-        log.error("Error with this message: " + e.getMessage());
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
-    }
-
-    @ExceptionHandler(AlreadyExistFacultyException.class)
-    public ResponseEntity<Object> handleAlreadyExistFacultyException(AlreadyExistFacultyException e, WebRequest request) {
-        String body = "Такой факультет уже существует.";
-        log.error("Error with this message: " + e.getMessage());
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
-    }
-
-    //
-    // COURSE
-    //
-    @ExceptionHandler(NotFoundCourseException.class)
-    public ResponseEntity<Object> handleNotFoundCourseException(NotFoundCourseException e, WebRequest request) {
-        String body = "Курс не найден.";
-        log.error("Error with this message: " + e.getMessage());
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
-    }
-
-    @ExceptionHandler(AlreadyExistCourseException.class)
-    public ResponseEntity<Object> handleAlreadyExistCourseException(AlreadyExistCourseException e, WebRequest request) {
-        String body = "Такой курс уже существует.";
-        log.error("Error with this message: " + e.getMessage());
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
-    }
-    //
-    // Validation
-    //
-
-    @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<Object> handleValidationException(ValidationException e, WebRequest request) {
-        String body = e.getMessage();
-        log.error("Error with this message: " + e.getMessage());
-        return handleExceptionInternal(e, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
-    }
 }

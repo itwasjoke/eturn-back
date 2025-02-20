@@ -6,6 +6,12 @@ import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
 
 public interface PositionCreationService {
-    DetailedPositionDTO createPositionAndSave(String login, String hash);
-    Member createMemberForPosition(User user, Turn turn);
+    DetailedPositionDTO createPositionAndSave(
+            String login,
+            String hash
+    );
+    Member createMemberForPosition(
+            User user,
+            Turn turn
+    );
 }

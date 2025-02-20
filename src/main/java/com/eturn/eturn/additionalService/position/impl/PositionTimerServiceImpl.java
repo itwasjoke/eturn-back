@@ -21,7 +21,10 @@ public class PositionTimerServiceImpl implements PositionTimerService {
     private final PositionRepository positionRepository;
     private final MemberService memberService;
 
-    public PositionTimerServiceImpl(PositionRepository positionRepository, MemberService memberService) {
+    public PositionTimerServiceImpl(
+            PositionRepository positionRepository,
+            MemberService memberService
+    ) {
         this.positionRepository = positionRepository;
         this.memberService = memberService;
     }
@@ -40,13 +43,21 @@ public class PositionTimerServiceImpl implements PositionTimerService {
         }
 
         // Находим первую позицию в очереди
-        positionRepository.findFirstByTurnOrderByIdAsc(turn).ifPresent(positionFirst -> {
+        positionRepository.
+                findFirstByTurnOrderByIdAsc(turn).ifPresent(positionFirst -> {
             // Проверяем, нужно ли удалять позиции
             if (shouldDeletePositions(positionFirst)) {
                 // Вычисляем количество позиций для удаления
-                int positionsToDelete = calculatePositionsToDelete(positionFirst, turn.getTimer());
+                int positionsToDelete =
+                        calculatePositionsToDelete(
+                                positionFirst,
+                                turn.getTimer()
+                        );
                 // Удаляем позиции и обновляем таймер
-                deletePositionsAndUpdateTimer(turn, positionsToDelete);
+                deletePositionsAndUpdateTimer(
+                        turn,
+                        positionsToDelete
+                );
             }
         });
     }
@@ -57,7 +68,8 @@ public class PositionTimerServiceImpl implements PositionTimerService {
      * @return true, если таймер активен, иначе false
      */
     private boolean isTimerActive(Turn turn) {
-        return turn.getTimer() != 0 && turn.getDateStart().getTime() <= System.currentTimeMillis();
+        return turn.getTimer() != 0
+                && turn.getDateStart().getTime() <= System.currentTimeMillis();
     }
 
     /**
@@ -66,7 +78,8 @@ public class PositionTimerServiceImpl implements PositionTimerService {
      * @return true, если позиции нужно удалять, иначе false
      */
     private boolean shouldDeletePositions(Position position) {
-        return position.getDateEnd() != null && !position.isStart();
+        return position.getDateEnd() != null
+                && !position.isStart();
     }
 
     /**
@@ -75,9 +88,15 @@ public class PositionTimerServiceImpl implements PositionTimerService {
      * @param timer Интервал таймера в минутах
      * @return Количество позиций для удаления
      */
-    private int calculatePositionsToDelete(Position position, int timer) {
-        long timeElapsed = System.currentTimeMillis() - position.getDateEnd().getTime();
-        return (int) (TimeUnit.MILLISECONDS.toMinutes(timeElapsed) / timer);
+    private int calculatePositionsToDelete(
+            Position position,
+            int timer
+    ) {
+        long timeElapsed =
+                System.currentTimeMillis()
+                        - position.getDateEnd().getTime();
+        return (int) (TimeUnit.MILLISECONDS.toMinutes(timeElapsed)
+                        / timer);
     }
 
     /**
@@ -87,14 +106,27 @@ public class PositionTimerServiceImpl implements PositionTimerService {
      */
     private void deletePositionsAndUpdateTimer(Turn turn, int positionsToDelete) {
         // Удаляем позиции и получаем последнюю удаленную позицию
-        positionRepository.resultsPositionDeleteOverdueElements(turn.getId(), positionsToDelete)
+        positionRepository.resultsPositionDeleteOverdueElements(
+                    turn.getId(),
+                    positionsToDelete
+                )
                 .ifPresent(p -> {
                     // Удаляем все позиции с ID меньше или равным ID последней удаленной позиции
-                    positionRepository.deleteByTurnAndIdLessThanEqual(turn, p.getId());
+                    positionRepository.
+                            deleteByTurnAndIdLessThanEqual(
+                                    turn,
+                                    p.getId()
+                            );
                     // Удаляем участников, оставшихся без позиций
-                    memberService.deleteMembersWithoutPositions(turn);
+                    memberService.deleteMembersWithoutPositions(
+                            turn
+                    );
                     // Логируем информацию об удалении
-                    logger.info("From turn {} deleted {} elements", turn.getName(), positionsToDelete);
+                    logger.info(
+                            "From turn {} deleted {} elements",
+                            turn.getName(),
+                            positionsToDelete
+                    );
                     // Запускаем таймер для новой первой позиции
                     startTimerForNewFirstPosition(turn);
                 });
@@ -104,16 +136,25 @@ public class PositionTimerServiceImpl implements PositionTimerService {
      * Запускает таймер для новой первой позиции в очереди.
      * @param turn Очередь, для которой обновляется таймер
      */
-    public void startTimerForNewFirstPosition(Turn turn) {
+    public void startTimerForNewFirstPosition(
+            Turn turn
+    ) {
         // Находим новую первую позицию
-        positionRepository.findFirstByTurnOrderByIdAsc(turn).ifPresent(position -> {
+        positionRepository.
+                findFirstByTurnOrderByIdAsc(turn).ifPresent(position -> {
             // Устанавливаем новое время окончания для позиции
-            Date newEndDate = Date.from(Instant.now().plus(turn.getTimer(), ChronoUnit.MINUTES));
+            Date newEndDate = Date.from(
+                    Instant.now().plus(turn.getTimer(),
+                    ChronoUnit.MINUTES)
+            );
             position.setDateEnd(newEndDate);
             // Сохраняем обновленную позицию
             positionRepository.save(position);
             // Логируем информацию о запуске таймера
-            logger.info("From turn {} timer starts", turn.getName());
+            logger.info(
+                    "From turn {} timer starts",
+                    turn.getName()
+            );
         });
     }
 

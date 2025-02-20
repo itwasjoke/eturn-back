@@ -7,7 +7,16 @@ import java.util.List;
 import java.util.Map;
 
 public interface TurnRepositoryService {
-    TurnDTO getTurn(String hash, String login);
-    List<TurnForListDTO> getUserTurns(String login, Map<String, String> params);
-    List<TurnForListDTO> getLinkedTurn(String hash, String username);
+    TurnDTO getTurn(
+            String hash,
+            String login
+    );
+    List<TurnForListDTO> getUserTurns(
+            String login,
+            Map<String, String> params
+    );
+    List<TurnForListDTO> getLinkedTurn(
+            String hash,
+            String username
+    );
 }

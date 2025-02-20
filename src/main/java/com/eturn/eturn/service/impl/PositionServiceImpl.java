@@ -66,16 +66,6 @@ public class PositionServiceImpl implements PositionService {
     }
 
     @Override
-    public DetailedPositionDTO getFirstUserPosition(String hash, String username) {
-        return positionRepService.getFirstUserPosition(hash, username);
-    }
-
-    @Override
-    public DetailedPositionDTO getFirstPosition(String hash, String username) {
-        return positionRepService.getFirstPosition(hash, username);
-    }
-
-    @Override
     public PositionsNotificationDTO getPositionsForNotify(Long turnId) {
         return positionNotificationService.getPositionsForNotify(turnId);
     }
@@ -85,10 +75,6 @@ public class PositionServiceImpl implements PositionService {
         return positionRepService.countPositionsByTurn(turn);
     }
 
-    @Override
-    public boolean existsAllByTurnAndUser(Turn turn, User user) {
-        return positionRepService.existsAllByTurnAndUser(turn, user);
-    }
 
     @Override
     public void deleteAllByTurnAndUser(Turn turn, User user) {

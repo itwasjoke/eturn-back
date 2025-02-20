@@ -12,20 +12,41 @@ import java.util.List;
 import java.util.Optional;
 
 public interface MemberRepositoryService {
-    Page<Member> getMembersByAccess(Turn turn, AccessMember accessMember, int page);
-    long getMemberCountByAccess(Turn turn, AccessMember accessMember);
-    List<Member> getUnconfirmedMembers(Turn turn, AccessMember accessMember);
-    long getUnconfirmedMemberCount(Turn turn, AccessMember accessMember);
-    int getCountMembersWith(Turn turn, MemberListType memberListType);
-    Optional<Member> getMemberWith(User user, Turn turn);
+    Page<Member> getMembersByAccess(
+            Turn turn,
+            AccessMember accessMember,
+            int page
+    );
+    long getMemberCountByAccess(
+            Turn turn,
+            AccessMember accessMember
+    );
+    List<Member> getUnconfirmedMembers(
+            Turn turn,
+            AccessMember accessMember
+    );
+    long getUnconfirmedMemberCount(
+            Turn turn,
+            AccessMember accessMember
+    );
+    int getCountMembersWith(
+            Turn turn,
+            MemberListType memberListType
+    );
+    Optional<Member> getMemberWith(
+            User user,
+            Turn turn
+    );
 
     MemberListDTO getUnconfirmedMemberList(
             String username,
             String type,
             String hash
     );
-    void deleteMemberWith(Turn turn, User user);
-    void deleteMemberWith(Long id);
+    void deleteMemberWith(
+            Turn turn,
+            User user
+    );
     Optional<Member> getMemberWith(long id);
 
     List<User> getModeratorsOfTurn(long turnId);
@@ -35,5 +56,8 @@ public interface MemberRepositoryService {
             String access,
             boolean invitedForTurn
     );
-    Member getOrCreateMember(User user, Turn turn);
+    Member getOrCreateMember(
+            User user,
+            Turn turn
+    );
 }

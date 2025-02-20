@@ -18,22 +18,60 @@ import java.util.Optional;
 
 @Repository
 public interface MemberRepository extends JpaRepository<Member,Long> {
-    Optional<Member> findMemberByUserAndTurn(User user, Turn turn);
-
+    Optional<Member> findMemberByUserAndTurn(
+            User user,
+            Turn turn
+    );
     Optional<Member> getMemberById(long id);
-    Page<Member> getMemberByTurnAndAccessMember(Turn turn, AccessMember accessMember, Pageable pageable);
-    List<Member> getMemberByTurnAndInvitedForModerator(Turn turn, boolean invited);
-    Page<Member> getMemberByTurnAndAccessMemberAndInvitedForTurn(Turn turn, AccessMember accessMember, InvitedStatus invitedStatus, Pageable pageable);
-    int countByTurnAndInvitedForModerator(Turn turn, boolean invited);
-    int countByTurnAndInvitedForTurn(Turn turn, InvitedStatus invitedStatus);
-    int countByTurnAndAccessMember(Turn turn, AccessMember accessMember);
-    void deleteByTurnAndUser(Turn turn, User user);
+    Page<Member> getMemberByTurnAndAccessMember(
+            Turn turn,
+            AccessMember accessMember,
+            Pageable pageable
+    );
+    List<Member> getMemberByTurnAndInvitedForModerator(
+            Turn turn,
+            boolean invited
+    );
+    Page<Member> getMemberByTurnAndAccessMemberAndInvitedForTurn(
+            Turn turn,
+            AccessMember accessMember,
+            InvitedStatus invitedStatus,
+            Pageable pageable
+    );
+    int countByTurnAndInvitedForModerator(
+            Turn turn,
+            boolean invited
+    );
+    int countByTurnAndInvitedForTurn(
+            Turn turn,
+            InvitedStatus invitedStatus
+    );
+    int countByTurnAndAccessMember(
+            Turn turn,
+            AccessMember accessMember
+    );
+    void deleteByTurnAndUser(
+            Turn turn,
+            User user
+    );
     void deleteById(long id);
     @Query("SELECT 1 FROM Member m WHERE (m.invitedForModerator = :i1 OR m.invitedForTurn = :i2) AND m.turn = :turn ")
-    Optional<Member> getOneInvitedExists(@Param("turn") Turn turn, @Param("i1") boolean i1, @Param("i2") InvitedStatus i2);
+    Optional<Member> getOneInvitedExists(
+            @Param("turn") Turn turn,
+            @Param("i1") boolean i1,
+            @Param("i2") InvitedStatus i2
+    );
     @Modifying
     @Query("DELETE FROM Member m WHERE SIZE(m.positionsMember) = 0 AND m.turn = :turn AND m.accessMember = 'MEMBER'")
-    void deleteMembersWithoutPositions(@Param("turn") Turn turn);
-    List<Member> getAllByTurn_IdAndAccessMember(long turnId, AccessMember accessMember);
-    Member getMemberByTurn_IdAndAccessMember(long turnId, AccessMember accessMember);
+    void deleteMembersWithoutPositions(
+            @Param("turn") Turn turn
+    );
+    List<Member> getAllByTurn_IdAndAccessMember(
+            long turnId,
+            AccessMember accessMember
+    );
+    Member getMemberByTurn_IdAndAccessMember(
+            long turnId,
+            AccessMember accessMember
+    );
 }
