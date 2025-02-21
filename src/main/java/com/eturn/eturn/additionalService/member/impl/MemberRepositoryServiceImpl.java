@@ -79,8 +79,14 @@ public class MemberRepositoryServiceImpl implements MemberRepositoryService {
     /**
      * Получает количество участников по типу доступа.
      */
-    public long getMemberCountByAccess(Turn turn, AccessMember accessMember) {
-        return memberRepository.countByTurnAndAccessMember(turn, accessMember);
+    public long getMemberCountByAccess(
+            Turn turn,
+            AccessMember accessMember
+    ) {
+        return memberRepository.countByTurnAndAccessMember(
+                turn,
+                accessMember
+        );
     }
 
     /**
@@ -101,7 +107,10 @@ public class MemberRepositoryServiceImpl implements MemberRepositoryService {
         Turn turn = turnService.getTurnFrom(hash);
 
         // Проверяем, есть ли у пользователя доступ к списку неподтвержденных участников
-        memberAccessService.validateMemberForListAccess(user, turn);
+        memberAccessService.validateMemberForListAccess(
+                user,
+                turn
+        );
 
         // Получаем список неподтвержденных участников и их количество
         AccessMember accessMember = AccessMember.valueOf(type);
@@ -109,7 +118,10 @@ public class MemberRepositoryServiceImpl implements MemberRepositoryService {
         long count = getUnconfirmedMemberCount(turn, accessMember);
 
         // Преобразуем результат в DTO и возвращаем
-        return new MemberListDTO(memberListMapper.mapMember(members), count);
+        return new MemberListDTO(
+                memberListMapper.mapMember(members),
+                count
+        );
     }
 
     /**
@@ -121,7 +133,10 @@ public class MemberRepositoryServiceImpl implements MemberRepositoryService {
     ) {
         if (accessMember == MODERATOR) {
             return memberRepository
-                    .getMemberByTurnAndInvitedForModerator(turn, true);
+                    .getMemberByTurnAndInvitedForModerator(
+                            turn,
+                            true
+                    );
         } else if (accessMember == MEMBER) {
             Pageable paging = PageRequest.of(0, 20);
             Page<Member> page = memberRepository
@@ -144,10 +159,14 @@ public class MemberRepositoryServiceImpl implements MemberRepositoryService {
     ) {
         if (accessMember == MODERATOR) {
             return memberRepository
-                    .countByTurnAndInvitedForModerator(turn, true);
+                    .countByTurnAndInvitedForModerator(
+                            turn,
+                            true
+                    );
         } else if (accessMember == MEMBER) {
             return memberRepository.countByTurnAndInvitedForTurn(
-                    turn, INVITED
+                    turn,
+                    INVITED
             );
         }
         return 0L; // Возвращаем 0, если тип доступа не подходит
@@ -208,8 +227,14 @@ public class MemberRepositoryServiceImpl implements MemberRepositoryService {
      * @return участник
      */
     @Override
-    public Optional<Member> getMemberWith(User user, Turn turn) {
-        return memberRepository.findMemberByUserAndTurn(user, turn);
+    public Optional<Member> getMemberWith(
+            User user,
+            Turn turn
+    ) {
+        return memberRepository.findMemberByUserAndTurn(
+                user,
+                turn
+        );
     }
 
     /**
@@ -218,8 +243,14 @@ public class MemberRepositoryServiceImpl implements MemberRepositoryService {
      * @param user и по пользователю
      */
     @Override
-    public void deleteMemberWith(Turn turn, User user) {
-        memberRepository.deleteByTurnAndUser(turn, user);
+    public void deleteMemberWith(
+            Turn turn,
+            User user
+    ) {
+        memberRepository.deleteByTurnAndUser(
+                turn,
+                user
+        );
     }
 
     /**
@@ -236,7 +267,10 @@ public class MemberRepositoryServiceImpl implements MemberRepositoryService {
      * Получает существующего участника или создает нового, если он не существует.
      * Если участник заблокирован, выбрасывает исключение.
      */
-    public Member getOrCreateMember(User user, Turn turn) {
+    public Member getOrCreateMember(
+            User user,
+            Turn turn
+    ) {
         return getMemberWith(user, turn)
                 .map(member -> {
                     // Если участник заблокирован, выбрасываем исключение
@@ -270,7 +304,10 @@ public class MemberRepositoryServiceImpl implements MemberRepositoryService {
             boolean invitedForTurn
     ) {
         Optional<Member> memberOptional =
-                memberRepository.findMemberByUserAndTurn(user,turn);
+                memberRepository.findMemberByUserAndTurn(
+                        user,
+                        turn
+                );
         if (memberOptional.isPresent()){
             throw new UnknownMemberException("this member already exists");
         }
@@ -287,7 +324,9 @@ public class MemberRepositoryServiceImpl implements MemberRepositoryService {
                 Set<Faculty> faculties = turn.getAllowedFaculties();
                 if (
                         groups.contains(user.getGroup())
-                                || faculties.contains(user.getGroup().getFaculty())
+                        || faculties.contains(
+                                user.getGroup().getFaculty()
+                            )
                 ) {
                     status = ACCESS_IN;
                 } else {

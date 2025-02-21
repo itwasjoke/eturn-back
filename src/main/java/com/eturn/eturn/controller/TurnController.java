@@ -46,7 +46,10 @@ public class TurnController {
     ){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
-        return turnService.getTurn(hash, userDetails.getUsername());
+        return turnService.getTurn(
+                hash,
+                userDetails.getUsername()
+        );
     }
 
     @GetMapping
@@ -65,7 +68,10 @@ public class TurnController {
         Map<String, String> params = new HashMap<>();
         params.put("Type", type);
         params.put("Access", access);
-        return turnService.getUserTurns(userDetails.getUsername(), params);
+        return turnService.getUserTurns(
+                userDetails.getUsername(),
+                params
+        );
     }
     @GetMapping("/linked")
     @Operation(
@@ -78,7 +84,10 @@ public class TurnController {
     ){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
-        return turnService.getLinkedTurn(hash, userDetails.getUsername());
+        return turnService.getLinkedTurn(
+                hash,
+                userDetails.getUsername()
+        );
     }
 
     @PostMapping
@@ -98,7 +107,10 @@ public class TurnController {
         }
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
-        return turnService.createTurn(turn, userDetails.getUsername());
+        return turnService.createTurn(
+                turn,
+                userDetails.getUsername()
+        );
     }
 
     @DeleteMapping("/{hash}")
@@ -112,7 +124,10 @@ public class TurnController {
     ) {
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
-        turnService.deleteTurn(userDetails.getUsername(), hash);
+        turnService.deleteTurn(
+                userDetails.getUsername(),
+                hash
+        );
     }
 
     @PutMapping()
@@ -131,7 +146,10 @@ public class TurnController {
         }
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
-        turnService.changeTurn(turn, userDetails.getUsername());
+        turnService.changeTurn(
+                turn,
+                userDetails.getUsername()
+        );
     }
 
 }

@@ -49,7 +49,8 @@ public class MemberStatusServiceImpl implements MemberStatusService {
             Member member,
             AccessMember newAccessMember
     ) {
-        AccessMember currentAccessMember = member.getAccessMember();
+        AccessMember currentAccessMember =
+                member.getAccessMember();
         InvitedStatus invitedStatus = ACCESS_OUT;
 
         // Если мы разблокируем пользователя
@@ -57,7 +58,8 @@ public class MemberStatusServiceImpl implements MemberStatusService {
                 currentAccessMember == BLOCKED
                         && newAccessMember == MEMBER
         ) {
-            AccessTurn accessType = member.getTurn().getAccessTurnType();
+            AccessTurn accessType =
+                    member.getTurn().getAccessTurnType();
             if (accessType == FOR_ALLOWED_ELEMENTS) {
                 memberRepository.deleteById(member.getId());
                 return false;
@@ -71,10 +73,17 @@ public class MemberStatusServiceImpl implements MemberStatusService {
                 currentAccessMember == MEMBER
                         && newAccessMember == BLOCKED
         ) {
-            positionService.deleteAllByTurnAndUser(member.getTurn(), member.getUser());
+            positionService.deleteAllByTurnAndUser(
+                    member.getTurn(),
+                    member.getUser()
+            );
         }
 
-        updateMemberStatus(member, newAccessMember, invitedStatus);
+        updateMemberStatus(
+                member,
+                newAccessMember,
+                invitedStatus
+        );
         return true;
     }
 
@@ -84,7 +93,11 @@ public class MemberStatusServiceImpl implements MemberStatusService {
      * @param accessMember статус доступа
      * @param invitedStatus статус приглашения
      */
-    public void updateMemberStatus(Member member, AccessMember accessMember, InvitedStatus invitedStatus) {
+    public void updateMemberStatus(
+            Member member,
+            AccessMember accessMember,
+            InvitedStatus invitedStatus
+    ) {
         if (accessMember == BLOCKED) {
             member.setInvitedForTurn(invitedStatus);
 
@@ -100,7 +113,10 @@ public class MemberStatusServiceImpl implements MemberStatusService {
      * @param member участник
      * @param isModerator модератор/участник
      */
-    public void handleInviteActivation(Member member, boolean isModerator) {
+    public void handleInviteActivation(
+            Member member,
+            boolean isModerator
+    ) {
         boolean isInvitedForModerator = member.isInvitedForModerator();
         InvitedStatus invitedStatusForTurn = member.getInvitedForTurn();
 
@@ -140,7 +156,10 @@ public class MemberStatusServiceImpl implements MemberStatusService {
      * @param member участника
      * @param isModerator модератор/участник
      */
-    public void handleInviteDeactivation(Member member, boolean isModerator) {
+    public void handleInviteDeactivation(
+            Member member,
+            boolean isModerator
+    ) {
         boolean invitedForModerator = member.isInvitedForModerator();
         InvitedStatus invitedForTurn = member.getInvitedForTurn();
 
@@ -203,15 +222,19 @@ public class MemberStatusServiceImpl implements MemberStatusService {
             // Установка доступов для модерации
             if (actionMod.isPresent()) {
                 switch (actionMod.get()) {
-                    case ADD_INVITE_STATUS -> memberGet.setInvitedForModerator(true);
-                    case DELETE_INVITE_STATUS -> memberGet.setInvitedForModerator(false);
+                    case ADD_INVITE_STATUS ->
+                            memberGet.setInvitedForModerator(true);
+                    case DELETE_INVITE_STATUS ->
+                            memberGet.setInvitedForModerator(false);
                 }
             }
             // Установка доступов для очереди
             if (actionTurn.isPresent()) {
                 switch (actionTurn.get()){
-                    case ADD_ACCESS_TURN -> memberGet.setInvitedForTurn(ACCESS_IN);
-                    case ADD_INVITE_STATUS -> memberGet.setInvitedForTurn(INVITED);
+                    case ADD_ACCESS_TURN ->
+                            memberGet.setInvitedForTurn(ACCESS_IN);
+                    case ADD_INVITE_STATUS ->
+                            memberGet.setInvitedForTurn(INVITED);
                 }
             }
             if (type != null) {

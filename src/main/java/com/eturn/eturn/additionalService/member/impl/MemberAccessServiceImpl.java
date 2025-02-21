@@ -74,13 +74,19 @@ public class MemberAccessServiceImpl implements MemberAccessService {
      */
     public boolean isInviteLimitExceeded(Turn turn) {
         return mbrRepService.getCountMembersWith(turn, INVITED_MODERATOR) > 20
-                || mbrRepService.getCountMembersWith(turn, MemberListType.MODERATOR) > 20;
+                || mbrRepService.getCountMembersWith(
+                        turn,
+                        MemberListType.MODERATOR
+                ) > 20;
     }
 
     /**
      * Проверяет, является ли пользователь создателем очереди.
      */
-    public boolean isUserCreator(User user, Turn turn) {
+    public boolean isUserCreator(
+            User user,
+            Turn turn
+    ) {
         return turn.getCreator() == user;
     }
 
@@ -88,8 +94,12 @@ public class MemberAccessServiceImpl implements MemberAccessService {
      * Проверяет, есть ли у пользователя доступ к списку участников.
      * Если пользователь не является создателем или модератором, выбрасывает исключение.
      */
-    public void validateMemberAccess(User user, Turn turn) {
-        Member member = mbrRepService.getMemberWith(user, turn)
+    public void validateMemberAccess(
+            User user,
+            Turn turn
+    ) {
+        Member member =
+                mbrRepService.getMemberWith(user, turn)
                 .orElseThrow(() -> new NotFoundMemberException("no member"));
 
         if (
@@ -104,8 +114,12 @@ public class MemberAccessServiceImpl implements MemberAccessService {
      * Проверяет, есть ли у пользователя доступ к списку неподтвержденных участников.
      * Если пользователь не является создателем или модератором, выбрасывает исключение.
      */
-    public void validateMemberForListAccess(User user, Turn turn) {
-        Member member = mbrRepService.getMemberWith(user, turn)
+    public void validateMemberForListAccess(
+            User user,
+            Turn turn
+    ) {
+        Member member =
+                mbrRepService.getMemberWith(user, turn)
                 .orElseThrow(() -> new NotFoundMemberException("no member"));
 
         if (

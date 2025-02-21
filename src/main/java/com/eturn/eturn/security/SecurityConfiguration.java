@@ -48,10 +48,17 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(request -> request
                         // Можно указать конкретный путь, * - 1 уровень вложенности, ** - любое количество уровней вложенности
                         // TODO Убрать "/auth/sign-in", "/auth/sign-up", когда тестирование пользователей закончится
-                        .requestMatchers("/auth/etuid", "/auth/groups", "/error/**", "/auth/sign-in", "/auth/sign-up", "/swagger-ui/**", "/v3/api-docs/**", "/groups").permitAll()
-//                        .requestMatchers("/group/**", "/course", "/faculty/**").hasRole("EMPLOYEE")
+                        .requestMatchers(
+                                "/auth/etuid",
+                                "/auth/groups",
+                                "/error/**",
+                                "/auth/sign-in",
+                                "/auth/sign-up",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/groups"
+                        ).permitAll()
                         .anyRequest().authenticated()
-//                        .requestMatchers("/swagger-ui/**", "/swagger-resources/*", "/v3/api-docs/**").permitAll()
                 )
                 .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
                 .authenticationProvider(authenticationProvider())

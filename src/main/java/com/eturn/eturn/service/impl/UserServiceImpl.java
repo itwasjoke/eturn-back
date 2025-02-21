@@ -61,7 +61,8 @@ public class UserServiceImpl implements UserService {
         String faculty = null;
         String role = null;
         int countAvailable = 5;
-        int countTurns = turnService.getCountTurnsOfUser(user);
+        int countTurns =
+                turnService.getCountTurnsOfUser(user);
 
         // ввод нужных данных в зависимости от статуса
         switch (user.getRole()) {
@@ -77,7 +78,13 @@ public class UserServiceImpl implements UserService {
             }
         }
         countAvailable = Math.max(countAvailable, 0);
-        return userMapper.userToUserDTO(user, faculty, group, role, countAvailable);
+        return userMapper.userToUserDTO(
+                user,
+                faculty,
+                group,
+                role,
+                countAvailable
+        );
     }
 
     /**

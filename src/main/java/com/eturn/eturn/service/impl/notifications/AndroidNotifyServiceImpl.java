@@ -11,7 +11,11 @@ import org.springframework.stereotype.Service;
 public class AndroidNotifyServiceImpl implements NotificationService {
     private static final Logger logger = LogManager.getLogger(AndroidNotifyServiceImpl.class);
     @Override
-    public void notifyUserOfTurnPositionChange(String tokenFirst, String turnName, int number) {
+    public void notifyUserOfTurnPositionChange(
+            String tokenFirst,
+            String turnName,
+            int number
+    ) {
         String title = NotificationMessages.getPositionTitle(number);
         String body = NotificationMessages.getPositionBody(number, turnName);
         logger.info("Notification body: " + title + " // " + body);
@@ -32,14 +36,22 @@ public class AndroidNotifyServiceImpl implements NotificationService {
 
 
     @Override
-    public void notifyTurnCreated(String token, String turnName, NotifySendType sendType) {
+    public void notifyTurnCreated(
+            String token,
+            String turnName,
+            NotifySendType sendType
+    ) {
         String title = NotificationMessages.getTurnCreatedTitle(sendType);
         String body = NotificationMessages.getTurnCreatedBody(sendType, turnName);
         logger.info("Notification body: " + title + " // " + body);
     }
 
     @Override
-    public void notifyReceiptRequest(String token, String turnName, NotifySendType sendType) {
+    public void notifyReceiptRequest(
+            String token,
+            String turnName,
+            NotifySendType sendType
+    ) {
         String title = NotificationMessages.getReceiptTitle(sendType);
         String body = NotificationMessages.getReceiptBody(turnName);
         logger.info("Notification body: " + title + " // " + body);

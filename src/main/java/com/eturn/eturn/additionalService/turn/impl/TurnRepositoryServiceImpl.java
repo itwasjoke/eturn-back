@@ -67,13 +67,17 @@ public class TurnRepositoryServiceImpl implements TurnRepositoryService {
         Turn turn = getTurnFrom(hash);
 
         // Проверяем, не устарела ли очередь
-        validateTurnExpiration(turn, login, hash);
+        validateTurnExpiration(turn);
 
         // Получаем информацию о члене (участнике) очереди
-        Optional<Member> memberOptional = mbrRepService.getMemberWith(user, turn);
+        Optional<Member> memberOptional =
+                mbrRepService.getMemberWith(user, turn);
 
         // Собираем данные о доступе, приглашениях и количестве участников
-        TurnDetails details = collectTurnDetails(memberOptional, turn);
+        TurnDetails details = collectTurnDetails(
+                memberOptional,
+                turn
+        );
 
         // Определяем тип доступа и список разрешенных групп/факультетов
         AccessInfo accessInfo = determineAccessInfo(turn);
@@ -106,11 +110,9 @@ public class TurnRepositoryServiceImpl implements TurnRepositoryService {
      * Проверяет, не устарела ли очередь. Если устарела, удаляет её и выбрасывает исключение.
      *
      * @param turn  Очередь для проверки.
-     * @param login Логин пользователя.
-     * @param hash  Хэш очереди.
      * @throws NotFoundTurnException Если очередь устарела и была удалена.
      */
-    private void validateTurnExpiration(Turn turn, String login, String hash) {
+    private void validateTurnExpiration(Turn turn) {
         if (turn.getDateEnd().getTime() < new Date().getTime()) {
             turnRepository.deleteTurnById(turn.getId());
             throw new NotFoundTurnException("Turn was deleted");
@@ -124,16 +126,28 @@ public class TurnRepositoryServiceImpl implements TurnRepositoryService {
      * @param turn           Очередь, для которой собираются данные.
      * @return Объект TurnDetails с собранной информацией.
      */
-    private TurnDetails collectTurnDetails(Optional<Member> memberOptional, Turn turn) {
+    private TurnDetails collectTurnDetails(
+            Optional<Member> memberOptional,
+            Turn turn
+    ) {
         TurnDetails details = new TurnDetails();
 
         if (memberOptional.isPresent()) {
             Member member = memberOptional.get();
-            details.setAccess(member.getAccessMember().name());
-            details.setInvitedForModerator(member.isInvitedForModerator());
-            details.setInvitedForTurn(member.getInvitedForTurn().toString());
+            details.setAccess(
+                    member.getAccessMember().name()
+            );
+            details.setInvitedForModerator(
+                    member.isInvitedForModerator()
+            );
+            details.setInvitedForTurn(
+                    member.getInvitedForTurn().toString()
+            );
 
-            if (member.getAccessMember() == AccessMember.CREATOR || member.getAccessMember() == AccessMember.MODERATOR) {
+            if (
+                    member.getAccessMember() == AccessMember.CREATOR ||
+                    member.getAccessMember() == AccessMember.MODERATOR
+            ) {
                 details.setExistsInvited(memberService.invitedExists(turn));
                 details.setMembersCountDTO(new MembersCountDTO(
                         mbrRepService.getCountMembersWith(turn, MODERATOR),
@@ -145,7 +159,9 @@ public class TurnRepositoryServiceImpl implements TurnRepositoryService {
             }
         }
 
-        details.setPositionsCount(positionService.countPositionsByTurn(turn));
+        details.setPositionsCount(
+                positionService.countPositionsByTurn(turn)
+        );
         return details;
     }
 
@@ -185,7 +201,10 @@ public class TurnRepositoryServiceImpl implements TurnRepositoryService {
      */
     @Transactional
     @Override
-    public List<TurnForListDTO> getUserTurns(String login, Map<String, String> params) {
+    public List<TurnForListDTO> getUserTurns(
+            String login,
+            Map<String, String> params
+    ) {
         // Получаем пользователя по логину
         User user = userService.getUserFromLogin(login);
         // Очищаем устаревшие очереди
@@ -193,7 +212,11 @@ public class TurnRepositoryServiceImpl implements TurnRepositoryService {
 
         // Определяем тип доступа и получаем соответствующие очереди
         String access = params.get("Access");
-        List<Object[]> allTurns = fetchTurnsBasedOnAccess(user, access, params.get("Type"));
+        List<Object[]> allTurns = fetchTurnsBasedOnAccess(
+                user,
+                access,
+                params.get("Type")
+        );
 
         // Преобразуем результаты в DTO
         return mapTurnsToDTOList(allTurns);
@@ -215,11 +238,18 @@ public class TurnRepositoryServiceImpl implements TurnRepositoryService {
      * @param type   Тип очереди.
      * @return Список очередей в виде массива объектов.
      */
-    private List<Object[]> fetchTurnsBasedOnAccess(User user, String access, String type) {
+    private List<Object[]> fetchTurnsBasedOnAccess(
+            User user,
+            String access,
+            String type
+    ) {
         if (Objects.equals(access, "memberOut")) {
             return fetchTurnsForMemberOut(user, type);
         } else if (Objects.equals(access, "memberIn")) {
-            return turnRepository.resultsMemberIn(user.getId(), type);
+            return turnRepository.resultsMemberIn(
+                    user.getId(),
+                    type
+            );
         }
         return new ArrayList<>();
     }
@@ -231,7 +261,10 @@ public class TurnRepositoryServiceImpl implements TurnRepositoryService {
      * @param type Тип очереди.
      * @return Список очередей в виде массива объектов.
      */
-    private List<Object[]> fetchTurnsForMemberOut(User user, String type) {
+    private List<Object[]> fetchTurnsForMemberOut(
+            User user,
+            String type
+    ) {
         long facultyId = 0L;
         long groupId = 0L;
         Group group = user.getGroup();
@@ -243,7 +276,12 @@ public class TurnRepositoryServiceImpl implements TurnRepositoryService {
             }
         }
 
-        return turnRepository.resultsMemberOut(user.getId(), groupId, facultyId, type);
+        return turnRepository.resultsMemberOut(
+                user.getId(),
+                groupId,
+                facultyId,
+                type
+        );
     }
 
     /**
@@ -252,18 +290,28 @@ public class TurnRepositoryServiceImpl implements TurnRepositoryService {
      * @param allTurns Список массивов объектов, содержащих данные очередей.
      * @return Список DTO очередей.
      */
-    private List<TurnForListDTO> mapTurnsToDTOList(List<Object[]> allTurns) {
+    private List<TurnForListDTO> mapTurnsToDTOList(
+            List<Object[]> allTurns
+    ) {
         List<TurnForListDTO> turnForList = new ArrayList<>();
         for (Object[] obj : allTurns) {
             Turn turn = (Turn) obj[0];
             String additionalInfo = (String) obj[1];
-            turnForList.add(turnForListMapper.turnToTurnForListDTO(turn, additionalInfo));
+            turnForList.add(
+                    turnForListMapper.turnToTurnForListDTO(
+                            turn,
+                            additionalInfo
+                    )
+            );
         }
         return turnForList;
     }
 
     @Override
-    public List<TurnForListDTO> getLinkedTurn(String hash, String username) {
+    public List<TurnForListDTO> getLinkedTurn(
+            String hash,
+            String username
+    ) {
         User user = userService.getUserFromLogin(username);
         Optional<Turn> t = turnRepository.findTurnByHash(hash);
         if (t.isEmpty()) {
@@ -272,7 +320,8 @@ public class TurnRepositoryServiceImpl implements TurnRepositoryService {
         Turn turn = t.get();
         List<TurnForListDTO> turnList = new ArrayList<>();
         // получение участника и проверка наличия доступа
-        Optional<Member> member = mbrRepService.getMemberWith(user, turn);
+        Optional<Member> member =
+                mbrRepService.getMemberWith(user, turn);
         if (member.isPresent()) {
             AccessMember access = member.get().getAccessMember();
             if (access == AccessMember.BLOCKED) {
@@ -280,7 +329,12 @@ public class TurnRepositoryServiceImpl implements TurnRepositoryService {
             }
         }
 
-        turnList.add(turnForListMapper.turnToTurnForListDTO(turn, null));
+        turnList.add(
+                turnForListMapper.turnToTurnForListDTO(
+                        turn,
+                        null
+                )
+        );
         return turnList;
     }
 

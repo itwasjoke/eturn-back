@@ -28,7 +28,11 @@ public class NotificationController {
         notificationDTO.setTurnId(turnId);
         notificationDTO.setType(0);
         logger.info("Notification sent to broker");
-        rabbitTemplate.convertAndSend(EXCHANGE, TOPIC, notificationDTO);
+        rabbitTemplate.convertAndSend(
+                EXCHANGE,
+                TOPIC,
+                notificationDTO
+        );
     }
 
     public void notifyTurnCreated(long groupId, String turnName) {
@@ -37,7 +41,11 @@ public class NotificationController {
         notificationDTO.setTurnName(turnName);
         notificationDTO.setGroupId(groupId);
         logger.info("Notification sent to broker");
-        rabbitTemplate.convertAndSend(EXCHANGE, TOPIC, notificationDTO);
+        rabbitTemplate.convertAndSend(
+                EXCHANGE,
+                TOPIC,
+                notificationDTO
+        );
     }
 
     public void notifyReceiptRequest(long turnId, String turnName) {
@@ -46,6 +54,10 @@ public class NotificationController {
         notificationDTO.setTurnId(turnId);
         notificationDTO.setTurnName(turnName);
         logger.info("Notification sent to broker");
-        rabbitTemplate.convertAndSend(EXCHANGE, TOPIC, notificationDTO);
+        rabbitTemplate.convertAndSend(
+                EXCHANGE,
+                TOPIC,
+                notificationDTO
+        );
     }
 }

@@ -33,7 +33,11 @@ public class PositionController {
     ){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
-        return positionService.getPositionList(hash, userDetails.getUsername(), page);
+        return positionService.getPositionList(
+                hash,
+                userDetails.getUsername(),
+                page
+        );
     }
     @PostMapping("/{hash}")
     @Operation(
@@ -46,7 +50,10 @@ public class PositionController {
     ){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
-        return positionService.createPositionAndSave(userDetails.getUsername(), hash);
+        return positionService.createPositionAndSave(
+                userDetails.getUsername(),
+                hash
+        );
     }
 
     @PutMapping()
@@ -61,7 +68,11 @@ public class PositionController {
     ){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
-        positionService.update(id, userDetails.getUsername(), status);
+        positionService.update(
+                id,
+                userDetails.getUsername(),
+                status
+        );
     }
 
     @PutMapping("/skip/{id}")
@@ -75,7 +86,10 @@ public class PositionController {
     ){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
-        positionService.skipPosition(id, userDetails.getUsername());
+        positionService.skipPosition(
+                id,
+                userDetails.getUsername()
+        );
     }
 
     @DeleteMapping("/{id}")
@@ -88,6 +102,9 @@ public class PositionController {
             @PathVariable @Parameter(name = "id", description = "Идентификатор позиции") Long id){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
-        positionService.delete(id, userDetails.getUsername());
+        positionService.delete(
+                id,
+                userDetails.getUsername()
+        );
     }
 }

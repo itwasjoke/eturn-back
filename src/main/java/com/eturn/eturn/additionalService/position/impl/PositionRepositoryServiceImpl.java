@@ -75,7 +75,8 @@ public class PositionRepositoryServiceImpl implements PositionRepositoryService 
     ) {
         Turn turn = turnService.getTurnFrom(hash);
         positionTimerService.deleteOverdueElements(turn);
-        long sizePositions = positionRepository.countAllByTurn(turn);
+        long sizePositions =
+                positionRepository.countAllByTurn(turn);
         List<PositionDTO> allPositions;
         int size = (int) Math.min(sizePositions, 20);
 
@@ -190,8 +191,11 @@ public class PositionRepositoryServiceImpl implements PositionRepositoryService 
             Optional<Position> userPosition,
             Optional<Position> lastPositionInTurn
     ) {
-        return userPosition.isPresent() && lastPositionInTurn.isPresent() &&
-                userPosition.get().getId().equals(lastPositionInTurn.get().getId());
+        return userPosition.isPresent()
+                && lastPositionInTurn.isPresent()
+                && userPosition.get().getId().equals(
+                        lastPositionInTurn.get().getId()
+                );
     }
 
     /**
@@ -231,7 +235,11 @@ public class PositionRepositoryServiceImpl implements PositionRepositoryService 
      * @param turn Очередь
      * @return Разница в позициях
      */
-    private int calculatePositionDifference(Position position, Position firstPosition, Turn turn) {
+    private int calculatePositionDifference(
+            Position position,
+            Position firstPosition,
+            Turn turn
+    ) {
         return firstPosition.getId().equals(position.getId())
                 ? 0
                 : (int) positionRepository.countIdLeft(

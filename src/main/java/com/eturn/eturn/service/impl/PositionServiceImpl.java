@@ -44,25 +44,46 @@ public class PositionServiceImpl implements PositionService {
     @Override
     @Transactional
     public void delete(Long id, String username) {
-        positionDeletionService.delete(id, username);
+        positionDeletionService.delete(
+                id, username
+        );
     }
 
     @Override
     @Transactional
-    public void update(Long id, String username, String status) {
-        positionUpdateService.update(id, username, status);
+    public void update(
+            Long id,
+            String username,
+            String status
+    ) {
+        positionUpdateService.update(
+                id,
+                username,
+                status
+        );
     }
 
     @Override
     @Transactional
     public void skipPosition(long id, String username) {
-        positionUpdateService.skipPosition(id, username);
+        positionUpdateService.skipPosition(
+                id,
+                username
+        );
     }
 
     @Override
     @Transactional
-    public PositionsTurnDTO getPositionList(String hash, String username, int page) {
-        return positionRepService.getPositionList(hash, username, page);
+    public PositionsTurnDTO getPositionList(
+            String hash,
+            String username,
+            int page
+    ) {
+        return positionRepService.getPositionList(
+                hash,
+                username,
+                page
+        );
     }
 
     @Override
@@ -77,7 +98,13 @@ public class PositionServiceImpl implements PositionService {
 
 
     @Override
-    public void deleteAllByTurnAndUser(Turn turn, User user) {
-        positionDeletionService.deleteAllByTurnAndUser(turn, user);
+    public void deleteAllByTurnAndUser(
+            Turn turn,
+            User user
+    ) {
+        positionDeletionService.deleteAllByTurnAndUser(
+                turn,
+                user
+        );
     }
 }

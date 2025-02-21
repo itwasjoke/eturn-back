@@ -41,11 +41,15 @@ public class TurnServiceImpl implements TurnService {
     }
 
     @Autowired
-    public void setTurnRepositoryService(TurnRepositoryService turnRepositoryService){
+    public void setTurnRepositoryService(
+            TurnRepositoryService turnRepositoryService
+    ){
         this.turnRepositoryService = turnRepositoryService;
     }
     @Autowired
-    public void setTurnCreationService(TurnCreationService turnCreationService){
+    public void setTurnCreationService(
+            TurnCreationService turnCreationService
+    ){
         this.turnCreationService = turnCreationService;
     }
 
@@ -68,8 +72,14 @@ public class TurnServiceImpl implements TurnService {
      */
     @Transactional
     @Override
-    public List<TurnForListDTO> getUserTurns(String login, Map<String, String> params) {
-        return turnRepositoryService.getUserTurns(login, params);
+    public List<TurnForListDTO> getUserTurns(
+            String login,
+            Map<String, String> params
+    ) {
+        return turnRepositoryService.getUserTurns(
+                login,
+                params
+        );
     }
 
     /**
@@ -79,8 +89,14 @@ public class TurnServiceImpl implements TurnService {
      * @return очередь с подробной информацией
      */
     @Override
-    public TurnDTO getTurn(String hash, String login) {
-        return  turnRepositoryService.getTurn(hash, login);
+    public TurnDTO getTurn(
+            String hash,
+            String login
+    ) {
+        return  turnRepositoryService.getTurn(
+                hash,
+                login
+        );
     }
 
     /**
@@ -91,8 +107,14 @@ public class TurnServiceImpl implements TurnService {
      */
     @Override
     @Transactional
-    public String createTurn(TurnCreatingDTO turnDTO, String login) {
-        return turnCreationService.createTurn(turnDTO, login);
+    public String createTurn(
+            TurnCreatingDTO turnDTO,
+            String login
+    ) {
+        return turnCreationService.createTurn(
+                turnDTO,
+                login
+        );
     }
 
     /**
@@ -102,8 +124,14 @@ public class TurnServiceImpl implements TurnService {
      */
     @Override
     @Transactional
-    public void deleteTurn(String username, String hash) {
-        turnUpdateService.deleteTurn(username, hash);
+    public void deleteTurn(
+            String username,
+            String hash
+    ) {
+        turnUpdateService.deleteTurn(
+                username,
+                hash
+        );
     }
 
     /**
@@ -127,13 +155,25 @@ public class TurnServiceImpl implements TurnService {
     }
 
     @Override
-    public List<TurnForListDTO> getLinkedTurn(String hash, String username) {
-        return turnRepositoryService.getLinkedTurn(hash, username);
+    public List<TurnForListDTO> getLinkedTurn(
+            String hash,
+            String username
+    ) {
+        return turnRepositoryService.getLinkedTurn(
+                hash,
+                username
+        );
     }
 
     @Override
-    public void changeTurn(TurnEditDTO turn, String username) {
-        turnUpdateService.updateTurn(turn, username);
+    public void changeTurn(
+            TurnEditDTO turn,
+            String username
+    ) {
+        turnUpdateService.updateTurn(
+                turn,
+                username
+        );
     }
 
 }

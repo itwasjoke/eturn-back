@@ -47,7 +47,10 @@ public class TurnCreationServiceImpl implements TurnCreationService {
 
     @Override
     @Transactional
-    public String createTurn(TurnCreatingDTO turnDTO, String login) {
+    public String createTurn(
+            TurnCreatingDTO turnDTO,
+            String login
+    ) {
         // Проверка корректности дат
         validateTurnDates(turnDTO);
 
@@ -70,7 +73,12 @@ public class TurnCreationServiceImpl implements TurnCreationService {
 
         // Сохраняем очередь и создаем участника (создателя)
         Turn savedTurn = turnRepository.save(turn);
-        memberService.createMember(user, savedTurn, "CREATOR", false);
+        memberService.createMember(
+                user,
+                savedTurn,
+                "CREATOR",
+                false
+        );
 
         return savedTurn.getHash();
     }
@@ -113,8 +121,12 @@ public class TurnCreationServiceImpl implements TurnCreationService {
      * @param user    Пользователь, создающий очередь.
      * @throws InvalidTimeToCreateTurnException Если длительность очереди недопустима.
      */
-    private void validateTurnDuration(TurnCreatingDTO turnDTO, User user) {
-        long timeDiff = turnDTO.dateEnd().getTime() - turnDTO.dateStart().getTime();
+    private void validateTurnDuration(
+            TurnCreatingDTO turnDTO,
+            User user
+    ) {
+        long timeDiff = turnDTO.dateEnd().getTime()
+                - turnDTO.dateStart().getTime();
         long maxDuration = switch (user.getRole()) {
             case STUDENT -> 1000L * 60 * 60 * 24 * 3; // 3 дня
             case EMPLOYEE -> 1000L * 60 * 60 * 24 * 365; // 1 год
@@ -133,7 +145,10 @@ public class TurnCreationServiceImpl implements TurnCreationService {
      * @param user    Пользователь, создающий очередь.
      * @throws InvalidLengthTurnException Если время начала недопустимо.
      */
-    private void validateTurnStartTime(TurnCreatingDTO turnDTO, User user) {
+    private void validateTurnStartTime(
+            TurnCreatingDTO turnDTO,
+            User user
+    ) {
         Date now = new Date();
         long timeDiff = turnDTO.dateStart().getTime() - now.getTime();
         long maxStartTime = switch (user.getRole()) {
@@ -154,11 +169,16 @@ public class TurnCreationServiceImpl implements TurnCreationService {
      * @param user    Пользователь, создающий очередь.
      * @return Созданная очередь.
      */
-    private Turn createAndConfigureTurn(TurnCreatingDTO turnDTO, User user) {
-        Turn turn = turnCreatingMapper.turnMoreDTOToTurn(turnDTO, user);
+    private Turn createAndConfigureTurn(
+            TurnCreatingDTO turnDTO,
+            User user
+    ) {
+        Turn turn = turnCreatingMapper.
+                turnMoreDTOToTurn(turnDTO, user);
 
         if (turn.getAccessTurnType() == FOR_ALLOWED_ELEMENTS) {
-            String allowedElements = buildAllowedElementsString(turn);
+            String allowedElements =
+                    buildAllowedElementsString(turn);
             turn.setAccessTags(allowedElements.trim());
         }
 
@@ -180,7 +200,10 @@ public class TurnCreationServiceImpl implements TurnCreationService {
         if (turn.getAllowedGroups() != null) {
             for (Group group : turn.getAllowedGroups()) {
                 allowedElements.append(group.getNumber()).append(" ");
-                notificationController.notifyTurnCreated(group.getId(), turn.getName());
+                notificationController.notifyTurnCreated(
+                        group.getId(),
+                        turn.getName()
+                );
             }
         }
 
@@ -200,8 +223,14 @@ public class TurnCreationServiceImpl implements TurnCreationService {
      * @param user Пользователь, создающий очередь.
      * @return Строка тегов.
      */
-    private String buildTagsString(Turn turn, User user) {
-        return turn.getName() + " " + turn.getDescription() + " " + turn.getAccessTags() + " " + user.getName();
+    private String buildTagsString(
+            Turn turn,
+            User user
+    ) {
+        return turn.getName() + " "
+                + turn.getDescription() + " "
+                + turn.getAccessTags() + " "
+                + user.getName();
     }
 
     /**

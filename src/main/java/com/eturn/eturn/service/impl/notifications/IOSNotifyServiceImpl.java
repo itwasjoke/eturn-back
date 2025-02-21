@@ -16,7 +16,11 @@ public class IOSNotifyServiceImpl implements NotificationService {
 //        this.apnsService = apnsService;
 //    }
     @Override
-    public void notifyUserOfTurnPositionChange(String tokenFirst, String turnName, int number) {
+    public void notifyUserOfTurnPositionChange(
+            String tokenFirst,
+            String turnName,
+            int number
+    ) {
         String title = NotificationMessages.getPositionTitle(number);
         String body = NotificationMessages.getPositionBody(number, turnName);
         logger.info("Notification body: " + title + " // " + body);
@@ -25,14 +29,22 @@ public class IOSNotifyServiceImpl implements NotificationService {
     }
 
     @Override
-    public void notifyTurnCreated(String token, String turnName, NotifySendType sendType) {
+    public void notifyTurnCreated(
+            String token,
+            String turnName,
+            NotifySendType sendType
+    ) {
         String title = NotificationMessages.getTurnCreatedTitle(sendType);
         String body = NotificationMessages.getTurnCreatedBody(sendType, turnName);
         logger.info("Notification body: " + title + " // " + body);
     }
 
     @Override
-    public void notifyReceiptRequest(String token, String turnName, NotifySendType sendType) {
+    public void notifyReceiptRequest(
+            String token,
+            String turnName,
+            NotifySendType sendType
+    ) {
         String title = NotificationMessages.getReceiptTitle(sendType);
         String body = NotificationMessages.getReceiptBody(turnName);
         logger.info("Notification body: " + title + " // " + body);

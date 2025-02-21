@@ -80,16 +80,25 @@ public class MemberServiceImpl implements MemberService {
      */
     @Override
     @Transactional
-    public void setInviteForMember(String hash, String username) {
+    public void setInviteForMember(
+            String hash,
+            String username
+    ) {
         User user = userService.getUserFromLogin(username);
         Turn turn = turnService.getTurnFrom(hash);
 
         // Проверяем условия для приглашения
         // (ограничения на количество участников и проверка, что пользователь не создатель)
-        mbrAccessService.validateInviteConditions(user, turn);
+        mbrAccessService.validateInviteConditions(
+                user,
+                turn
+        );
 
         // Получаем существующего участника или создаем нового, если он не существует
-        Member member = mbrRepService.getOrCreateMember(user, turn);
+        Member member = mbrRepService.getOrCreateMember(
+                user,
+                turn
+        );
 
         // Обновляем статус участника, чтобы добавить приглашение
         mbrStatusService.updateMemberInviteStatus(member);
@@ -129,11 +138,20 @@ public class MemberServiceImpl implements MemberService {
                         ));
 
         // Проверка доступа текущего пользователя
-        mbrAccessService.validateAccess(currentUserMember, memberToUpdate, access);
+        mbrAccessService.validateAccess(
+                currentUserMember,
+                memberToUpdate,
+                access
+        );
 
         // Обработка изменения статуса
         AccessMember newAccessMember = AccessMember.valueOf(access);
-        if (mbrStatusService.handleStatusChange(memberToUpdate, newAccessMember)) {
+        if (
+                mbrStatusService.handleStatusChange(
+                        memberToUpdate,
+                        newAccessMember
+                )
+        ) {
             memberRepository.save(memberToUpdate);
         }
     }
@@ -154,9 +172,15 @@ public class MemberServiceImpl implements MemberService {
                 .orElseThrow(() -> new NotFoundMemberException("Member not found"));
 
         if (status) {
-            mbrStatusService.handleInviteActivation(member, isModerator);
+            mbrStatusService.handleInviteActivation(
+                    member,
+                    isModerator
+            );
         } else {
-            mbrStatusService.handleInviteDeactivation(member, isModerator);
+            mbrStatusService.handleInviteDeactivation(
+                    member,
+                    isModerator
+            );
         }
     }
 
@@ -179,15 +203,28 @@ public class MemberServiceImpl implements MemberService {
         Turn turn = turnService.getTurnFrom(hash);
 
         // Проверяем, есть ли у пользователя доступ к списку участников
-        mbrAccessService.validateMemberAccess(user, turn);
+        mbrAccessService.validateMemberAccess(
+                user,
+                turn
+        );
 
         // Получаем список участников и их количество
         AccessMember accessMember = AccessMember.valueOf(type);
-        Page<Member> members = mbrRepService.getMembersByAccess(turn, accessMember, page);
-        long count = mbrRepService.getMemberCountByAccess(turn, accessMember);
+        Page<Member> members = mbrRepService.getMembersByAccess(
+                turn,
+                accessMember,
+                page
+        );
+        long count = mbrRepService.getMemberCountByAccess(
+                turn,
+                accessMember
+        );
 
         // Преобразуем результат в DTO и возвращаем
-        return new MemberListDTO(memberListMapper.map(members), count);
+        return new MemberListDTO(
+                memberListMapper.map(members),
+                count
+        );
     }
 
     /**
@@ -218,8 +255,18 @@ public class MemberServiceImpl implements MemberService {
      * @return участник
      */
     @Override
-    public Member createMember(User user, Turn turn, String access, boolean invitedForTurn) {
-        return mbrRepService.createMember(user,turn,access,invitedForTurn);
+    public Member createMember(
+            User user,
+            Turn turn,
+            String access,
+            boolean invitedForTurn
+    ) {
+        return mbrRepService.createMember(
+                user,
+                turn,
+                access,
+                invitedForTurn
+        );
     }
 
     /**
@@ -241,9 +288,15 @@ public class MemberServiceImpl implements MemberService {
      * @return DTO участника
      */
     @Override
-    public MemberDTO getMemberDTO(User user, Turn turn) {
+    public MemberDTO getMemberDTO(
+            User user,
+            Turn turn
+    ) {
         Optional<Member> member =
-                memberRepository.findMemberByUserAndTurn(user, turn);
+                memberRepository.findMemberByUserAndTurn(
+                        user,
+                        turn
+                );
         if (member.isPresent()){
             Member memberToDTO = member.get();
             return new MemberDTO(

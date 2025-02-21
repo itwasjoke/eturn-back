@@ -42,11 +42,13 @@ public class NotificationListener {
     private final MemberService memberService;
 
     public NotificationListener(
-            NotificationRepository notificationRepository, AndroidNotifyServiceImpl androidNotifyService,
+            NotificationRepository notificationRepository,
+            AndroidNotifyServiceImpl androidNotifyService,
             IOSNotifyServiceImpl iOSNotifyService,
             RuStoreNotifyServiceImpl ruStoreNotifyService,
             PositionService positionService,
-            UserService userService, MemberService memberService) {
+            UserService userService, MemberService memberService
+    ) {
         this.notificationRepository = notificationRepository;
         this.androidNotifyService = androidNotifyService;
         this.iOSNotifyService = iOSNotifyService;
@@ -85,15 +87,25 @@ public class NotificationListener {
         }
     }
 
-    private NotifySendType checkNotification(NotificationDTO notificationDTO, User user) {
+    private NotifySendType checkNotification(
+            NotificationDTO notificationDTO,
+            User user
+    ) {
         NotifyType notifyType = getNotifyType(notificationDTO);
         if (notifyType == null) {
             return NO_ACCESS;
         }
         deleteNotifications();
-        Optional<Notification> existingNotification = notificationRepository.findNotificationByUserIdAndType(user.getId(), notifyType);
+        Optional<Notification> existingNotification =
+                notificationRepository
+                        .findNotificationByUserIdAndType(
+                                user.getId(),
+                                notifyType
+                        );
         if (existingNotification.isPresent()) {
-            return handleExistingNotification(existingNotification.get());
+            return handleExistingNotification(
+                    existingNotification.get()
+            );
         } else {
             return handleNewNotification(user, notifyType);
         }
@@ -107,7 +119,8 @@ public class NotificationListener {
         calendar.add(Calendar.MINUTE, -30);
         Date date30MinutesAgo = calendar.getTime();
         if (notificationRepository.existsAllByCreatedBefore(date30MinutesAgo)) {
-            notificationRepository.deleteAllByCreatedBefore(date30MinutesAgo);
+            notificationRepository
+                    .deleteAllByCreatedBefore(date30MinutesAgo);
         }
     }
 
@@ -120,26 +133,43 @@ public class NotificationListener {
         };
     }
 
-    private NotifySendType handleExistingNotification(Notification notification) {
+    private NotifySendType handleExistingNotification(
+            Notification notification
+    ) {
         if (notification.isMany()) {
             if (isNotificationExpired(notification.getCreated())) {
-                updateNotification(notification, false, new Date());
+                updateNotification(
+                        notification,
+                        false,
+                        new Date()
+                );
                 return ONE;
             } else {
                 return NO_ACCESS;
             }
         } else {
             if (isNotificationExpired(notification.getCreated())) {
-                updateNotification(notification, false, new Date());
+                updateNotification(
+                        notification,
+                        false,
+                        new Date()
+                );
                 return ONE;
             } else {
-                updateNotification(notification, true, notification.getCreated());
+                updateNotification(
+                        notification,
+                        true,
+                        notification.getCreated()
+                );
                 return MANY;
             }
         }
     }
 
-    private NotifySendType handleNewNotification(User user, NotifyType notifyType) {
+    private NotifySendType handleNewNotification(
+            User user,
+            NotifyType notifyType
+    ) {
         Notification notification = new Notification();
         notification.setMany(false);
         notification.setType(notifyType);
@@ -158,49 +188,85 @@ public class NotificationListener {
         return createdDate.before(date15MinutesAgo);
     }
 
-    private void updateNotification(Notification notification, boolean many, Date date) {
+    private void updateNotification(
+            Notification notification,
+            boolean many,
+            Date date
+    ) {
         notification.setCreated(date);
         notification.setMany(many);
         notificationRepository.save(notification);
     }
 
-    private void sendNotificationFor3Positions(NotificationDTO notificationDTO){
-        PositionsNotificationDTO info = positionService.getPositionsForNotify(notificationDTO.turnId);
+    private void sendNotificationFor3Positions(
+            NotificationDTO notificationDTO
+    ){
+        PositionsNotificationDTO info =
+                positionService.getPositionsForNotify(
+                        notificationDTO.turnId
+                );
         if (info.userList() != null && info.turnName() != null) {
             int num = 0;
             for (User u : info.userList()) {
                 if (typeExists(u)) {
-                    NotificationService notificationService = getCurrentService(u.getApplicationType());
-                    notificationService.notifyUserOfTurnPositionChange(u.getTokenNotification(), info.turnName(), num);
+                    NotificationService notificationService =
+                            getCurrentService(u.getApplicationType());
+                    notificationService.notifyUserOfTurnPositionChange(
+                            u.getTokenNotification(),
+                            info.turnName(),
+                            num
+                    );
                 }
                 num += 5;
             }
         }
     }
 
-    private void sendNotificationForGroup(NotificationDTO notificationDTO){
+    private void sendNotificationForGroup(
+            NotificationDTO notificationDTO
+    ){
         long groupId = notificationDTO.groupId;
         List<User> userList = userService.getGroupUsers(groupId);
         for (User u: userList) {
             if (typeExists(u)) {
-                NotifySendType sendType = checkNotification(notificationDTO, u);
+                NotifySendType sendType =
+                        checkNotification(notificationDTO, u);
                 if (sendType != NO_ACCESS) {
                     logger.info(sendType);
-                    NotificationService notificationService = getCurrentService(u.getApplicationType());
-                    notificationService.notifyTurnCreated(u.getTokenNotification(), notificationDTO.turnName, sendType);
+                    NotificationService notificationService =
+                            getCurrentService(
+                                    u.getApplicationType()
+                            );
+                    notificationService.notifyTurnCreated(
+                            u.getTokenNotification(),
+                            notificationDTO.turnName,
+                            sendType
+                    );
                 }
             }
         }
     }
     private void sendNotificationForModerators(NotificationDTO notificationDTO){
         long turnId = notificationDTO.turnId;
-        List<User> userList = memberService.getModeratorsOfTurn(turnId);
+        List<User> userList =
+                memberService.getModeratorsOfTurn(turnId);
         for (User u: userList) {
             if (typeExists(u)) {
-                NotifySendType sendType = checkNotification(notificationDTO, u);
+                NotifySendType sendType =
+                        checkNotification(
+                                notificationDTO,
+                                u
+                        );
                 if (sendType != NO_ACCESS) {
-                    NotificationService notificationService = getCurrentService(u.getApplicationType());
-                    notificationService.notifyReceiptRequest(u.getTokenNotification(), notificationDTO.turnName, sendType);
+                    NotificationService notificationService =
+                            getCurrentService(
+                                    u.getApplicationType()
+                            );
+                    notificationService.notifyReceiptRequest(
+                            u.getTokenNotification(),
+                            notificationDTO.turnName,
+                            sendType
+                    );
                 }
             }
         }

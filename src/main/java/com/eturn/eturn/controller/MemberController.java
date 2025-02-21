@@ -33,13 +33,17 @@ public class MemberController {
     ){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
-        memberService.setBlockStatus(id, type, userDetails.getUsername());
+        memberService.setBlockStatus(
+                id,
+                type,
+                userDetails.getUsername()
+        );
     }
 
     @PutMapping("/invite")
     @Operation(
             summary = "Заявка на становление модератором",
-            description = "Подача заяки на становление модератором (меняет тип доступа на MEMBER_LINK и invited на true)"
+            description = "Подача заявки на становление модератором (меняет тип доступа на MEMBER_LINK и invited на true)"
     )
     public void inviteUser(
             HttpServletRequest request,
@@ -47,19 +51,26 @@ public class MemberController {
     ) {
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
-        memberService.setInviteForMember(hash, userDetails.getUsername());
+        memberService.setInviteForMember(
+                hash,
+                userDetails.getUsername()
+        );
     }
     @PutMapping("/accept")
     @Operation(
             summary = "Принятие заявки (на модератора или в очередь по ссылке)",
-            description = "Принимает или отклоняет зявку на становление модератором или в очередь по ссылке (меняет тип доступа и invited/invitedForTurn на false)"
+            description = "Принимает или отклоняет заявку на становление модератором или в очередь по ссылке (меняет тип доступа и invited/invitedForTurn на false)"
     )
     public void acceptInvite(
             @RequestParam @Parameter(name = "id", description = "Идентификатор участника") Long id,
             @RequestParam @Parameter(name = "status", description = "Решение по заявке (принять/отклонить)") boolean status,
             @RequestParam @Parameter(name = "isModerator", description = "Подтверждение модератора (true) или участника (false)") boolean isModerator
     ) {
-        memberService.changeMemberInvite(id, status, isModerator);
+        memberService.changeMemberInvite(
+                id,
+                status,
+                isModerator
+        );
     }
 
     @GetMapping("/list")
@@ -75,7 +86,12 @@ public class MemberController {
     ){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
-        return memberService.getMemberList(userDetails.getUsername(), type, hash, page);
+        return memberService.getMemberList(
+                userDetails.getUsername(),
+                type,
+                hash,
+                page
+        );
     }
 
     @GetMapping("/unconfirmed")
@@ -90,6 +106,10 @@ public class MemberController {
     ) {
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
-        return memberService.getUnconfirmedMemberList(userDetails.getUsername(), type, hash);
+        return memberService.getUnconfirmedMemberList(
+                userDetails.getUsername(),
+                type,
+                hash
+        );
     }
 }
