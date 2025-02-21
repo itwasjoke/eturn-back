@@ -5,12 +5,8 @@ import com.eturn.eturn.dto.MemberListDTO;
 import com.eturn.eturn.entity.Member;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
-import com.eturn.eturn.enums.AccessMember;
-import com.eturn.eturn.enums.ChangeMbrAction;
-import com.eturn.eturn.enums.MemberListType;
 
 import java.util.List;
-import java.util.Optional;
 
 
 public interface MemberService {
@@ -28,7 +24,7 @@ public interface MemberService {
             String hash,
             int page
     );
-    void setBlockStatus(
+    void setMemberStatus(
             long id,
             String type,
             String username

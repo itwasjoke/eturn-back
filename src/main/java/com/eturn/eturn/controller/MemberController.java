@@ -23,7 +23,7 @@ public class MemberController {
 
     @PutMapping()
     @Operation(
-            summary = "Блокировка или разблокировка пользователя",
+            summary = "Изменение статуса пользователя",
             description = "Изменяет тип доступа участника (MEMBER/BLOCKED) по id"
     )
     public void setBlockStatus(
@@ -33,7 +33,7 @@ public class MemberController {
     ){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
-        memberService.setBlockStatus(
+        memberService.setMemberStatus(
                 id,
                 type,
                 userDetails.getUsername()

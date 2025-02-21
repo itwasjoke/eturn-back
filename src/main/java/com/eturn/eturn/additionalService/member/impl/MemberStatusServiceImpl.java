@@ -53,8 +53,15 @@ public class MemberStatusServiceImpl implements MemberStatusService {
                 member.getAccessMember();
         InvitedStatus invitedStatus = ACCESS_OUT;
 
-        // Если мы разблокируем пользователя
+        // если мы хотим разжаловать модератора
         if (
+                currentAccessMember == MODERATOR
+                        && newAccessMember == MEMBER
+        ) {
+            invitedStatus = ACCESS_IN;
+
+            // Если мы разблокируем пользователя
+        } else if (
                 currentAccessMember == BLOCKED
                         && newAccessMember == MEMBER
         ) {

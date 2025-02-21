@@ -108,14 +108,14 @@ public class MemberServiceImpl implements MemberService {
     }
 
     /**
-     * Блокировка/разблокировка пользователя
+     * Изменение статуса пользователя
      * @param id идентификатор
      * @param access тип участника
      * @param username имя пользователя
      */
     @Override
     @Transactional
-    public void setBlockStatus(
+    public void setMemberStatus(
             long id,
             String access,
             String username
