@@ -40,6 +40,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static com.eturn.eturn.enums.Role.*;
@@ -60,7 +61,16 @@ public class AuthenticationService {
     private final UserMapper userMapper;
     private final AuthenticationManager authenticationManager;
 
-    public AuthenticationService(JwtService jwtService, RestTemplate restTemplate, UserService userService, GroupService groupService, FacultyService facultyService, PasswordEncoder passwordEncoder, UserMapper userMapper, AuthenticationManager authenticationManager) {
+    public AuthenticationService(
+            JwtService jwtService,
+            RestTemplate restTemplate,
+            UserService userService,
+            GroupService groupService,
+            FacultyService facultyService,
+            PasswordEncoder passwordEncoder,
+            UserMapper userMapper,
+            AuthenticationManager authenticationManager
+    ) {
         this.jwtService = jwtService;
         this.restTemplate = restTemplate;
         this.userService = userService;
@@ -73,44 +83,155 @@ public class AuthenticationService {
 
     @CacheEvict(value = "groups", allEntries = true)
     public void createFaculties(String username){
+
+        // проверка прав
         User u = userService.getUserFromLogin(username);
-        if (u.getRole() == ADMIN) {
-            HttpHeaders headers = new HttpHeaders();
-            HttpEntity<String> entity = new HttpEntity<>(headers);
+        if (u.getRole() != ADMIN) {
+            throw new AccessException("no admin access");
+        }
 
-            String externalApiUrlGroups = "https://digital.etu.ru/api/mobile/groups";
-            ResponseEntity<List<FacultiesResponse>> response = restTemplate.exchange(
-                    externalApiUrlGroups,
-                    HttpMethod.GET,
-                    entity,
-                    new ParameterizedTypeReference<List<FacultiesResponse>>() {
-                    }
+        // получение групп из API ЛЭТИ
+        List<FacultiesResponse> faculties = getGroupsByEtu();
+        if (faculties == null){
+            throw new NotFoundGroupException("network problem");
+        }
+
+        // создание групп
+        for (FacultiesResponse faculty : faculties) {
+            FacultyDTO facultyDTO = new FacultyDTO(
+                    faculty.getId(),
+                    faculty.getTitle()
             );
-
-            if (!response.getStatusCode().is2xxSuccessful()) {
-                throw new NotFoundGroupException("network problem");
-            }
-            if (!response.getBody().isEmpty()) {
-                List<FacultiesResponse> faculties = response.getBody();
-                for (FacultiesResponse faculty : faculties) {
-                    FacultyDTO facultyDTO = new FacultyDTO(faculty.getId(), faculty.getTitle());
-                    Faculty facultyCreated = facultyService.createFaculty(facultyDTO);
-                    for (DepartmentResponse department : faculty.getDepartmentResponses()) {
-                        for (GroupResponse group : department.getGroupResponses()) {
-                            groupService.createOptionalGroup(group.getId(), group.getNumber(), group.getCourse(), facultyCreated);
-                        }
-                    }
+            Faculty facultyCreated =
+                    facultyService.createFaculty(facultyDTO);
+            for (DepartmentResponse dep : faculty.getDepartmentResponses()) {
+                for (GroupResponse group : dep.getGroupResponses()) {
+                    groupService.createOptionalGroup(
+                            group.getId(),
+                            group.getNumber(),
+                            group.getCourse(),
+                            facultyCreated
+                    );
                 }
             }
-        } else {
-            throw new AccessException("no admin access");
         }
     }
 
-    public JwtAuthenticationResponse auth(AuthData authData) {
+    /**
+     * Ручная регистрация
+     * @param userCreateDTO с помощью собственного тела
+     * @param username имя текущего пользователя
+     * @return токен
+     */
+    public JwtAuthenticationResponse signUp(
+            UserCreateDTO userCreateDTO,
+            String username
+    ) {
+        // Проверяем, имеет ли пользователь права администратора
+        validateAdminAccess(username);
 
+        // Создаем пользователя на основе DTO
+        User newUser = createUserFromDTO(userCreateDTO);
+
+        // Сохраняем пользователя в системе
+        User createdUser = userService.createUser(newUser);
+
+        // Генерируем JWT токен
+        String jwt = "Bearer "
+                + jwtService.generateToken(createdUser);
+        return new JwtAuthenticationResponse(jwt);
+    }
+
+    /**
+     * Авторизация через ETU ID
+     * @param authData Данные с токеном
+     * @return данные об успешной авторизации
+     */
+    public JwtAuthenticationResponse auth(AuthData authData) {
+        // Получаем данные пользователя из ETU ID
+        EtuIdUser etuIdUser = fetchEtuIdUser(authData.tokenETUID());
+
+        // Проверяем, что данные пользователя получены
+        if (etuIdUser == null) {
+            throw new NotFoundUserException("No user in ETU ID");
+        }
+
+        // Обновляем или создаем пользователя в системе
+        User currentUser = updateOrCreateUser(etuIdUser, authData);
+
+        // Генерируем JWT токен
+        String jwt = "Bearer " + jwtService.generateToken(currentUser);
+        return new JwtAuthenticationResponse(jwt);
+    }
+
+    /**
+     * Ручной вход
+     * @param login по логину
+     * @param password и паролю
+     * @return токен авторизации
+     */
+    public JwtAuthenticationResponse signIn(
+            String login,
+            String password
+    ) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        login,
+                        password
+                )
+        );
+        User user = userService.getUserFromLogin(login);
+        String jwt = "Bearer " + jwtService.generateToken(user);
+        return new JwtAuthenticationResponse(jwt);
+    }
+
+    //
+    //
+    //
+
+    /**
+     * GET запрос групп
+     * @return список факультетов с группами
+     */
+    private List<FacultiesResponse> getGroupsByEtu(){
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + authData.tokenETUID());
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        String externalApiUrlGroups = "https://digital.etu.ru/api/mobile/groups";
+        ResponseEntity<List<FacultiesResponse>> response = restTemplate.exchange(
+                externalApiUrlGroups,
+                HttpMethod.GET,
+                entity,
+                new ParameterizedTypeReference<>() {
+                }
+        );
+
+        // проверка ответа
+        checkSuccessResponse(response);
+        return response.getBody();
+    }
+
+    /**
+     * Проверка успешного выполнения запроса
+     * @param response выполненный запрос
+     */
+    private void checkSuccessResponse(
+            ResponseEntity<List<FacultiesResponse>> response
+    ){
+        if (!response.getStatusCode().is2xxSuccessful()) {
+            throw new NotFoundGroupException("network problem");
+        }
+    }
+
+    /**
+     * Получает данные пользователя из ETU ID.
+     * @param tokenETUID Токен для авторизации в ETU ID.
+     * @return Данные пользователя из ETU ID.
+     * @throws AuthPasswordException Если не удалось получить данные.
+     */
+    private EtuIdUser fetchEtuIdUser(String tokenETUID) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + tokenETUID);
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
         ResponseEntity<EtuIdUser> response = restTemplate.exchange(
@@ -121,101 +242,190 @@ public class AuthenticationService {
         );
 
         if (!response.getStatusCode().is2xxSuccessful()) {
-            throw new AuthPasswordException("no access from ETU ID");
+            throw new AuthPasswordException("No access from ETU ID");
         }
-        EtuIdUser etuIdUser = response.getBody();
-        User currentUser;
-        if (etuIdUser != null) {
-            Optional<User> user = userService.getOptionalUserFromId(etuIdUser.getId());
-            EtuIdEducation etuIdEducation = etuIdUser.getEducations().get(0);
-            EduGroups eduGroups = etuIdEducation.getEduGroups();
-            if (user.isPresent()) {
-                currentUser = user.get();
-                if (etuIdUser.getEducations() != null) {
-                    Optional<Group> group = groupService.getGroup(eduGroups.getName());
-                    if (group.isPresent()) {
-                        currentUser.setGroup(group.get());
-                    } else {
-                        throw new NotFoundGroupException("no group exception");
-                    }
-                }
-                if (authData.tokenNotify()!=null) {
-                    try {
-                        currentUser.setTokenNotification(authData.tokenNotify());
-                        currentUser.setApplicationType(ApplicationType.valueOf(authData.type()));
-                    } catch (IllegalArgumentException e) {
-                        logger.error("cannot resolve type of application");
-                    }
-                }
-                currentUser = userService.updateUser(currentUser);
-            } else {
-                User newUser = new User();
-                newUser.setId(etuIdUser.getId());
-                if (authData.tokenNotify()!=null) {
-                    try {
-                        newUser.setTokenNotification(authData.tokenNotify());
-                        newUser.setApplicationType(ApplicationType.valueOf(authData.type()));
-                    } catch (IllegalArgumentException e) {
-                        logger.error("cannot resolve type of application");
-                    }
-                }
-                newUser.setName(etuIdUser.getFirstName() + " " + etuIdUser.getSecondName());
-                newUser.setLogin("eturnLogin" + etuIdUser.getId().toString());
-                newUser.setPassword("eturnPassword"+etuIdUser.getId().toString());
-                if (etuIdUser.getEducations() != null) {
-                    Optional<Group> group = groupService.getGroup(eduGroups.getName());
-                    if (group.isPresent()) {
-                        newUser.setGroup(group.get());
-                    } else {
-                        throw new NotFoundGroupException("no group exception");
-                    }
-                }
-                Role role;
-                switch (etuIdUser.getPosition()) {
-                    case "Сотрудник":
-                        role = EMPLOYEE;
-                        break;
-                    default:
-                        role = STUDENT;
-                }
-                newUser.setRole(role);
-                currentUser = userService.createUser(newUser);
-            }
-        }
-        else {
-            throw new NotFoundUserException("no user in ETU ID");
-        }
-        String jwt = "Bearer " + jwtService.generateToken(currentUser);
-        return new JwtAuthenticationResponse(jwt);
-    }
-    public JwtAuthenticationResponse signUp(UserCreateDTO userCreateDTO, String username) {
-        User userAdmin = userService.getUserFromLogin(username);
-        if (userAdmin.getRole() == ADMIN && userCreateDTO.id() != 1) {
-            User user;
-            Role r = Role.valueOf(userCreateDTO.role());
-            if (userCreateDTO.appType().equals("IOS") || userCreateDTO.appType().equals("ANDROID") || userCreateDTO.appType().equals("RUSTORE")) {
-                ApplicationType a = ApplicationType.valueOf(userCreateDTO.appType());
-                user = userMapper.userCreateDTOtoUser(userCreateDTO, r, a);
-            } else {
-                user = userMapper.userCreateDTOtoUser(userCreateDTO, r, null);
-            }
-            String password = passwordEncoder.encode(userCreateDTO.password());
-            user.setPassword(password);
-            User newUser = userService.createUser(user);
 
-            var jwt = "Bearer " + jwtService.generateToken(newUser);
-            return new JwtAuthenticationResponse(jwt);
+        return response.getBody();
+    }
+
+    /**
+     * Обновляет или создает пользователя в системе на основе данных из ETU ID.
+     * @param etuIdUser Данные пользователя из ETU ID.
+     * @param authData  Данные для авторизации.
+     * @return Обновленный или созданный пользователь.
+     */
+    private User updateOrCreateUser(
+            EtuIdUser etuIdUser,
+            AuthData authData
+    ) {
+        Optional<User> optionalUser = userService.getOptionalUserFromId(
+                etuIdUser.getId()
+        );
+        User user;
+
+        if (optionalUser.isPresent()) {
+            user = optionalUser.get();
+            updateUserGroup(user, etuIdUser);
+            updateUserNotificationToken(user, authData);
+            user = userService.updateUser(user);
         } else {
-            throw new AccessException("no admin access");
+            user = createNewUser(etuIdUser, authData);
+        }
+
+        return user;
+    }
+
+    /**
+     * Обновляет группу пользователя на основе данных из ETU ID.
+     * @param user     Пользователь, которого нужно обновить.
+     * @param etuIdUser Данные пользователя из ETU ID.
+     * @throws NotFoundGroupException Если группа не найдена.
+     */
+    private void updateUserGroup(
+            User user,
+            EtuIdUser etuIdUser
+    ) {
+        if (etuIdUser.getEducations() != null) {
+            EtuIdEducation etuIdEducation =
+                    etuIdUser.getEducations().get(0);
+            EduGroups eduGroups =
+                    etuIdEducation.getEduGroups();
+            Optional<Group> group =
+                    groupService.getGroup(
+                            eduGroups.getName()
+                    );
+
+            if (group.isPresent()) {
+                user.setGroup(group.get());
+            } else {
+                throw new NotFoundGroupException("No group exception");
+            }
         }
     }
-    public JwtAuthenticationResponse signIn(String login, String password) {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                login,
-                password
-        ));
-        User user = userService.getUserFromLogin(login);
-        String jwt = "Bearer "+jwtService.generateToken(user);
-        return new JwtAuthenticationResponse(jwt);
+
+    /**
+     * Обновляет токен уведомлений и тип приложения пользователя.
+     * @param user     Пользователь, которого нужно обновить.
+     * @param authData Данные для авторизации.
+     */
+    private void updateUserNotificationToken(
+            User user,
+            AuthData authData
+    ) {
+        if (authData.tokenNotify() != null) {
+            try {
+                user.setTokenNotification(
+                        authData.tokenNotify()
+                );
+                user.setApplicationType(
+                        ApplicationType.valueOf(authData.type())
+                );
+            } catch (IllegalArgumentException e) {
+                logger.error("Cannot resolve type of application");
+            }
+        }
+    }
+
+    /**
+     * Создает нового пользователя на основе данных из ETU ID.
+     * @param etuIdUser Данные пользователя из ETU ID.
+     * @param authData  Данные для авторизации.
+     * @return Созданный пользователь.
+     */
+    private User createNewUser(
+            EtuIdUser etuIdUser,
+            AuthData authData
+    ) {
+        User newUser = new User();
+        newUser.setId(etuIdUser.getId());
+        newUser.setName(
+                etuIdUser.getFirstName() + " " + etuIdUser.getSecondName()
+        );
+        newUser.setLogin(
+                "eturnLogin" + etuIdUser.getId().toString()
+        );
+        newUser.setPassword(
+                "eturnPassword" + etuIdUser.getId().toString()
+        );
+
+        updateUserGroup(newUser, etuIdUser);
+        updateUserNotificationToken(
+                newUser,
+                authData
+        );
+
+        Role role = determineUserRole(
+                etuIdUser.getPosition()
+        );
+        newUser.setRole(role);
+
+        return userService.createUser(newUser);
+    }
+
+    /**
+     * Определяет роль пользователя на основе его позиции в ETU ID.
+     * @param position Позиция пользователя в ETU ID.
+     * @return Роль пользователя.
+     */
+    private Role determineUserRole(String position) {
+        return "Сотрудник".equals(position) ? EMPLOYEE : STUDENT;
+    }
+
+    /**
+     * Проверяет, имеет ли пользователь права администратора.
+     * @param username Логин пользователя.
+     * @throws AccessException Если пользователь не является администратором.
+     */
+    private void validateAdminAccess(String username) {
+        User userAdmin = userService.getUserFromLogin(username);
+        if (userAdmin.getRole() != ADMIN) {
+            throw new AccessException("No admin access");
+        }
+    }
+
+    /**
+     * Создает пользователя на основе DTO.
+     * @param userCreateDTO DTO с данными для создания пользователя.
+     * @return Созданный пользователь.
+     */
+    private User createUserFromDTO(
+            UserCreateDTO userCreateDTO
+    ) {
+        // Определяем роль пользователя
+        Role role = Role.valueOf(userCreateDTO.role());
+
+        // Определяем тип приложения (если указан)
+        ApplicationType appType = parseApplicationType(
+                userCreateDTO.appType()
+        );
+
+        // Создаем пользователя
+        User user = userMapper.userCreateDTOtoUser(
+                userCreateDTO,
+                role,
+                appType
+        );
+
+        // Хэшируем пароль
+        String hashedPassword = passwordEncoder.encode(
+                userCreateDTO.password()
+        );
+        user.setPassword(hashedPassword);
+
+        return user;
+    }
+
+    /**
+     * Парсит тип приложения из строки.
+     * @param appType Строка с типом приложения.
+     * @return Тип приложения или null, если тип не поддерживается.
+     */
+    private ApplicationType parseApplicationType(String appType) {
+        try {
+            return ApplicationType.valueOf(appType);
+        } catch (IllegalArgumentException e) {
+            logger.warn("Unsupported application type: {}", appType);
+            return null;
+        }
     }
 }

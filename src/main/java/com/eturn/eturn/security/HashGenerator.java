@@ -10,7 +10,13 @@ public class HashGenerator {
     public static String generateUniqueCode() {
         StringBuilder code = new StringBuilder();
         for (int i = 0; i < 6; i++) {
-            code.append(CHAR_POOL.charAt(RANDOM.nextInt(CHAR_POOL.length())));
+            code.append(
+                    CHAR_POOL.charAt(
+                            RANDOM.nextInt(
+                                    CHAR_POOL.length()
+                            )
+                    )
+            );
         }
         return code.toString();
     }

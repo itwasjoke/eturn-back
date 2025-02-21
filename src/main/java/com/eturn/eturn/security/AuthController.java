@@ -32,7 +32,10 @@ public class AuthController {
             HttpServletRequest request){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
-        return authenticationService.signUp(user, userDetails.getUsername());
+        return authenticationService.signUp(
+                user,
+                userDetails.getUsername()
+        );
     }
 
     @PostMapping("/sign-in")
@@ -44,7 +47,10 @@ public class AuthController {
             @RequestParam @Parameter(name = "login", description = "Логин") String login,
             @RequestParam @Parameter(name = "password", description = "Пароль") String password
     ){
-        return authenticationService.signIn(login, password);
+        return authenticationService.signIn(
+                login,
+                password
+        );
     }
 
     @PostMapping("/groups")

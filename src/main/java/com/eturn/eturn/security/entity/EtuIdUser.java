@@ -23,7 +23,7 @@ public class EtuIdUser {
     private String position;
 
     @JsonProperty("educations")
-    private List<EtuIdEducation> educations; // Замените Object на нужный тип, если известен
+    private List<EtuIdEducation> educations;
 
 }
 
