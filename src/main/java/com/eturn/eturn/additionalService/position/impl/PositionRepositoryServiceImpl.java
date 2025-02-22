@@ -285,4 +285,15 @@ public class PositionRepositoryServiceImpl implements PositionRepositoryService 
         return positionRepository.countByTurn(turn);
     }
 
+    @Override
+    public boolean existsByTurnAndUser(
+            Turn turn,
+            User user
+    ) {
+        return positionRepository.existsAllByTurnAndUser(
+                turn,
+                user
+        );
+    }
+
 }

@@ -20,4 +20,8 @@ public interface PositionRepositoryService {
             int page
     );
     long countPositionsByTurn(Turn turn);
+    boolean existsByTurnAndUser(
+            Turn turn,
+            User user
+    );
 }

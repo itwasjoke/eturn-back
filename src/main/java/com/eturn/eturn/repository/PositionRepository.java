@@ -84,4 +84,5 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
             Turn turn,
             long id
     );
+    boolean existsAllByTurnAndUser(Turn turn, User user);
 }

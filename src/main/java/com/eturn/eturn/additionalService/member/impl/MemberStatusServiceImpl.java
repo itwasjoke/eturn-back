@@ -60,6 +60,22 @@ public class MemberStatusServiceImpl implements MemberStatusService {
         ) {
             invitedStatus = ACCESS_IN;
 
+            // проверяем, что нет позиций
+            if (
+                    !positionService.existsByTurnAndUser(
+                        member.getTurn(),
+                        member.getUser()
+                    )
+            ){
+                AccessTurn accessType =
+                        member.getTurn().getAccessTurnType();
+                if (accessType == FOR_ALLOWED_ELEMENTS) {
+                    memberRepository.deleteById(member.getId());
+                    return false;
+                } else {
+                    newAccessMember = MEMBER_LINK;
+                }
+            }
             // Если мы разблокируем пользователя
         } else if (
                 currentAccessMember == BLOCKED

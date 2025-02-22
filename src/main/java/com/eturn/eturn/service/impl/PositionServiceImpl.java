@@ -107,4 +107,15 @@ public class PositionServiceImpl implements PositionService {
                 user
         );
     }
+
+    @Override
+    public boolean existsByTurnAndUser(
+            Turn turn,
+            User user
+    ) {
+        return positionRepService.existsByTurnAndUser(
+                turn,
+                user
+        );
+    }
 }

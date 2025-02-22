@@ -36,4 +36,8 @@ public interface PositionService {
             Turn turn,
             User user
     );
+    boolean existsByTurnAndUser(
+            Turn turn,
+            User user
+    );
 }
