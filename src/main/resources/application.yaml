@@ -37,6 +37,8 @@ spring:
 
 server:
   port: 37111
+  servlet:
+    context-path: /eturn/api
 
 token:
   signing:

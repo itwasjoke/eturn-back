@@ -21,6 +21,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
 
+import static com.eturn.eturn.enums.AccessMember.CREATOR;
 import static com.eturn.eturn.enums.AccessMember.MODERATOR;
 import static com.eturn.eturn.enums.AccessTurn.FOR_LINK;
 
@@ -118,8 +119,15 @@ public class PositionDeletionServiceImpl implements PositionDeletionService {
             Position position
     ) {
         AccessMember access = member.getAccessMember();
-        if (!(access == AccessMember.MEMBER
-                && position.getUser().getId().equals(member.getUser().getId()))) {
+
+        if (access == MODERATOR || access == CREATOR){
+            return;
+        }
+
+        boolean idEquals = position.getUser().getId().equals(
+                member.getUser().getId()
+        );
+        if (!(access == AccessMember.MEMBER && idEquals)) {
             throw new NoAccessPosException("No access");
         }
     }
