@@ -54,10 +54,13 @@ public class PositionTimerServiceImpl implements PositionTimerService {
                                 turn.getTimer()
                         );
                 // Удаляем позиции и обновляем таймер
-                deletePositionsAndUpdateTimer(
-                        turn,
-                        positionsToDelete
-                );
+                logger.info("final count to delete"+positionsToDelete);
+                if (positionsToDelete>0) {
+                    deletePositionsAndUpdateTimer(
+                            turn,
+                            positionsToDelete
+                    );
+                }
             }
         });
     }
@@ -95,6 +98,8 @@ public class PositionTimerServiceImpl implements PositionTimerService {
         long timeElapsed =
                 System.currentTimeMillis()
                         - position.getDateEnd().getTime();
+        logger.info("time elapsed"+timeElapsed);
+        logger.info("time in minutes"+TimeUnit.MILLISECONDS.toMinutes(timeElapsed));
         return (int) (TimeUnit.MILLISECONDS.toMinutes(timeElapsed)
                         / timer);
     }
