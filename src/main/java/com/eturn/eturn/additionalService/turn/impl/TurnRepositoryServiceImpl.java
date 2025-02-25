@@ -18,6 +18,8 @@ import com.eturn.eturn.repository.TurnRepository;
 import com.eturn.eturn.service.MemberService;
 import com.eturn.eturn.service.PositionService;
 import com.eturn.eturn.service.UserService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +29,8 @@ import static com.eturn.eturn.enums.MemberListType.*;
 
 @Service
 public class TurnRepositoryServiceImpl implements TurnRepositoryService {
+
+    private static final Logger logger = LogManager.getLogger(TurnRepositoryServiceImpl.class);
 
     private final TurnRepository turnRepository;
     private final UserService userService;
@@ -131,9 +135,10 @@ public class TurnRepositoryServiceImpl implements TurnRepositoryService {
             Turn turn
     ) {
         TurnDetails details = new TurnDetails();
-
+        logger.info("member exists: "+memberOptional.isPresent());
         if (memberOptional.isPresent()) {
             Member member = memberOptional.get();
+            logger.info(member.getInvitedForTurn().toString()+" status of invitedForTurn");
             details.setAccess(
                     member.getAccessMember().name()
             );
