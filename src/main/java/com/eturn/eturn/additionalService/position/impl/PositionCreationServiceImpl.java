@@ -221,7 +221,6 @@ public class PositionCreationServiceImpl implements PositionCreationService {
             if (isPositionCreationAllowed(
                     turn,
                     user,
-                    countPositions,
                     permittedCount
             )) {
                 Position newPosition = createNewPosition(member);
@@ -281,19 +280,40 @@ public class PositionCreationServiceImpl implements PositionCreationService {
      * Проверяет, может ли пользователь создать новую позицию.
      * @param turn Очередь
      * @param user Пользователь
-     * @param countPositions Текущее количество позиций
      * @param permittedCount Допустимое количество позиций
      * @return true, если создание позиции разрешено, иначе false
      */
     private boolean isPositionCreationAllowed(
             Turn turn,
             User user,
-            long countPositions,
             int permittedCount
     ) {
         Optional<Position> ourPosition =
                 positionRepository.findFirstByUserAndTurnOrderByIdDesc(user, turn);
-        return countPositions >= permittedCount || ourPosition.isEmpty();
+        if (ourPosition.isEmpty()) return true;
+        Position ourPositionExisted = ourPosition.get();
+
+        Optional<Position> lastPosition =
+                positionRepository.findFirstByTurnOrderByIdDesc(turn);
+        if (lastPosition.isEmpty()) return true;
+        Position lastPositionExisted = lastPosition.get();
+        int count = getCountBetween(lastPositionExisted, ourPositionExisted);
+
+        return count >= permittedCount;
+    }
+
+    /**
+     * Получение количества позиций между 2 позициями
+     * @param p1 позиция 1
+     * @param p2 позиция 2
+     * @return количество
+     */
+    private int getCountBetween(Position p1, Position p2){
+        return  positionRepository.countAllByTurnAndIdBetween(
+                p1.getTurn(),
+                p1.getId(),
+                p2.getId()
+        );
     }
 
     /**
@@ -309,15 +329,16 @@ public class PositionCreationServiceImpl implements PositionCreationService {
             User user
     ) {
         Optional<Position> ourPosition =
-                positionRepository.findFirstByUserAndTurnOrderByIdDesc(
+                positionRepository.findFirstByUserAndTurnOrderByIdAsc(
                         user,
                         turn
                 );
         return ourPosition.isEmpty()
-                ? (int) positionRepository.countIdLeft(
-                        newPosition.getId(),
-                        turn
-                ) : -1;
+                ? -1
+                : (int) positionRepository.countIdLeft(
+                    newPosition.getId(),
+                    turn
+                );
     }
 
     /**
@@ -334,29 +355,15 @@ public class PositionCreationServiceImpl implements PositionCreationService {
     ) {
         Optional<Position> lastPos =
                 positionRepository.findFirstByTurnOrderByIdDesc(turn);
-        Position positionDelete =
-                positionRepository.resultsPositionDelete(
-                        turn.getId(),
-                        permittedCount
-                );
-        if (positionDelete != null) {
-            Optional<Position> positionOfUser =
-                    positionRepository.
-                            findFirstByTurnAndUserAndIdGreaterThanOrderByIdDesc(
-                                    turn,
-                                    user,
-                                    positionDelete.getId()
-                            );
-            if (positionOfUser.isPresent() && lastPos.isPresent()) {
-                return permittedCount - positionRepository.
-                        countAllByTurnAndIdBetween(
-                                turn,
-                                positionOfUser.get().getId(),
-                                lastPos.get().getId()
-                        ) + 1;
-            }
-        }
-        return 0;
+        if (lastPos.isEmpty()) return 0;
+        Optional<Position> positionUser =
+                positionRepository.findFirstByUserAndTurnOrderByIdDesc(user, turn);
+        return positionUser.map(position -> permittedCount - positionRepository.
+                countAllByTurnAndIdBetween(
+                        turn,
+                        position.getId(),
+                        lastPos.get().getId()
+                ) + 1).orElse(0);
     }
 
     /**
