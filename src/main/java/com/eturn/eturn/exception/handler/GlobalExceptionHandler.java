@@ -190,10 +190,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler({
             ValidationException.class,
-            NoCreatePosException.class
     })
     public ResponseEntity<Object> handleValidationException(
             ValidationException e,
+            WebRequest request
+    ) {
+        return buildResponse(
+                e,
+                e.getMessage(),
+                HttpStatus.BAD_REQUEST,
+                request
+        );
+    }
+    @ExceptionHandler({NoCreatePosException.class})
+    public ResponseEntity<Object> handleCreatePosDifferenceException(
+            Exception e,
             WebRequest request
     ) {
         return buildResponse(
