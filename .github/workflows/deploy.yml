@@ -38,5 +38,6 @@ jobs:
             docker system prune -af
           
             # Собираем и запускаем новый контейнер приложения
-            
+            docker compose build
+            docker compose up -d
           EOF
