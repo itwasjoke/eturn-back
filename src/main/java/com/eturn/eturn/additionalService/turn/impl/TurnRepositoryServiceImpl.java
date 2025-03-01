@@ -127,7 +127,7 @@ public class TurnRepositoryServiceImpl implements TurnRepositoryService {
      * Собирает информацию о доступе, приглашениях и количестве участников.
      *
      * @param memberOptional Опциональный объект участника.
-     * @param turn           Очередь, для которой собираются данные.
+     * @param turn Очередь, для которой собираются данные.
      * @return Объект TurnDetails с собранной информацией.
      */
     private TurnDetails collectTurnDetails(

@@ -3,30 +3,16 @@ spring:
     allow-circular-references: true
     allow-bean-definition-overriding: true
   datasource:
-    url: jdbc:postgresql://localhost:37113/eturn
-    username: admin
-    password: admin
+    url: env
+    username: env
+    password: env
 
   rabbitmq:
     host: rabbitmq
     port: 37122
-    username: eturnuser
-    password: klbWQFEfeGr4vdv41fs
+    username: env
+    password: env
     virtual-host: /
-#    template:
-#      exchange: response.exchange
-#      routing-key: response.routing.key
-
-#    url: jdbc:postgresql://localhost:5432/postgres
-#    username: vsnigerev
-#    password: 12345678
-#    password: 0000
-    #url: jdbc:postgresql://127.0.0.1:5432/postgres
-    #username: ${POSTGRES_USERNAME:postgresql}
-    #password: ${POSTGRES_PASSWORD:12345678}
-#      url: jdbc:postgresql://127.0.0.1:5432/eturn
-#      username: ${POSTGRES_USERNAME:developer}
-#      password: ${POSTGRES_PASSWORD:dfcbkmtd2004}
   jpa:
     show-sql: false
     hibernate:
@@ -42,20 +28,18 @@ server:
 
 token:
   signing:
-    key: admin
+    key: env
 
 eturn:
   defaults:
-    username: "admin"
-    password: "admin"
+    username: env
+    password: env
   rabbitmq:
-    queue: "eturn-queue"
-    topic: "eturn-notifications"
-    exchange: "eturn-qkjib2rtq3"
+    queue: env
+    topic: env
+    exchange: env
 
 springdoc:
-#  api-docs:
-#    path: "http://eturn.ru/api/v3/api-docs"
   swagger-ui:
     default-model-expand-depth: -1
     disable-swagger-default-url: true
