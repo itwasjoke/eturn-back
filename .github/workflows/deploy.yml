@@ -31,11 +31,12 @@ jobs:
           
             # Обновляем .env файл из GitHub Secrets
             echo "${{ secrets.ENV_FILE }}" > .env
+            cat .env
+            ls -la
 
             # Удаляем ненужные образы и кеши
             docker system prune -af
           
             # Собираем и запускаем новый контейнер приложения
-            docker compose build
-            docker compose up
+            
           EOF
