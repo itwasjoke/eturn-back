@@ -3,31 +3,31 @@ name: Deploy Spring App
 on:
   push:
     branches:
-      - main  # Деплой происходит при пуше в ветку main
+      - prod
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest  # GitHub Actions запустится в облачном контейнере на Ubuntu
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4  # Клонируем код репозитория на агент GitHub Actions
+        uses: actions/checkout@v4
 
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}  # Берём приватный SSH-ключ из GitHub Secrets
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Deploy to server
         run: |
           ssh -o StrictHostKeyChecking=no ${{secrets.USERNAME}}@${{secrets.SERVER_IP}} << 'EOF'
-            cd /path/to/your/project
+            cd ~/eturn-back
 
             # Останавливаем и удаляем старый контейнер приложения, не трогая БД и RabbitMQ
             docker compose stop eturn_app
             docker compose rm -f eturn_app
 
             # Забираем последнюю версию кода
-            git pull origin main
+            git pull origin prod
           
             # Обновляем .env файл из GitHub Secrets
             echo "${{ secrets.ENV_FILE }}" > .env
@@ -36,5 +36,6 @@ jobs:
             docker system prune -af
           
             # Собираем и запускаем новый контейнер приложения
-            docker compose up -d --build eturn_app
+            docker compose build
+            docker compose up
           EOF
