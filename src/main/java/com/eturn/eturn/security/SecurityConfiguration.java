@@ -49,11 +49,7 @@ public class SecurityConfiguration {
                         // Можно указать конкретный путь, * - 1 уровень вложенности, ** - любое количество уровней вложенности
                         // TODO Убрать "/auth/sign-in", "/auth/sign-up", когда тестирование пользователей закончится
                         .requestMatchers(
-                                "/auth/etuid",
-                                "/auth/groups",
-                                "/error/**",
-                                "/auth/sign-in",
-                                "/auth/sign-up",
+                                "/auth/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/groups"
