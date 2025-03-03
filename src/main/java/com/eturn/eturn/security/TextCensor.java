@@ -1,9 +1,5 @@
 package com.eturn.eturn.security;
 
-import java.util.*;
-
-import java.util.regex.*;
-
 import java.util.regex.Pattern;
 
 public class TextCensor {
@@ -11,17 +7,25 @@ public class TextCensor {
 
     static {
         String regex = buildCompleteRegex();
-        BAD_WORDS_PATTERN = Pattern.compile(regex, Pattern.UNICODE_CASE | Pattern.CASE_INSENSITIVE | Pattern.COMMENTS);
+        BAD_WORDS_PATTERN =
+                Pattern.compile(
+                        regex,
+                        Pattern.UNICODE_CASE | Pattern.CASE_INSENSITIVE | Pattern.COMMENTS
+                );
     }
 
     private static String buildCompleteRegex() {
         String pretext = buildPretextRegex();
         String[] badWords = {
                 // Хуй и производные
-                "(?<![^\\s\\d])(?:" + pretext + ")?+[hхx]\\s*[уyu]\\s*[ийiеeёяюju](?<!_hue(?=_)|_хуе(?=дин)|_hyu(?=ndai_))",
+                "(?<![^\\s\\d])(?:"
+                        + pretext
+                        + ")?+[hхx]\\s*[уyu]\\s*[ийiеeёяюju](?<!_hue(?=_)|_хуе(?=дин)|_hyu(?=ndai_))",
 
                 // Пизда и производные
-                "(?<![^\\s\\d])(?:" + pretext + ")?+[пp]\\s*[иieеё]\\s*[зz3]\\s*[дd](?=\\s*[аеиоуыэюяёaeioyu])",
+                "(?<![^\\s\\d])(?:"
+                        + pretext
+                        + ")?+[пp]\\s*[иieеё]\\s*[зz3]\\s*[дd](?=\\s*[аеиоуыэюяёaeioyu])",
 
                 // Еб и производные
                 "(?<![^\\s\\d])(?:" + pretext + ")?+[eеё]\\s*[бb6](?=\\s*([уyиi]|"
@@ -32,13 +36,17 @@ public class TextCensor {
                         + "[сc]\\s*[тt]))",
 
                 // Еб с приставкой
-                "(?<![^\\s\\d])(?:" + pretext + ")?+(?<=\\p{L}{2,})[eеё]\\s*[бb6]",
+                "(?<![^\\s\\d])" + pretext + "[eеё]\\s*[бb6]",
+                "(?<![^\\s\\d])[eеё]\\s*[бb6]",
+                "(?<![^\\s\\d])под[ъь]е(бать|бал[аио]?|быва(ть|л[аио]?|ю[т]?|ешь|ет)|ва(ть|л[аио]?|ю[т]?|ешь|ет)?)",
 
                 // Ёб
                 "(?<![^\\s\\d])ёб(?=\\s*[^\\s\\d])",
 
                 // Бля и производные
-                "(?<![^\\s\\d])(?:" + pretext + ")?+[бb6]\\s*[лl]\\s*(?:я|ya)(?:\\s*[тдtd])?",
+                "(?<![^\\s\\d])(?:"
+                        + pretext
+                        + ")?+[бb6]\\s*[лl]\\s*(?:я|ya)(?:\\s*[тдtd])?",
 
                 // Пидор и производные
                 "[пp]\\s*[иieе]\\s*[дdg]\\s*[eеaаoо]\\s*[rpр]",
@@ -56,7 +64,22 @@ public class TextCensor {
                 "[гg]\\s*[оo]\\s*[вvb]\\s*[нnh]\\s*[оoаaяеeyу]",
 
                 // Fuck и производные
-                "f\\s*u\\s*[cс]\\s*k"
+                "f\\s*u\\s*[cс]\\s*k",
+
+                // Любое слово с "пизд"
+                "(\\b[а-я]*п[иiеeё]зд[а-я]*\\b)",
+
+                // Любое слово с "ёбищ" или "ёбин"
+                "\\b[а-я]*[eеё]б[иi]щ[а-я]*\\b|\\b[а-я]*[еeё]б[аaиi]н[а-я]*\\b",
+                "хули",
+                "хуле",
+                "\\b[а-я]*бляд[а-я]*\\b",
+                // Любое слово с "хер"
+                "\\b[а-я]*[хx][eе][рp][а-я]*\\b",
+                "\\b[а-я]*жоп[а-я]*\\b",
+                "\\b[а-я]*шлюх[а-я]*\\b",
+                "\\b[а-я]*су[кч][а-я]*\\b",
+                "\\b[а-я]*[а-я]*\\b",
         };
 
         return "(?xi)(" + String.join("|", badWords) + ")";
@@ -105,7 +128,7 @@ public class TextCensor {
         return "(?:" + String.join("|", prefixes) + ")?+";
     }
 
-    public static boolean parse(String text) {
+    public static boolean textIsCorrect(String text) {
         if (text == null) return true;
 
         String processed = preprocessText(text);
@@ -122,18 +145,5 @@ public class TextCensor {
                 .replaceAll("[6]", "б")
                 .replaceAll("[0]", "о")
                 .replaceAll("\\s+", " ");
-    }
-
-    public static void main(String[] args) {
-        System.out.println(parse("подъебать"));     // false
-        System.out.println(parse("хуй"));        // false
-        System.out.println(parse("схуярить"));   // false
-        System.out.println(parse("пиздёж"));     // false
-        System.out.println(parse("ебёт"));       // false
-
-        // Должны возвращать true
-        System.out.println(parse("hyundai"));    // true (исключение)
-        System.out.println(parse("мандарин"));   // true (исключение)
-        System.out.println(parse("hue цвет"));   // true (исключение)
     }
 }

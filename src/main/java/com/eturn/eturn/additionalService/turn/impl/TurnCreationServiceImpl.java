@@ -2,6 +2,7 @@ package com.eturn.eturn.additionalService.turn.impl;
 
 import com.eturn.eturn.additionalService.turn.TurnCreationService;
 import com.eturn.eturn.dto.TurnCreatingDTO;
+import com.eturn.eturn.dto.TurnDTO;
 import com.eturn.eturn.dto.mapper.TurnCreatingMapper;
 import com.eturn.eturn.entity.Faculty;
 import com.eturn.eturn.entity.Group;
@@ -14,6 +15,7 @@ import com.eturn.eturn.exception.turn.NoCreateTurnException;
 import com.eturn.eturn.notifications.NotificationController;
 import com.eturn.eturn.repository.TurnRepository;
 import com.eturn.eturn.security.HashGenerator;
+import com.eturn.eturn.security.TextCensor;
 import com.eturn.eturn.service.MemberService;
 import com.eturn.eturn.service.UserService;
 import jakarta.transaction.Transactional;
@@ -61,8 +63,13 @@ public class TurnCreationServiceImpl implements TurnCreationService {
         // Проверяем допустимую длительность очереди в зависимости от роли пользователя
         validateTurnDuration(turnDTO, user);
 
+        // Проверка на цензуру
+        validateCensor(turnDTO);
+
         // Проверяем корректность времени начала очереди
         validateTurnStartTime(turnDTO, user);
+
+
 
         // Создаем очередь и настраиваем её параметры
         Turn turn = createAndConfigureTurn(turnDTO, user);
@@ -81,6 +88,18 @@ public class TurnCreationServiceImpl implements TurnCreationService {
         );
 
         return savedTurn.getHash();
+    }
+
+    /**
+     * Проверка на цензуру
+     * @param turnDTO очередь
+     */
+    private void validateCensor(TurnCreatingDTO turnDTO){
+        boolean nameIsCorrect = TextCensor.textIsCorrect(turnDTO.name());
+        boolean descriptionIsCorrect = TextCensor.textIsCorrect(turnDTO.description());
+        if (!nameIsCorrect && !descriptionIsCorrect){
+            throw new InvalidDataTurnException("Censor error");
+        }
     }
 
     /**

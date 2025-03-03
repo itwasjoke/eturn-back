@@ -3,6 +3,7 @@ package com.eturn.eturn.additionalService.turn.impl;
 import com.eturn.eturn.additionalService.turn.TurnUpdateService;
 import com.eturn.eturn.dto.FacultyDTO;
 import com.eturn.eturn.dto.GroupDTO;
+import com.eturn.eturn.dto.TurnCreatingDTO;
 import com.eturn.eturn.dto.TurnEditDTO;
 import com.eturn.eturn.dto.mapper.FacultyMapper;
 import com.eturn.eturn.dto.mapper.GroupMapper;
@@ -11,9 +12,11 @@ import com.eturn.eturn.entity.Group;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
 import com.eturn.eturn.exception.member.NoAccessMemberException;
+import com.eturn.eturn.exception.turn.InvalidDataTurnException;
 import com.eturn.eturn.exception.turn.NoAccessDeleteTurnException;
 import com.eturn.eturn.exception.turn.NotFoundTurnException;
 import com.eturn.eturn.repository.TurnRepository;
+import com.eturn.eturn.security.TextCensor;
 import com.eturn.eturn.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +55,9 @@ public class TurnUpdateServiceImpl implements TurnUpdateService {
         Turn currentTurn = getTurnByHashOrThrow(turn.hash());
         User user = userService.getUserFromLogin(username);
 
+        // Проверка на цензуру
+        validateCensor(turn);
+
         // Проверяем, имеет ли пользователь право на изменение очереди
         validateUserAccess(currentTurn, user);
 
@@ -60,6 +66,18 @@ public class TurnUpdateServiceImpl implements TurnUpdateService {
 
         // Сохраняем обновленную очередь
         saveTurn(currentTurn);
+    }
+
+    /**
+     * Проверка на цензуру
+     * @param turnDTO очередь
+     */
+    private void validateCensor(TurnEditDTO turnDTO){
+        boolean nameIsCorrect = TextCensor.textIsCorrect(turnDTO.name());
+        boolean descriptionIsCorrect = TextCensor.textIsCorrect(turnDTO.description());
+        if (!nameIsCorrect && !descriptionIsCorrect){
+            throw new InvalidDataTurnException("Censor error");
+        }
     }
 
     /**
