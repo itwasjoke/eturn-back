@@ -50,6 +50,7 @@ public class SecurityConfiguration {
                         // TODO Убрать "/auth/sign-in", "/auth/sign-up", когда тестирование пользователей закончится
                         .requestMatchers(
                                 "/auth/**",
+                                "/auth/web",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/groups"
