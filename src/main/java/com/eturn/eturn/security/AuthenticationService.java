@@ -13,12 +13,8 @@ import com.eturn.eturn.entity.User;
 import com.eturn.eturn.enums.ApplicationType;
 import com.eturn.eturn.enums.Role;
 import com.eturn.eturn.exception.group.NotFoundGroupException;
-import com.eturn.eturn.exception.user.AccessException;
-import com.eturn.eturn.exception.user.AuthPasswordException;
-import com.eturn.eturn.exception.user.NotFoundUserException;
-import com.eturn.eturn.security.entity.EduGroups;
-import com.eturn.eturn.security.entity.EtuIdEducation;
-import com.eturn.eturn.security.entity.EtuIdUser;
+import com.eturn.eturn.exception.user.*;
+import com.eturn.eturn.security.entity.*;
 import com.eturn.eturn.security.jwt.JwtAuthenticationResponse;
 import com.eturn.eturn.security.jwt.JwtService;
 import com.eturn.eturn.service.FacultyService;
@@ -29,14 +25,13 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
@@ -51,6 +46,17 @@ public class AuthenticationService {
     private final JwtService jwtService;
     @Value("${external.api.url}")
     private String externalApiUrl;
+
+    @Value("${external.api.url_etu_id}")
+    private String externalApiETUIDUrl;
+
+    @Value("${external.api.url_profile}")
+    private String externalApiProfile;
+
+    @Value("${eturn.etu.secret}")
+    private String etuIdSecret;
+    @Value("${eturn.etu.client}")
+    private String etuIdClientId;
     private final RestTemplate restTemplate;
     private final UserService userService;
     private final GroupService groupService;
@@ -426,6 +432,66 @@ public class AuthenticationService {
         } catch (IllegalArgumentException e) {
             logger.warn("Unsupported application type: {}", appType);
             return null;
+        }
+    }
+
+    public String etuIdAuth(EtuIdCode etuIdCode) {
+        // Создаем заголовки
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        // Создаем параметры для тела запроса
+        MultiValueMap<String, String> bodyParams = new LinkedMultiValueMap<>();
+        bodyParams.add("grant_type", "authorization_code");
+        bodyParams.add("client_id", etuIdClientId);
+        bodyParams.add("redirect_uri", "https://digital.etu.ru/eturn/processing-auth");
+        bodyParams.add("client_secret", etuIdSecret);
+        bodyParams.add("code_verifier", etuIdCode.codeVerifier());
+        bodyParams.add("code", etuIdCode.code());
+
+        // Создаем HttpEntity с заголовками и телом запроса
+        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(bodyParams, headers);
+
+        ResponseEntity<EtuIdToken> response = restTemplate.exchange(
+                externalApiETUIDUrl,
+                HttpMethod.POST,
+                entity,
+                EtuIdToken.class
+        );
+        // Обрабатываем ответ
+        if (response.getStatusCode() != HttpStatus.OK) {
+           throw new OAuthRequestETUIDException("Request failed");
+        }
+        EtuIdToken token = response.getBody();
+        if (token == null){
+            throw new NoBodyETUIDException("Request failed with no body");
+        }
+
+        HttpHeaders headersProfile = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + token.access_token()); // Устанавливаем токен
+
+        // Создаем HttpEntity с заголовками
+        HttpEntity<String> entityProfile = new HttpEntity<>(headersProfile);
+
+        // Создаем RestTemplate
+        RestTemplate restTemplate = new RestTemplate();
+
+        // Отправляем GET-запрос
+        ResponseEntity<EtuIdProfile> responseProfile = restTemplate.exchange(
+                externalApiProfile,
+                HttpMethod.GET,
+                entityProfile,
+                EtuIdProfile.class
+        );
+        // Обрабатываем ответ
+        if (responseProfile.getStatusCode() != HttpStatus.OK) {
+            throw new OAuthRequestETUIDException("Request failed");
+        }
+        EtuIdProfile etuIdProfile = responseProfile.getBody();
+        if (etuIdProfile == null){
+            throw new NoBodyETUIDException("Request failed with no body");
+        } else {
+            return etuIdProfile.second_name();
         }
     }
 }

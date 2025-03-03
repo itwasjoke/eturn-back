@@ -11,10 +11,7 @@ import com.eturn.eturn.exception.member.NotFoundMemberException;
 import com.eturn.eturn.exception.member.UnknownMemberException;
 import com.eturn.eturn.exception.position.*;
 import com.eturn.eturn.exception.turn.*;
-import com.eturn.eturn.exception.user.AccessException;
-import com.eturn.eturn.exception.user.AuthPasswordException;
-import com.eturn.eturn.exception.user.LocalNotFoundUserException;
-import com.eturn.eturn.exception.user.NotFoundUserException;
+import com.eturn.eturn.exception.user.*;
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -210,6 +207,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return buildResponse(
                 e,
                 e.getMessage(),
+                HttpStatus.BAD_REQUEST,
+                request
+        );
+    }
+    @ExceptionHandler({NoBodyETUIDException.class, OAuthRequestETUIDException.class})
+    public ResponseEntity<Object> handleETUIDException(
+            Exception e,
+            WebRequest request
+    ) {
+        return buildResponse(
+                e,
+                "Ошибка при загрузке данных из ETU ID",
                 HttpStatus.BAD_REQUEST,
                 request
         );

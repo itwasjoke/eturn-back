@@ -31,6 +31,10 @@ token:
     key: env
 
 eturn:
+  etu:
+    secret: env
+    client: env
+
   defaults:
     username: env
     password: env
@@ -48,3 +52,5 @@ springdoc:
 external:
   api:
     url: "https://lk.etu.ru/api/profile/0"
+    url_etu_id: "https://id.etu.ru/oauth/token"
+    url_profile: "https://id.etu.ru/api/profile"

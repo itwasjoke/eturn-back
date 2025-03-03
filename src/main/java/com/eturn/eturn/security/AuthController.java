@@ -2,6 +2,7 @@ package com.eturn.eturn.security;
 
 import com.eturn.eturn.dto.AuthData;
 import com.eturn.eturn.dto.UserCreateDTO;
+import com.eturn.eturn.security.entity.EtuIdCode;
 import com.eturn.eturn.security.jwt.JwtAuthenticationResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -67,6 +68,15 @@ public class AuthController {
     )
     public JwtAuthenticationResponse signIn(@RequestBody AuthData authData){
         return authenticationService.auth(authData);
+    }
+
+    @PostMapping("/web")
+    @Operation(
+            summary = "Вход через ETU ID на сайте",
+            description = "Отправка кода с дальнейшей авторизацией"
+    )
+    public String signInWeb(EtuIdCode etuIdCode){
+        return authenticationService.etuIdAuth(etuIdCode);
     }
 
 }
