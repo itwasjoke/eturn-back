@@ -98,6 +98,16 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * Получение пользователя
+     * @param login по ETU ID
+     * @return Опциональный пользователь
+     */
+    @Override
+    public Optional<User> getOptionalUserFromLogin(String login) {
+        return userRepository.findUserByLogin(login);
+    }
+
+    /**
      * Создание пользователя
      * @param user тело пользователя
      * @return пользователь

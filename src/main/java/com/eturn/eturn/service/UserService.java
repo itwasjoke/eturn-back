@@ -10,6 +10,7 @@ import java.util.Optional;
 public interface UserService {
     UserDTO getUserDTOFromLogin(String login);
     Optional<User> getOptionalUserFromId(Long id);
+    Optional<User> getOptionalUserFromLogin(String login);
     User createUser(User user);
     User getUserFromLogin(String login);
     UserDetailsService userDetailsService();

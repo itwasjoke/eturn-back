@@ -75,7 +75,7 @@ public class AuthController {
             summary = "Вход через ETU ID на сайте",
             description = "Отправка кода с дальнейшей авторизацией"
     )
-    public String signInWeb(@RequestBody EtuIdCode etuIdCode){
+    public JwtAuthenticationResponse signInWeb(@RequestBody EtuIdCode etuIdCode){
         return authenticationService.etuIdAuth(etuIdCode);
     }
 

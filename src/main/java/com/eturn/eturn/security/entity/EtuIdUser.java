@@ -10,8 +10,8 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true) // Игнорируем неизвестные поля
 public class EtuIdUser {
 
-    @JsonProperty("id")
-    private Long id;
+    @JsonProperty("etu_id")
+    private String etuId;
 
     @JsonProperty("first_name")
     private String firstName;

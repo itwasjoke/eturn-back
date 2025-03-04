@@ -264,8 +264,8 @@ public class AuthenticationService {
             EtuIdUser etuIdUser,
             AuthData authData
     ) {
-        Optional<User> optionalUser = userService.getOptionalUserFromId(
-                etuIdUser.getId()
+        Optional<User> optionalUser = userService.getOptionalUserFromLogin(
+                etuIdUser.getEtuId()
         );
         User user;
 
@@ -343,15 +343,14 @@ public class AuthenticationService {
             AuthData authData
     ) {
         User newUser = new User();
-        newUser.setId(etuIdUser.getId());
         newUser.setName(
                 etuIdUser.getFirstName() + " " + etuIdUser.getSecondName()
         );
         newUser.setLogin(
-                "eturnLogin" + etuIdUser.getId().toString()
+                etuIdUser.getEtuId()
         );
         newUser.setPassword(
-                "eturnPassword" + etuIdUser.getId().toString()
+                etuIdUser.getEtuId()+HashGenerator.generateUniqueCode()
         );
 
         updateUserGroup(newUser, etuIdUser);
@@ -435,7 +434,7 @@ public class AuthenticationService {
         }
     }
 
-    public String etuIdAuth(EtuIdCode etuIdCode) {
+    public JwtAuthenticationResponse etuIdAuth(EtuIdCode etuIdCode) {
         // Создаем заголовки
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -450,14 +449,15 @@ public class AuthenticationService {
         bodyParams.add("code", etuIdCode.code());
 
         // Создаем HttpEntity с заголовками и телом запроса
-        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(bodyParams, headers);
-
+        HttpEntity<MultiValueMap<String, String>> entity
+                = new HttpEntity<>(bodyParams, headers);
         ResponseEntity<EtuIdToken> response = restTemplate.exchange(
                 externalApiETUIDUrl,
                 HttpMethod.POST,
                 entity,
                 EtuIdToken.class
         );
+
         // Обрабатываем ответ
         if (response.getStatusCode() != HttpStatus.OK) {
            throw new OAuthRequestETUIDException("Request failed");
@@ -467,31 +467,6 @@ public class AuthenticationService {
             throw new NoBodyETUIDException("Request failed with no body");
         }
 
-        HttpHeaders headersProfile = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + token.access_token()); // Устанавливаем токен
-
-        // Создаем HttpEntity с заголовками
-        HttpEntity<String> entityProfile = new HttpEntity<>(headersProfile);
-
-        // Создаем RestTemplate
-        RestTemplate restTemplate = new RestTemplate();
-
-        // Отправляем GET-запрос
-        ResponseEntity<EtuIdProfile> responseProfile = restTemplate.exchange(
-                externalApiProfile,
-                HttpMethod.GET,
-                entityProfile,
-                EtuIdProfile.class
-        );
-        // Обрабатываем ответ
-        if (responseProfile.getStatusCode() != HttpStatus.OK) {
-            throw new OAuthRequestETUIDException("Request failed");
-        }
-        EtuIdProfile etuIdProfile = responseProfile.getBody();
-        if (etuIdProfile == null){
-            throw new NoBodyETUIDException("Request failed with no body");
-        } else {
-            return etuIdProfile.second_name();
-        }
+        return auth(new AuthData(token.access_token(), null, null));
     }
 }
