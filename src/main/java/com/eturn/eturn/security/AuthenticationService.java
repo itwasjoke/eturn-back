@@ -296,6 +296,7 @@ public class AuthenticationService {
                     etuIdUser.getEducations().get(0);
             EduGroups eduGroups =
                     etuIdEducation.getEduGroups();
+            logger.info("group: "+eduGroups.getName());
             Optional<Group> group =
                     groupService.getGroup(
                             eduGroups.getName()
