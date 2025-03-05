@@ -75,7 +75,7 @@ public class TurnUpdateServiceImpl implements TurnUpdateService {
     private void validateCensor(TurnEditDTO turnDTO){
         boolean nameIsCorrect = TextCensor.textIsCorrect(turnDTO.name());
         boolean descriptionIsCorrect = TextCensor.textIsCorrect(turnDTO.description());
-        if (!nameIsCorrect && !descriptionIsCorrect){
+        if (!nameIsCorrect || !descriptionIsCorrect){
             throw new InvalidDataTurnException("Censor error");
         }
     }

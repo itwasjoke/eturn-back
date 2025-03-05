@@ -97,7 +97,7 @@ public class TurnCreationServiceImpl implements TurnCreationService {
     private void validateCensor(TurnCreatingDTO turnDTO){
         boolean nameIsCorrect = TextCensor.textIsCorrect(turnDTO.name());
         boolean descriptionIsCorrect = TextCensor.textIsCorrect(turnDTO.description());
-        if (!nameIsCorrect && !descriptionIsCorrect){
+        if (!nameIsCorrect || !descriptionIsCorrect){
             throw new InvalidDataTurnException("Censor error");
         }
     }

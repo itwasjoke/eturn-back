@@ -79,7 +79,6 @@ public class TextCensor {
                 "\\b[а-я]*жоп[а-я]*\\b",
                 "\\b[а-я]*шлюх[а-я]*\\b",
                 "\\b[а-я]*су[кч][а-я]*\\b",
-                "\\b[а-я]*[а-я]*\\b",
         };
 
         return "(?xi)(" + String.join("|", badWords) + ")";
@@ -129,7 +128,7 @@ public class TextCensor {
     }
 
     public static boolean textIsCorrect(String text) {
-        if (text == null) return true;
+        if (text == null || text.trim().equals("")) return true;
 
         String processed = preprocessText(text);
         return !BAD_WORDS_PATTERN.matcher(processed).find();
