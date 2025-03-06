@@ -34,4 +34,8 @@ public interface TurnService {
             TurnEditDTO turn,
             String username
     );
+    void addHour(
+            String hash,
+            String username
+    );
 }

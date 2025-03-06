@@ -113,6 +113,8 @@ public class Turn {
 
     private String accessTags;
 
+    private Integer extensionTimes = 5;
+
     // Среднее время в миллисекундах
 
     private Double smoothedValue;

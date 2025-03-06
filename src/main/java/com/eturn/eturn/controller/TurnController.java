@@ -42,7 +42,12 @@ public class TurnController {
     )
     public TurnDTO getTurn(
             HttpServletRequest request,
-            @PathVariable @Parameter(name = "hash", description = "Хэш очереди") String hash
+            @PathVariable
+            @Parameter(
+                    name = "hash",
+                    description = "Хэш очереди"
+            )
+            String hash
     ){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
@@ -59,8 +64,18 @@ public class TurnController {
     )
     public List<TurnForListDTO> getUserTurns(
         HttpServletRequest request,
-        @RequestParam @Parameter(name = "type", description = "Тип очереди turn/edu") String type,
-        @RequestParam @Parameter(name = "access", description = "Тип доступа memberIn/memberOut") String access
+        @RequestParam
+        @Parameter(
+                name = "type",
+                description = "Тип очереди turn/edu"
+        )
+        String type,
+        @RequestParam
+        @Parameter(
+                name = "access",
+                description = "Тип доступа memberIn/memberOut"
+        )
+        String access
     ) {
 
         var authentication = (Authentication) request.getUserPrincipal();
@@ -80,7 +95,12 @@ public class TurnController {
     )
     public List<TurnForListDTO> getLinkedTurn(
             HttpServletRequest request,
-            @RequestParam @Parameter(name = "hash", description = "Хэш очереди") String hash
+            @RequestParam
+            @Parameter(
+                    name = "hash",
+                    description = "Хэш очереди"
+            )
+            String hash
     ){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
@@ -98,7 +118,13 @@ public class TurnController {
     )
     public String create(
             HttpServletRequest request,
-            @Valid @RequestBody @Parameter(name = "turn", description = "Объект turnCreatingDTO") TurnCreatingDTO turn,
+            @Valid
+            @RequestBody
+            @Parameter(
+                    name = "turn",
+                    description = "Объект turnCreatingDTO"
+            )
+            TurnCreatingDTO turn,
             BindingResult bindingResult
     ){
         if (bindingResult.hasErrors()) {
@@ -120,7 +146,9 @@ public class TurnController {
     )
     public void delete(
             HttpServletRequest request,
-            @PathVariable @Parameter(name = "hash", description = "Хэш очереди") String hash
+            @PathVariable
+            @Parameter(name = "hash", description = "Хэш очереди")
+            String hash
     ) {
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
@@ -137,7 +165,13 @@ public class TurnController {
     )
     public void changeTurn(
             HttpServletRequest request,
-            @Valid @RequestBody @Parameter(name = "turn", description = "Объект turnEditDTO") TurnEditDTO turn,
+            @Valid
+            @RequestBody
+            @Parameter(
+                    name = "turn",
+                    description = "Объект turnEditDTO"
+            )
+            TurnEditDTO turn,
             BindingResult bindingResult
     ){
         if (bindingResult.hasErrors()) {
@@ -152,4 +186,24 @@ public class TurnController {
         );
     }
 
+    @PutMapping("/add-hour/{hash}")
+    @Operation(
+            summary = "Добавление часа к очереди",
+            description = "5 раз можно добавлять час к дате конца очереди"
+    )
+    public void addHourToTurn(
+            HttpServletRequest request,
+            @PathVariable
+            @Parameter(
+                    name = "hash",
+                    description = "Хэш очереди"
+            ) String hash
+    ){
+        var authentication = (Authentication) request.getUserPrincipal();
+        var userDetails = (UserDetails) authentication.getPrincipal();
+        turnService.addHour(
+                hash,
+                userDetails.getUsername()
+        );
+    }
 }

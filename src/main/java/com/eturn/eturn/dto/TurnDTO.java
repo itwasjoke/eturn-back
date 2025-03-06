@@ -48,7 +48,10 @@ public record TurnDTO(
         @Schema(description = "Количество участников")
         MembersCountDTO membersCount,
         @Schema(description = "Время на удаление", example="2")
-        Integer timer
+        Integer timer,
+
+        @Schema(description = "Разрешенное количество на увеличение очереди", example="2")
+        Integer extensionTimes
 ) {
 
 }

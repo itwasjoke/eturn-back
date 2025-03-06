@@ -11,4 +11,8 @@ public interface TurnUpdateService {
             String username,
             String hash
     );
+    void addHour(
+            String hash,
+            String username
+    );
 }

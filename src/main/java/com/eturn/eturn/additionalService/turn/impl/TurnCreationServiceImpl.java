@@ -200,6 +200,7 @@ public class TurnCreationServiceImpl implements TurnCreationService {
                     buildAllowedElementsString(turn);
             turn.setAccessTags(allowedElements.trim());
         }
+        turn.setExtensionTimes(5);
 
         String tags = buildTagsString(turn, user);
         turn.setTags(tags);

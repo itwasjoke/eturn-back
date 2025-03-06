@@ -154,6 +154,12 @@ public class TurnServiceImpl implements TurnService {
         return turnRepository.countAllByCreator(user);
     }
 
+    /**
+     * Получение очереди при поиске по ссылке
+     * @param hash хэш очереди
+     * @param username пользователь
+     * @return
+     */
     @Override
     public List<TurnForListDTO> getLinkedTurn(
             String hash,
@@ -165,6 +171,11 @@ public class TurnServiceImpl implements TurnService {
         );
     }
 
+    /**
+     * Изменение очереди
+     * @param turn очередь с изменениями
+     * @param username пользователь
+     */
     @Override
     public void changeTurn(
             TurnEditDTO turn,
@@ -174,6 +185,19 @@ public class TurnServiceImpl implements TurnService {
                 turn,
                 username
         );
+    }
+
+    /**
+     * Добавление часа к концу очереди
+     * @param hash хэш очереди
+     * @param username пользователь
+     */
+    @Override
+    public void addHour(
+            String hash,
+            String username
+    ) {
+        turnUpdateService.addHour(hash, username);
     }
 
 }

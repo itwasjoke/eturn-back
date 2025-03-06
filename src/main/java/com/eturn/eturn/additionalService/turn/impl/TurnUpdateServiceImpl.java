@@ -14,6 +14,7 @@ import com.eturn.eturn.entity.User;
 import com.eturn.eturn.exception.member.NoAccessMemberException;
 import com.eturn.eturn.exception.turn.InvalidDataTurnException;
 import com.eturn.eturn.exception.turn.NoAccessDeleteTurnException;
+import com.eturn.eturn.exception.turn.NoAccessUpdateTurnException;
 import com.eturn.eturn.exception.turn.NotFoundTurnException;
 import com.eturn.eturn.repository.TurnRepository;
 import com.eturn.eturn.security.TextCensor;
@@ -21,6 +22,9 @@ import com.eturn.eturn.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -103,7 +107,7 @@ public class TurnUpdateServiceImpl implements TurnUpdateService {
             Turn turn,
             User user
     ) {
-        if (!turn.getCreator().equals(user)) {
+        if (!turn.getCreator().getId().equals(user.getId())) {
             throw new NoAccessMemberException("No access");
         }
     }
@@ -291,6 +295,59 @@ public class TurnUpdateServiceImpl implements TurnUpdateService {
             turnRepository.deleteTurnById(turn.get().getId());
         } else {
             throw new NoAccessDeleteTurnException("Only creator can delete turn information on deleteTurn method (TurnServiceImpl.java)");
+        }
+    }
+
+    /**
+     * Добавляет час к дате конца очереди, если осталось менее 15 минут до конца очереди
+     * @param hash хэш очереди
+     * @param username пользователь
+     */
+    @Override
+    public void addHour(String hash, String username) {
+        // Получаем текущую очередь и пользователя
+        Turn currentTurn = getTurnByHashOrThrow(hash);
+        User user = userService.getUserFromLogin(username);
+
+        // Проверяем, имеет ли пользователь право на изменение очереди
+        validateUserAccess(currentTurn, user);
+
+        // получение количества попыток
+        Integer extensionTimes = currentTurn.getExtensionTimes();
+        if (extensionTimes <= 0){
+            throw new NoAccessUpdateTurnException("No times left");
+        }
+
+        // проверка, что осталось меньше 15 минут до конца очереди
+        Date dateEnd = currentTurn.getDateEnd();
+        isLessThan15MinutesRemaining(dateEnd);
+
+        // добавление часа и сохранение
+        Instant instantDate = dateEnd
+                .toInstant()
+                .plusSeconds(3600);
+        currentTurn.setDateEnd(Date.from(instantDate));
+        currentTurn.setExtensionTimes(extensionTimes-1);
+        turnRepository.save(currentTurn);
+    }
+
+    /**
+     * Проверяет, что осталось менее 15 минут до конца очереди
+     * @param date1 дата конца очереди
+     */
+    private void isLessThan15MinutesRemaining(Date date1) {
+        // Текущее время
+        Instant now = Instant.now();
+
+        // Время date1
+        Instant target = date1.toInstant();
+
+        // Разница между датами
+        Duration duration = Duration.between(now, target);
+
+        // Проверяем, что разница меньше 15 минут (900 секунд)
+        if(duration.isNegative() || duration.getSeconds() >= 900){
+            throw new NoAccessUpdateTurnException("Too far");
         }
     }
 }
