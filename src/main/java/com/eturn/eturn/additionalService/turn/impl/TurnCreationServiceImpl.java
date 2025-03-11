@@ -69,8 +69,6 @@ public class TurnCreationServiceImpl implements TurnCreationService {
         // Проверяем корректность времени начала очереди
         validateTurnStartTime(turnDTO, user);
 
-
-
         // Создаем очередь и настраиваем её параметры
         Turn turn = createAndConfigureTurn(turnDTO, user);
 

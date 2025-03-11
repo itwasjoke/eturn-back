@@ -83,7 +83,8 @@ public class UserServiceImpl implements UserService {
                 faculty,
                 group,
                 role,
-                countAvailable
+                countAvailable,
+                user.getFeedback() != null
         );
     }
 

@@ -46,6 +46,9 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private ApplicationType applicationType;
 
+    @OneToOne(mappedBy = "user")
+    private Feedback feedback;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.toString()));

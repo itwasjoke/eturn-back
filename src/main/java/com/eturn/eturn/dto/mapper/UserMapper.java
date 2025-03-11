@@ -21,7 +21,15 @@ public interface UserMapper {
     @Mapping(target = "group", source = "group")
     @Mapping(target = "role", source = "role")
     @Mapping(target = "countAvailableTurns", source = "count")
-    UserDTO userToUserDTO(User user, String faculty, String group, String role, int count);
+    @Mapping(target = "feedbackSent", source = "feedbackSent")
+    UserDTO userToUserDTO(
+            User user,
+            String faculty,
+            String group,
+            String role,
+            int count,
+            boolean feedbackSent
+    );
 
     @Mapping(target = "role", source = "role")
     @Mapping(target = "applicationType", source = "type")

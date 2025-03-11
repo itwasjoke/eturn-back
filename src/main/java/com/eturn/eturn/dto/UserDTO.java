@@ -16,7 +16,9 @@ public record UserDTO(
         @Schema(description = "Группа", example="2000")
         String group,
         @Schema(description = "Количество групп, которое может создать пользователь", example="2")
-        int countAvailableTurns
+        int countAvailableTurns,
+        @Schema(description = "Отправлена ли обратная связь", example="true")
+        boolean feedbackSent
 ) {
 
 }
