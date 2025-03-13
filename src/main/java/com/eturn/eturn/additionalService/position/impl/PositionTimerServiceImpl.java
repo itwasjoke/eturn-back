@@ -96,11 +96,13 @@ public class PositionTimerServiceImpl implements PositionTimerService {
             int timer
     ) {
         long now = new Date().getTime();
+        int firstPosition = 0;
         long timeElapsed = now - position.getDateEnd().getTime();
-        logger.info("time elapsed"+timeElapsed);
-        logger.info("time in minutes"+TimeUnit.MILLISECONDS.toMinutes(timeElapsed));
+        if (timeElapsed>0) firstPosition = 1;
+        logger.info("time elapsed " + timeElapsed);
+        logger.info("time in minutes " + TimeUnit.MILLISECONDS.toMinutes(timeElapsed));
         return (int) (TimeUnit.MILLISECONDS.toMinutes(timeElapsed)
-                        / timer);
+                        / timer) + firstPosition;
     }
 
     /**
