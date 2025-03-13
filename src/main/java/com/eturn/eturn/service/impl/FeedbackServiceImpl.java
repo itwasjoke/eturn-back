@@ -2,6 +2,7 @@ package com.eturn.eturn.service.impl;
 
 import com.eturn.eturn.dto.FeedbackCreateDTO;
 import com.eturn.eturn.dto.FeedbackDTO;
+import com.eturn.eturn.dto.FeedbackMainDTO;
 import com.eturn.eturn.dto.mapper.FeedbackListMapper;
 import com.eturn.eturn.entity.Feedback;
 import com.eturn.eturn.entity.User;
@@ -80,5 +81,16 @@ public class FeedbackServiceImpl implements FeedbackService {
         Page<Feedback> pageFeedback = feedbackRepository.findAll(pageable);
         return feedbackListMapper.mapFeedback(pageFeedback.toList());
 
+    }
+
+    @Override
+    public FeedbackMainDTO getMainInfoFeedback(String username) {
+        User user = userService.getUserFromLogin(username);
+        if (user.getRole()!= Role.ADMIN){
+            throw new AccessException("No admin access");
+        }
+        Double evaluation = feedbackRepository.findAverageEvaluation();
+        long count = feedbackRepository.count();
+        return new FeedbackMainDTO(evaluation, count);
     }
 }

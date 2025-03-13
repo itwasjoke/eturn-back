@@ -2,7 +2,9 @@ package com.eturn.eturn.controller;
 
 import com.eturn.eturn.dto.FeedbackCreateDTO;
 import com.eturn.eturn.dto.FeedbackDTO;
+import com.eturn.eturn.dto.FeedbackMainDTO;
 import com.eturn.eturn.service.FeedbackService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,6 +26,10 @@ public class FeedbackController {
     }
 
     @PostMapping()
+    @Operation(
+            summary = "Создание обратной связи",
+            description = "Отправляет форму с оценкой и отзывом"
+    )
     public void addFeedback(
             HttpServletRequest request,
             @Parameter(
@@ -41,6 +47,10 @@ public class FeedbackController {
     }
 
     @GetMapping()
+    @Operation(
+            summary = "Получение списка с обратной связью",
+            description = "Получает список с отзывами"
+    )
     public List<FeedbackDTO> getFeedbackList(
             HttpServletRequest request,
             @RequestParam @Parameter(name = "page", description = "Номер страницы") Integer page
@@ -48,5 +58,18 @@ public class FeedbackController {
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
         return feedbackService.getFeedback(userDetails.getUsername(), page);
+    }
+
+    @GetMapping("/main")
+    @Operation(
+            summary = "Основная информация",
+            description = "Делает вывод основной информации об оценках"
+    )
+    public FeedbackMainDTO getMainInfoFeedback(
+            HttpServletRequest request
+    ){
+        var authentication = (Authentication) request.getUserPrincipal();
+        var userDetails = (UserDetails) authentication.getPrincipal();
+        return feedbackService.getMainInfoFeedback(userDetails.getUsername());
     }
 }
