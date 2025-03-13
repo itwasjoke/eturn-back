@@ -51,6 +51,7 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
             Turn turn,
             User user
     );
+    void deleteAllByTurn(Turn turn);
     long countByTurn(Turn turn);
     void deleteAllByTurnAndUser(
             Turn turn,

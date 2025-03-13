@@ -109,6 +109,11 @@ public class PositionTimerServiceImpl implements PositionTimerService {
      * @param positionsToDelete Количество позиций для удаления
      */
     private void deletePositionsAndUpdateTimer(Turn turn, int positionsToDelete) {
+        int count = positionRepository.countAllByTurn(turn);
+        if (count<=positionsToDelete){
+            positionRepository.deleteAllByTurn(turn);
+            return;
+        }
         // Удаляем позиции и получаем последнюю удаленную позицию
         positionRepository.resultsPositionDeleteOverdueElements(
                     turn.getId(),
