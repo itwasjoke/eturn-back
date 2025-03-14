@@ -68,14 +68,9 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
             long id1,
             long id2
     );
-    void deleteByTurnAndIdLessThanEqual(
+    void deleteByTurnAndIdLessThan(
             Turn turn,
             long id
-    );
-    Optional<Position> findFirstByTurnAndUserAndIdGreaterThanOrderByIdDesc(
-            Turn turn,
-            User user,
-            long Id
     );
     Optional<Position> findFirstByTurnAndIdGreaterThanOrderByIdAsc(
             Turn turn,

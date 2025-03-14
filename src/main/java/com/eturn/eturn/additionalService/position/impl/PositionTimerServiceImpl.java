@@ -124,7 +124,7 @@ public class PositionTimerServiceImpl implements PositionTimerService {
                 .ifPresent(p -> {
                     // Удаляем все позиции с ID меньше или равным ID последней удаленной позиции
                     positionRepository.
-                            deleteByTurnAndIdLessThanEqual(
+                            deleteByTurnAndIdLessThan(
                                     turn,
                                     p.getId()
                             );
