@@ -349,7 +349,6 @@ public class PositionUpdateServiceImpl implements PositionUpdateService {
         // Обновляем таймеры, если текущая позиция активна
         updateTimersIfCurrent(
                 position,
-                nextPosition,
                 currentPosition
         );
 
@@ -414,12 +413,10 @@ public class PositionUpdateServiceImpl implements PositionUpdateService {
     /**
      * Обновляет таймеры, если текущая позиция активна.
      * @param position Текущая позиция
-     * @param nextPosition Следующая позиция
      * @param currentPosition Активная позиция в очереди
      */
     private void updateTimersIfCurrent(
             Position position,
-            Position nextPosition,
             Position currentPosition
     ) {
         if (
@@ -431,8 +428,8 @@ public class PositionUpdateServiceImpl implements PositionUpdateService {
                     )
         ) {
             position.setDateEnd(null);
-            Date newEndDate = calculateNewEndDate(nextPosition.getTurn().getTimer());
-            nextPosition.setDateEnd(newEndDate);
+            Date newEndDate = calculateNewEndDate(position.getTurn().getTimer());
+            position.setDateEnd(newEndDate);
         }
     }
 

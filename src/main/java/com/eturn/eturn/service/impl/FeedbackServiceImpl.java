@@ -7,6 +7,8 @@ import com.eturn.eturn.dto.mapper.FeedbackListMapper;
 import com.eturn.eturn.entity.Feedback;
 import com.eturn.eturn.entity.User;
 import com.eturn.eturn.enums.Role;
+import com.eturn.eturn.exception.turn.InvalidFeedbackDataException;
+import com.eturn.eturn.exception.turn.InvalidLengthTurnException;
 import com.eturn.eturn.exception.user.AccessException;
 import com.eturn.eturn.repository.FeedbackRepository;
 import com.eturn.eturn.service.FeedbackService;
@@ -49,6 +51,13 @@ public class FeedbackServiceImpl implements FeedbackService {
         User user = userService.getUserFromLogin(username);
         if (feedbackRepository.existsByUser(user)){
             throw new AccessException("already exists");
+        }
+        if (
+                feedbackCreateDTO.text().length()> 500
+                || feedbackCreateDTO.evaluation() < 1
+                || feedbackCreateDTO.evaluation() > 5
+        ){
+            throw new InvalidFeedbackDataException("incorrect data");
         }
         Feedback feedback = new Feedback();
         feedback.setDate(new Date());

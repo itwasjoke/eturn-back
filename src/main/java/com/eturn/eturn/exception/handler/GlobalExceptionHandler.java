@@ -115,7 +115,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             InvalidLengthTurnException.class,
             NoSkipPositionException.class,
             NoInviteException.class,
-            NoCreateTurnException.class
+            NoCreateTurnException.class,
+            InvalidFeedbackDataException.class
     })
     public ResponseEntity<Object> handleBadRequestValidationExceptions(
             Exception e,
