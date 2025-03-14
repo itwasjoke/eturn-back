@@ -353,9 +353,12 @@ public class PositionUpdateServiceImpl implements PositionUpdateService {
         );
 
         // Уменьшаем счетчик пропусков
-        position.setSkipCount(
-                position.getSkipCount() - 1
+        int countPosition = position.getSkipCount();
+        int countNextPosition = nextPosition.getSkipCount();
+        nextPosition.setSkipCount(
+                countPosition - 1
         );
+        position.setSkipCount(countNextPosition);
 
         // Меняем местами пользователей
         User nextPositionUser = position.getUser();
