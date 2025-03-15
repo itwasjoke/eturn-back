@@ -31,7 +31,7 @@ public class User implements UserDetails {
     private Group group;
     @Enumerated(EnumType.STRING)
     private Role role;
-    @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "creator", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     private Set<Turn> createdTurns;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
