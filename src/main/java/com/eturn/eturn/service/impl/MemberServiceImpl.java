@@ -7,6 +7,7 @@ import com.eturn.eturn.additionalService.member.MemberStatusService;
 import com.eturn.eturn.dto.MemberDTO;
 import com.eturn.eturn.dto.MemberListDTO;
 import com.eturn.eturn.dto.mapper.MemberListMapper;
+import com.eturn.eturn.entity.Group;
 import com.eturn.eturn.entity.Member;
 import com.eturn.eturn.entity.Turn;
 import com.eturn.eturn.entity.User;
@@ -299,12 +300,14 @@ public class MemberServiceImpl implements MemberService {
                 );
         if (member.isPresent()){
             Member memberToDTO = member.get();
+            Group group = memberToDTO.getUser().getGroup();
+            String number = group == null ? null : group.getNumber();
             return new MemberDTO(
                     memberToDTO.getId(),
                     memberToDTO.getUser().getId(),
                     memberToDTO.getTurn().getId(),
                     memberToDTO.getUser().getName(),
-                    memberToDTO.getUser().getGroup().getNumber(),
+                    number,
                     memberToDTO.getAccessMember().toString(),
                     memberToDTO.isInvitedForModerator(),
                     memberToDTO.getInvitedForTurn().toString()

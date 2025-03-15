@@ -318,8 +318,10 @@ public class MemberRepositoryServiceImpl implements MemberRepositoryService {
         } else if (accessMember == MEMBER_LINK) {
             // если участник не стоит сейчас в очереди, то определяется формат доступа
             // по допустимым группам и факультетам
-            if (turn.getAccessTurnType() ==
-                    FOR_ALLOWED_ELEMENTS) {
+            if (
+                    turn.getAccessTurnType() == FOR_ALLOWED_ELEMENTS
+                    && user.getGroup() != null
+            ) {
                 Set<Group> groups = turn.getAllowedGroups();
                 Set<Faculty> faculties = turn.getAllowedFaculties();
                 if (

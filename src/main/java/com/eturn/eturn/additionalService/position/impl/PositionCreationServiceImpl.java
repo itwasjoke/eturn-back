@@ -23,6 +23,7 @@ import java.util.Set;
 
 import static com.eturn.eturn.enums.AccessMember.BLOCKED;
 import static com.eturn.eturn.enums.AccessMember.MEMBER_LINK;
+import static com.eturn.eturn.enums.AccessTurn.FOR_ALLOWED_ELEMENTS;
 import static com.eturn.eturn.enums.AccessTurn.FOR_LINK;
 import static com.eturn.eturn.enums.ChangeMbrAction.ADD_INVITE_STATUS;
 import static com.eturn.eturn.enums.InvitedStatus.ACCESS_IN;
@@ -112,19 +113,7 @@ public class PositionCreationServiceImpl implements PositionCreationService {
 
         // Проверяем тип очереди
         AccessTurn turnEnum = turn.getAccessTurnType();
-        if (turnEnum == FOR_LINK) {
-            // Отправляем уведомление о новой заявки в очередь
-            notificationController.notifyReceiptRequest(
-                    turn.getId(),
-                    turn.getName()
-            );
-            return memberService.createMember(
-                    user,
-                    turn,
-                    "MEMBER_LINK",
-                    true
-            );
-        } else {
+        if (turnEnum == FOR_ALLOWED_ELEMENTS && user.getGroup() != null){
             // проверяем, что есть доступ к добавлению
             Set<Group> groups = turn.getAllowedGroups();
             Set<Faculty> faculties = turn.getAllowedFaculties();
@@ -137,10 +126,18 @@ public class PositionCreationServiceImpl implements PositionCreationService {
                         false
                 );
             }
-            else {
-                throw new NoAccessMemberException("You are not this user!");
-            }
         }
+        // Отправляем уведомление о новой заявки в очередь
+        notificationController.notifyReceiptRequest(
+                turn.getId(),
+                turn.getName()
+        );
+        return memberService.createMember(
+                user,
+                turn,
+                "MEMBER_LINK",
+                true
+        );
     }
 
     /**
