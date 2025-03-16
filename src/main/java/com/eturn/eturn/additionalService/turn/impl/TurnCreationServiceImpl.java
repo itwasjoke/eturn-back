@@ -16,6 +16,7 @@ import com.eturn.eturn.notifications.NotificationController;
 import com.eturn.eturn.repository.TurnRepository;
 import com.eturn.eturn.security.HashGenerator;
 import com.eturn.eturn.security.TextCensor;
+import com.eturn.eturn.service.CounterService;
 import com.eturn.eturn.service.MemberService;
 import com.eturn.eturn.service.UserService;
 import jakarta.transaction.Transactional;
@@ -32,19 +33,22 @@ public class TurnCreationServiceImpl implements TurnCreationService {
     private final UserService userService;
     private final TurnCreatingMapper turnCreatingMapper;
     private final NotificationController notificationController;
+    private final CounterService counterService;
 
     public TurnCreationServiceImpl(
             TurnRepository turnRepository,
             MemberService memberService,
             UserService userService,
             TurnCreatingMapper turnCreatingMapper,
-            NotificationController notificationController
+            NotificationController notificationController,
+            CounterService counterService
     ) {
         this.turnRepository = turnRepository;
         this.memberService = memberService;
         this.userService = userService;
         this.turnCreatingMapper = turnCreatingMapper;
         this.notificationController = notificationController;
+        this.counterService = counterService;
     }
 
     @Override
@@ -84,6 +88,7 @@ public class TurnCreationServiceImpl implements TurnCreationService {
                 "CREATOR",
                 false
         );
+        counterService.plusValue("turn");
 
         return savedTurn.getHash();
     }

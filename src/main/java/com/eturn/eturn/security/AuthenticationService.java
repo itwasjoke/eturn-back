@@ -17,6 +17,7 @@ import com.eturn.eturn.exception.user.*;
 import com.eturn.eturn.security.entity.*;
 import com.eturn.eturn.security.jwt.JwtAuthenticationResponse;
 import com.eturn.eturn.security.jwt.JwtService;
+import com.eturn.eturn.service.CounterService;
 import com.eturn.eturn.service.FacultyService;
 import com.eturn.eturn.service.GroupService;
 import com.eturn.eturn.service.UserService;
@@ -43,7 +44,7 @@ import static com.eturn.eturn.enums.Role.*;
 @Service
 public class AuthenticationService {
     private static final Logger logger = LogManager.getLogger(AuthenticationService.class);
-    private final JwtService jwtService;
+
     @Value("${external.api.url}")
     private String externalApiUrl;
 
@@ -61,8 +62,9 @@ public class AuthenticationService {
     private final UserService userService;
     private final GroupService groupService;
     private final FacultyService facultyService;
+    private final CounterService counterService;
+    private final JwtService jwtService;
 
-    // TODO Эти две переменные снизу будут не нужны, когда будут удалены тестировочные функции
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
     private final AuthenticationManager authenticationManager;
@@ -75,7 +77,8 @@ public class AuthenticationService {
             FacultyService facultyService,
             PasswordEncoder passwordEncoder,
             UserMapper userMapper,
-            AuthenticationManager authenticationManager
+            AuthenticationManager authenticationManager,
+            CounterService counterService
     ) {
         this.jwtService = jwtService;
         this.restTemplate = restTemplate;
@@ -85,6 +88,7 @@ public class AuthenticationService {
         this.passwordEncoder = passwordEncoder;
         this.userMapper = userMapper;
         this.authenticationManager = authenticationManager;
+        this.counterService = counterService;
     }
 
     @CacheEvict(value = "groups", allEntries = true)
@@ -363,6 +367,7 @@ public class AuthenticationService {
                 etuIdUser.getPosition()
         );
         newUser.setRole(role);
+        counterService.plusValue("user");
 
         return userService.createUser(newUser);
     }
@@ -440,17 +445,7 @@ public class AuthenticationService {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         // Создаем параметры для тела запроса
-        MultiValueMap<String, String> bodyParams = new LinkedMultiValueMap<>();
-        bodyParams.add("grant_type", "authorization_code");
-        bodyParams.add("client_id", etuIdClientId);
-        bodyParams.add("redirect_uri", "https://digital.etu.ru/eturn/processing-auth");
-        bodyParams.add("client_secret", etuIdSecret);
-        bodyParams.add("code_verifier", etuIdCode.codeVerifier());
-        bodyParams.add("code", etuIdCode.code());
-
-        // Создаем HttpEntity с заголовками и телом запроса
-        HttpEntity<MultiValueMap<String, String>> entity
-                = new HttpEntity<>(bodyParams, headers);
+        HttpEntity<MultiValueMap<String, String>> entity = getMultiValueMapHttpEntity(etuIdCode, headers);
         ResponseEntity<EtuIdToken> response = restTemplate.exchange(
                 externalApiETUIDUrl,
                 HttpMethod.POST,
@@ -468,5 +463,23 @@ public class AuthenticationService {
         }
 
         return auth(new AuthData(token.access_token(), null, null));
+    }
+
+    private HttpEntity<MultiValueMap<String, String>> getMultiValueMapHttpEntity(
+            EtuIdCode etuIdCode,
+            HttpHeaders headers
+    ) {
+        MultiValueMap<String, String> bodyParams = new LinkedMultiValueMap<>();
+        bodyParams.add("grant_type", "authorization_code");
+        bodyParams.add("client_id", etuIdClientId);
+        bodyParams.add("redirect_uri", "https://digital.etu.ru/eturn/processing-auth");
+        bodyParams.add("client_secret", etuIdSecret);
+        bodyParams.add("code_verifier", etuIdCode.codeVerifier());
+        bodyParams.add("code", etuIdCode.code());
+
+        // Создаем HttpEntity с заголовками и телом запроса
+        HttpEntity<MultiValueMap<String, String>> entity
+                = new HttpEntity<>(bodyParams, headers);
+        return entity;
     }
 }

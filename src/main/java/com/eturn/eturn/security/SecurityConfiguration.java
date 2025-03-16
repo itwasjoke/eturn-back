@@ -47,13 +47,13 @@ public class SecurityConfiguration {
                 // Настройка доступа к конечным точкам
                 .authorizeHttpRequests(request -> request
                         // Можно указать конкретный путь, * - 1 уровень вложенности, ** - любое количество уровней вложенности
-                        // TODO Убрать "/auth/sign-in", "/auth/sign-up", когда тестирование пользователей закончится
                         .requestMatchers(
                                 "/auth/**",
                                 "/auth/web",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/groups"
+                                "/groups",
+                                "/counter"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

@@ -6,7 +6,7 @@ volumes:
 
 services:
   eturn_db:
-    image: postgres
+    image: postgres:15
     restart: always
     env_file:
       - .env

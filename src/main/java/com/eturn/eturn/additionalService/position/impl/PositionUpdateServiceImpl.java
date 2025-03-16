@@ -11,6 +11,7 @@ import com.eturn.eturn.exception.position.DateNotArrivedPosException;
 import com.eturn.eturn.exception.position.NoAccessPosException;
 import com.eturn.eturn.exception.position.NotFoundPosException;
 import com.eturn.eturn.repository.PositionRepository;
+import com.eturn.eturn.service.CounterService;
 import com.eturn.eturn.service.MemberService;
 import com.eturn.eturn.service.TurnService;
 import com.eturn.eturn.service.UserService;
@@ -32,6 +33,7 @@ public class PositionUpdateServiceImpl implements PositionUpdateService {
     private final MemberService memberService;
     private final PositionTimerService positionTimerService;
     private final PositionDeletionService positionDeletionService;
+    private final CounterService counterService;
 
     public PositionUpdateServiceImpl(
             PositionRepository positionRepository,
@@ -39,7 +41,8 @@ public class PositionUpdateServiceImpl implements PositionUpdateService {
             TurnService turnService,
             MemberService memberService,
             PositionTimerService positionTimerService,
-            PositionDeletionService positionDeletionService
+            PositionDeletionService positionDeletionService,
+            CounterService counterService
     ) {
         this.positionRepository = positionRepository;
         this.userService = userService;
@@ -47,6 +50,7 @@ public class PositionUpdateServiceImpl implements PositionUpdateService {
         this.memberService = memberService;
         this.positionTimerService = positionTimerService;
         this.positionDeletionService = positionDeletionService;
+        this.counterService = counterService;
     }
 
     /**
@@ -208,6 +212,7 @@ public class PositionUpdateServiceImpl implements PositionUpdateService {
                 position.getTurn(),
                 position.getDateStart()
         );
+        counterService.plusValue("position");
     }
 
     /**

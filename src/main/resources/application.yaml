@@ -20,6 +20,16 @@ spring:
       ddl-auto: update
 #      ddl-auto: create-drop
     generate-ddl: true
+  flyway:
+    baseline-on-migrate: true
+    baseline-version: 0
+    enabled: true                       # Включение Flyway
+    schemas: public                     # Схема для таблицы `flyway_schema_history`
+    sql-migration-suffixes: .sql        # Суффикс для SQL-файлов
+    encoding: UTF-8                     # Кодировка файлов миграций
+    validate-on-migrate: true           # Проверять контрольные суммы миграций
+    create-schemas: true                # Автоматически создавать схему, если её нет
+    out-of-order: false                 # Запретить выполнение миграций не по порядку
 
 server:
   port: 37111
