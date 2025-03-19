@@ -9,7 +9,6 @@ import java.util.Optional;
 
 public interface GroupService {
     void createOptionalGroup(
-            Long id,
             String number,
             Integer course,
             Faculty faculty

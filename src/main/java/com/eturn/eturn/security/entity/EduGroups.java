@@ -13,4 +13,6 @@ public class EduGroups {
     private String name;
     @JsonProperty("faculty")
     private FacultyResponse facultyResponse;
+    @JsonProperty("course")
+    private Integer course;
 }

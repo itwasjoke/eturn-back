@@ -125,7 +125,6 @@ public class AuthService {
                 groupResponseList.addAll(dep.getGroupResponses());
                 for (GroupResponse group : dep.getGroupResponses()) {
                     groupService.createOptionalGroup(
-                            group.getId(),
                             group.getNumber(),
                             group.getCourse(),
                             facultyCreated
@@ -339,10 +338,28 @@ public class AuthService {
                         groupService.getGroup(
                                 eduGroups.getName()
                         );
+                FacultyResponse facultyResponse = eduGroups.getFacultyResponse();
                 if (group.isPresent()) {
                     user.setGroup(group.get());
-                } else {
-                    throw new NotFoundGroupException("No group exception");
+                } else if (
+                        facultyResponse != null
+                        && facultyResponse.getName() != null
+                        && eduGroups.getName() != null
+                        && eduGroups.getCourse() != null
+                ) {
+                    Faculty faculty = facultyService.createFaculty(
+                            new FacultyDTO(
+                                    null,
+                                    eduGroups.getFacultyResponse().getName()
+                            )
+                    );
+                    groupService.createOptionalGroup(
+                            eduGroups.getName(),
+                            eduGroups.getCourse(),
+                            faculty
+                    );
+                    Optional<Group> groupOptional = groupService.getGroup(eduGroups.getName());
+                    groupOptional.ifPresent(user::setGroup);
                 }
             }
         }

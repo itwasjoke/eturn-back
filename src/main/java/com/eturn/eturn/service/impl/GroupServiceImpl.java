@@ -54,7 +54,6 @@ public class GroupServiceImpl implements GroupService {
      */
     @Override
     public void createOptionalGroup(
-            Long id,
             String number,
             Integer course,
             Faculty faculty
