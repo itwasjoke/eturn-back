@@ -496,6 +496,7 @@ public class AuthService {
         if (token == null){
             throw new NoBodyETUIDException("Request failed with no body");
         }
+        logger.info("token" + token.access_token());
 
         return auth(new AuthData(token.access_token(), null, null));
     }
