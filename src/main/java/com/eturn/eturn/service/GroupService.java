@@ -4,6 +4,7 @@ import com.eturn.eturn.dto.GroupDTO;
 import com.eturn.eturn.entity.Faculty;
 import com.eturn.eturn.entity.Group;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface GroupService {
@@ -14,4 +15,6 @@ public interface GroupService {
             Faculty faculty
     );
     Optional<Group> getGroup(String number);
+    List<Group> getAllGroups();
+    void deleteGroup(Long id);
 }

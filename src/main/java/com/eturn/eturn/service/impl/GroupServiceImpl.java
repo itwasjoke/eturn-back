@@ -6,6 +6,7 @@ import com.eturn.eturn.repository.GroupRepository;
 import com.eturn.eturn.service.GroupService;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -27,6 +28,20 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public Optional<Group> getGroup(String number) {
         return groupRepository.getGroupByNumber(number);
+    }
+
+    /**
+     * Получение всех групп
+     * @return все группы
+     */
+    @Override
+    public List<Group> getAllGroups() {
+        return groupRepository.findAll();
+    }
+
+    @Override
+    public void deleteGroup(Long id) {
+        groupRepository.deleteById(id);
     }
 
     /**

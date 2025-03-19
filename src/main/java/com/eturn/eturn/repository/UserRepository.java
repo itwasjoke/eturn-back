@@ -1,6 +1,8 @@
 package com.eturn.eturn.repository;
 
+import com.eturn.eturn.entity.Group;
 import com.eturn.eturn.entity.User;
+import com.eturn.eturn.enums.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,4 +14,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findUserByLogin(String login);
     boolean existsByLogin(String login);
     List<User> getAllByGroup_Id(long id);
+    void deleteAllByGroupAndRole(Group group, Role role);
 }

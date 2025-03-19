@@ -8,11 +8,13 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static com.eturn.eturn.enums.Role.ADMIN;
 
 @SpringBootApplication
+@EnableScheduling
 public class EturnApplication {
 
 	private final PasswordEncoder passwordEncoder;

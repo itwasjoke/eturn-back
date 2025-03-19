@@ -21,12 +21,14 @@ import com.eturn.eturn.service.CounterService;
 import com.eturn.eturn.service.FacultyService;
 import com.eturn.eturn.service.GroupService;
 import com.eturn.eturn.service.UserService;
+import jakarta.transaction.Transactional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -35,15 +37,14 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.eturn.eturn.enums.Role.*;
 
 @Service
-public class AuthenticationService {
-    private static final Logger logger = LogManager.getLogger(AuthenticationService.class);
+public class AuthService {
+    private static final Logger logger = LogManager.getLogger(AuthService.class);
 
     @Value("${external.api.url}")
     private String externalApiUrl;
@@ -69,7 +70,7 @@ public class AuthenticationService {
     private final UserMapper userMapper;
     private final AuthenticationManager authenticationManager;
 
-    public AuthenticationService(
+    public AuthService(
             JwtService jwtService,
             RestTemplate restTemplate,
             UserService userService,
@@ -92,12 +93,17 @@ public class AuthenticationService {
     }
 
     @CacheEvict(value = "groups", allEntries = true)
-    public void createFaculties(String username){
+    public void createFaculties(String username, boolean out){
+
+        // получение текущего списка
+        List<Group> allGroups = groupService.getAllGroups();
 
         // проверка прав
-        User u = userService.getUserFromLogin(username);
-        if (u.getRole() != ADMIN) {
-            throw new AccessException("no admin access");
+        if (out) {
+            User u = userService.getUserFromLogin(username);
+            if (u.getRole() != ADMIN) {
+                throw new AccessException("no admin access");
+            }
         }
 
         // получение групп из API ЛЭТИ
@@ -107,6 +113,7 @@ public class AuthenticationService {
         }
 
         // создание групп
+        List<GroupResponse> groupResponseList = new ArrayList<>();
         for (FacultiesResponse faculty : faculties) {
             FacultyDTO facultyDTO = new FacultyDTO(
                     faculty.getId(),
@@ -115,6 +122,7 @@ public class AuthenticationService {
             Faculty facultyCreated =
                     facultyService.createFaculty(facultyDTO);
             for (DepartmentResponse dep : faculty.getDepartmentResponses()) {
+                groupResponseList.addAll(dep.getGroupResponses());
                 for (GroupResponse group : dep.getGroupResponses()) {
                     groupService.createOptionalGroup(
                             group.getId(),
@@ -125,6 +133,32 @@ public class AuthenticationService {
                 }
             }
         }
+
+        // удаление групп, которых нет в списках
+        if (!allGroups.isEmpty()){
+            Set<String> names = groupResponseList.stream()
+                    .map(GroupResponse::getNumber)
+                    .collect(Collectors.toSet());
+            allGroups = allGroups.stream()
+                    .filter(group -> !names.contains((group.getNumber())))
+                    .toList();
+            for (Group group : allGroups) {
+                userService.deleteUsersWithGroups(group);
+                groupService.deleteGroup(group.getId());
+            }
+        }
+    }
+
+    @Transactional
+    @Scheduled(cron = "0 0 3 3 2 *")
+    void checkGroupsFeb(){
+        createFaculties("", false);
+    }
+
+    @Transactional
+    @Scheduled(cron = "0 0 3 2 9 *")
+    void checkGroupsSep(){
+        createFaculties("", false);
     }
 
     /**
@@ -295,20 +329,21 @@ public class AuthenticationService {
             User user,
             EtuIdUser etuIdUser
     ) {
-        if (etuIdUser.getEducations() != null) {
+        if (!etuIdUser.getEducations().isEmpty()) {
             EtuIdEducation etuIdEducation =
                     etuIdUser.getEducations().get(0);
             EduGroups eduGroups =
                     etuIdEducation.getEduGroups();
-            Optional<Group> group =
-                    groupService.getGroup(
-                            eduGroups.getName()
-                    );
-
-            if (group.isPresent()) {
-                user.setGroup(group.get());
-            } else {
-                throw new NotFoundGroupException("No group exception");
+            if (eduGroups != null) {
+                Optional<Group> group =
+                        groupService.getGroup(
+                                eduGroups.getName()
+                        );
+                if (group.isPresent()) {
+                    user.setGroup(group.get());
+                } else {
+                    throw new NotFoundGroupException("No group exception");
+                }
             }
         }
     }

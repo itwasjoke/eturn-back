@@ -17,10 +17,10 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Авторизация", description = "Вход и регистрация")
 public class AuthController {
 
-    private final AuthenticationService authenticationService;
+    private final AuthService authService;
 
-    public AuthController(AuthenticationService authenticationService) {
-        this.authenticationService = authenticationService;
+    public AuthController(AuthService authService) {
+        this.authService = authService;
     }
 
     @PostMapping("/sign-up")
@@ -33,7 +33,7 @@ public class AuthController {
             HttpServletRequest request){
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
-        return authenticationService.signUp(
+        return authService.signUp(
                 user,
                 userDetails.getUsername()
         );
@@ -48,7 +48,7 @@ public class AuthController {
             @RequestParam @Parameter(name = "login", description = "Логин") String login,
             @RequestParam @Parameter(name = "password", description = "Пароль") String password
     ){
-        return authenticationService.signIn(
+        return authService.signIn(
                 login,
                 password
         );
@@ -58,7 +58,7 @@ public class AuthController {
     public void createGroups(HttpServletRequest request) {
         var authentication = (Authentication) request.getUserPrincipal();
         var userDetails = (UserDetails) authentication.getPrincipal();
-        authenticationService.createFaculties(userDetails.getUsername());
+        authService.createFaculties(userDetails.getUsername(), true);
     }
 
     @PostMapping("/etuid")
@@ -66,8 +66,10 @@ public class AuthController {
             summary = "Вход",
             description = "Отправка логина и пароля, получение токена авторизации"
     )
-    public JwtAuthenticationResponse signIn(@RequestBody AuthData authData){
-        return authenticationService.auth(authData);
+    public JwtAuthenticationResponse signIn(
+            @RequestBody AuthData authData
+    ){
+        return authService.auth(authData);
     }
 
     @PostMapping("/web")
@@ -76,7 +78,7 @@ public class AuthController {
             description = "Отправка кода с дальнейшей авторизацией"
     )
     public JwtAuthenticationResponse signInWeb(@RequestBody EtuIdCode etuIdCode){
-        return authenticationService.etuIdAuth(etuIdCode);
+        return authService.etuIdAuth(etuIdCode);
     }
 
 }

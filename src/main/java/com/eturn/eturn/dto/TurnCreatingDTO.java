@@ -25,7 +25,7 @@ public record TurnCreatingDTO(
         @Schema(description = "Тип очереди", example="EDU")
         @Enumerated()
         @NotNull TurnType turnType,
-        @Schema(description = "Доступ к очереди", example="FOR_ALLOWED_GROUPS")
+        @Schema(description = "Доступ к очереди", example="FOR_ALLOWED_ELEMENTS")
         @Enumerated()
         @NotNull AccessTurn turnAccess,
         @Schema(description = "Допустимые группы")

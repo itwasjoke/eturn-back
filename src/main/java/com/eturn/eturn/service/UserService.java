@@ -1,6 +1,7 @@
 package com.eturn.eturn.service;
 
 import com.eturn.eturn.dto.UserDTO;
+import com.eturn.eturn.entity.Group;
 import com.eturn.eturn.entity.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
@@ -16,6 +17,7 @@ public interface UserService {
     UserDetailsService userDetailsService();
     User updateUser(User user);
     List<User> getGroupUsers(long groupId);
+    void deleteUsersWithGroups(Group group);
 
     boolean isUserExist(String login);
 }

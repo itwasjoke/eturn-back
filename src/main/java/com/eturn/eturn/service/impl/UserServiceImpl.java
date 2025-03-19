@@ -2,6 +2,7 @@ package com.eturn.eturn.service.impl;
 
 import com.eturn.eturn.dto.UserDTO;
 import com.eturn.eturn.dto.mapper.UserMapper;
+import com.eturn.eturn.entity.Group;
 import com.eturn.eturn.entity.User;
 import com.eturn.eturn.exception.user.NotFoundUserException;
 import com.eturn.eturn.repository.UserRepository;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.eturn.eturn.enums.Role.ADMIN;
+import static com.eturn.eturn.enums.Role.STUDENT;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -166,6 +168,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> getGroupUsers(long groupId) {
         return userRepository.getAllByGroup_Id(groupId);
+    }
+
+    @Override
+    public void deleteUsersWithGroups(Group group) {
+        userRepository.deleteAllByGroupAndRole(group, STUDENT);
     }
 
     /**
