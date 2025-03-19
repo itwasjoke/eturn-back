@@ -399,7 +399,7 @@ public class AuthService {
         );
 
         Role role = determineUserRole(
-                etuIdUser.getPosition()
+                etuIdUser.getEtuIdWorkerPositions()
         );
         newUser.setRole(role);
         counterService.plusValue("user");
@@ -409,11 +409,14 @@ public class AuthService {
 
     /**
      * Определяет роль пользователя на основе его позиции в ETU ID.
-     * @param position Позиция пользователя в ETU ID.
+     * @param list Список рабочих позиций.
      * @return Роль пользователя.
      */
-    private Role determineUserRole(String position) {
-        return "Сотрудник".equals(position) ? EMPLOYEE : STUDENT;
+    private Role determineUserRole(List<EtuIdWorkerPosition> list) {
+        if (list == null){
+            return STUDENT;
+        }
+        return list.isEmpty() ? STUDENT : EMPLOYEE;
     }
 
     /**
@@ -496,7 +499,6 @@ public class AuthService {
         if (token == null){
             throw new NoBodyETUIDException("Request failed with no body");
         }
-        logger.info("token" + token.access_token());
 
         return auth(new AuthData(token.access_token(), null, null));
     }

@@ -7,7 +7,7 @@ import java.util.List;
 
 @Getter
 @Setter
-@JsonIgnoreProperties(ignoreUnknown = true) // Игнорируем неизвестные поля
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class EtuIdUser {
 
     @JsonProperty("etu_id")
@@ -19,11 +19,11 @@ public class EtuIdUser {
     @JsonProperty("second_name")
     private String secondName;
 
-    @JsonProperty("position")
-    private String position;
-
     @JsonProperty("educations")
     private List<EtuIdEducation> educations;
+
+    @JsonProperty("worker_positions")
+    private  List<EtuIdWorkerPosition> etuIdWorkerPositions;
 
 }
 
