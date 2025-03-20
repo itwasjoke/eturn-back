@@ -518,8 +518,8 @@ public class AuthService {
         bodyParams.add("code", etuIdCode.code());
 
         // Создаем HttpEntity с заголовками и телом запроса
-        HttpEntity<MultiValueMap<String, String>> entity
-                = new HttpEntity<>(bodyParams, headers);
+        HttpEntity<MultiValueMap<String, String>> entity =
+                new HttpEntity<>(bodyParams, headers);
         return entity;
     }
 }

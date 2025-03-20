@@ -37,8 +37,7 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private Set<Member> memberTurns;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "turn_id")
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private Set<Position> positions;
 
     private String tokenNotification;
