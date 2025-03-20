@@ -310,6 +310,10 @@ public class AuthService {
             user = optionalUser.get();
             updateUserGroup(user, etuIdUser);
             updateUserNotificationToken(user, authData);
+            Role role = determineUserRole(
+                    etuIdUser.getEtuIdWorkerPositions()
+            );
+            user.setRole(role);
             user = userService.updateUser(user);
         } else {
             user = createNewUser(etuIdUser, authData);
@@ -328,38 +332,19 @@ public class AuthService {
             User user,
             EtuIdUser etuIdUser
     ) {
-        if (!etuIdUser.getEducations().isEmpty()) {
-            EtuIdEducation etuIdEducation =
-                    etuIdUser.getEducations().get(0);
-            EduGroups eduGroups =
-                    etuIdEducation.getEduGroups();
-            if (eduGroups != null) {
-                Optional<Group> group =
-                        groupService.getGroup(
-                                eduGroups.getName()
-                        );
-                FacultyResponse facultyResponse = eduGroups.getFacultyResponse();
-                if (group.isPresent()) {
-                    user.setGroup(group.get());
-                } else if (
-                        facultyResponse != null
-                        && facultyResponse.getName() != null
-                        && eduGroups.getName() != null
-                        && eduGroups.getCourse() != null
-                ) {
-                    Faculty faculty = facultyService.createFaculty(
-                            new FacultyDTO(
-                                    null,
-                                    eduGroups.getFacultyResponse().getName()
-                            )
-                    );
-                    groupService.createOptionalGroup(
-                            eduGroups.getName(),
-                            eduGroups.getCourse(),
-                            faculty
-                    );
-                    Optional<Group> groupOptional = groupService.getGroup(eduGroups.getName());
-                    groupOptional.ifPresent(user::setGroup);
+        List<EtuIdEducation> educations = etuIdUser.getEducations();
+        if (!educations.isEmpty()) {
+            for (EtuIdEducation education : educations) {
+                EduGroups eduGroups =
+                        education.getEduGroups();
+                if (eduGroups != null) {
+                    if (eduGroups.getName()!=null){
+                        Optional<Group> group =
+                                groupService.getGroup(
+                                        eduGroups.getName()
+                                );
+                        group.ifPresent(user::setGroup);
+                    }
                 }
             }
         }
