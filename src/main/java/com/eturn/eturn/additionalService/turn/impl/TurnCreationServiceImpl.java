@@ -150,7 +150,7 @@ public class TurnCreationServiceImpl implements TurnCreationService {
         long timeDiff = turnDTO.dateEnd().getTime()
                 - turnDTO.dateStart().getTime();
         long maxDuration = switch (user.getRole()) {
-            case STUDENT -> 1000L * 60 * 60 * 24 * 3; // 3 дня
+            case STUDENT -> 1000L * 60 * 60 * 24 * 15; // 15 дней
             case EMPLOYEE -> 1000L * 60 * 60 * 24 * 365; // 1 год
             default -> 0;
         };
