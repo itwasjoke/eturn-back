@@ -20,6 +20,10 @@ import com.eturn.eturn.service.PositionService;
 import com.eturn.eturn.service.UserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -343,4 +347,17 @@ public class TurnRepositoryServiceImpl implements TurnRepositoryService {
         return turnList;
     }
 
+    /**
+     * Получение статистики по 20 недавно созданным очередям
+     * @return список DTO
+     */
+    @Override
+    public List<TurnForListDTO> getStatisticForRecentTurns() {
+        Pageable paging = PageRequest.of(0, 20, Sort.by("id").descending());
+        Page<Turn> list = turnRepository.findAll(paging);
+        return list
+                .stream()
+                .map(turn -> turnForListMapper.turnToTurnForListDTO(turn, ""))
+                .toList();
+    }
 }

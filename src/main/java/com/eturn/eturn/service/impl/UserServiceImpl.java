@@ -12,6 +12,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -183,6 +187,17 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean isUserExist(String login) {
         return userRepository.existsByLogin(login);
+    }
+
+    /**
+     * Статистика по недавним зарегистрированным пользователям
+     * @return список имен
+     */
+    @Override
+    public List<String> getStatisticForRecentUsers() {
+        Pageable paging = PageRequest.of(0, 20, Sort.by("id").descending());
+        Page<User> users = userRepository.findAll(paging);
+        return users.stream().map(User::getName).toList();
     }
 
 }

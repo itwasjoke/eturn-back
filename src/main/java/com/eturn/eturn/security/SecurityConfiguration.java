@@ -52,8 +52,7 @@ public class SecurityConfiguration {
                                 "/auth/web",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/groups",
-                                "/counter"
+                                "/groups"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

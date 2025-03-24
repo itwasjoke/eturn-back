@@ -15,6 +15,10 @@ import com.eturn.eturn.service.TurnService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +30,6 @@ import java.util.Optional;
 @Service
 public class TurnServiceImpl implements TurnService {
 
-    private static Logger logger = LogManager.getLogger(TurnServiceImpl.class);
     private final TurnRepository turnRepository;
     private TurnRepositoryService turnRepositoryService;
     private final TurnUpdateService turnUpdateService;

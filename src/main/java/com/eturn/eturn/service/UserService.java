@@ -20,4 +20,5 @@ public interface UserService {
     void deleteUsersWithGroups(Group group);
 
     boolean isUserExist(String login);
+    List<String> getStatisticForRecentUsers();
 }

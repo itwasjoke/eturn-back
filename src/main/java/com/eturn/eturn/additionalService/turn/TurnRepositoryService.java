@@ -19,4 +19,5 @@ public interface TurnRepositoryService {
             String hash,
             String username
     );
+    List<TurnForListDTO> getStatisticForRecentTurns();
 }
