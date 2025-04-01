@@ -166,6 +166,8 @@ public class TurnRepositoryServiceImpl implements TurnRepositoryService {
                         mbrRepService.getCountMembersWith(turn, BLOCKED)
                 ));
             }
+        } else {
+            details.setInvitedForTurn("ACCESS_OUT");
         }
 
         details.setPositionsCount(
