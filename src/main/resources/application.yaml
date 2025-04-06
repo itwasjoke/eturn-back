@@ -64,3 +64,4 @@ external:
     url: "https://lk.etu.ru/id/profile"
     url_etu_id: "https://id.etu.ru/oauth/token"
     url_profile: "https://id.etu.ru/api/profile"
+    url_mobile: "https://lk.etu.ru/api/profile/0"

@@ -49,6 +49,9 @@ public class AuthService {
     @Value("${external.api.url}")
     private String externalApiUrl;
 
+    @Value("${external.api.url_mobile}")
+    private String externalApiUrlMobile;
+
     @Value("${external.api.url_etu_id}")
     private String externalApiETUIDUrl;
 
@@ -190,9 +193,9 @@ public class AuthService {
      * @param authData Данные с токеном
      * @return данные об успешной авторизации
      */
-    public JwtAuthenticationResponse auth(AuthData authData) {
+    public JwtAuthenticationResponse auth(AuthData authData, Boolean isWeb) {
         // Получаем данные пользователя из ETU ID
-        EtuIdUser etuIdUser = fetchEtuIdUser(authData.tokenETUID());
+        EtuIdUser etuIdUser = fetchEtuIdUser(authData.tokenETUID(), isWeb);
 
         // Проверяем, что данные пользователя получены
         if (etuIdUser == null) {
@@ -272,13 +275,13 @@ public class AuthService {
      * @return Данные пользователя из ETU ID.
      * @throws AuthPasswordException Если не удалось получить данные.
      */
-    private EtuIdUser fetchEtuIdUser(String tokenETUID) {
+    private EtuIdUser fetchEtuIdUser(String tokenETUID, Boolean isWeb) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + tokenETUID);
         HttpEntity<String> entity = new HttpEntity<>(headers);
-
+        String url = isWeb ? externalApiUrl : externalApiUrlMobile;
         ResponseEntity<EtuIdUser> response = restTemplate.exchange(
-                externalApiUrl,
+                url,
                 HttpMethod.GET,
                 entity,
                 EtuIdUser.class
@@ -503,7 +506,14 @@ public class AuthService {
         }
         logger.info(token.access_token());
 
-        return auth(new AuthData(token.access_token(), null, null));
+        return auth(
+                new AuthData(
+                        token.access_token(),
+                        null,
+                        null
+                ),
+                true
+        );
     }
 
     private HttpEntity<MultiValueMap<String, String>> getMultiValueMapHttpEntity(

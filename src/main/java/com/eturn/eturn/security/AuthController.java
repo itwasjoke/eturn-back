@@ -69,7 +69,7 @@ public class AuthController {
     public JwtAuthenticationResponse signIn(
             @RequestBody AuthData authData
     ){
-        return authService.auth(authData);
+        return authService.auth(authData, false);
     }
 
     @PostMapping("/web")
