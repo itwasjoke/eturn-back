@@ -154,12 +154,18 @@ public class PositionDeletionServiceImpl implements PositionDeletionService {
                             nextPosition.getTurn().getId()
                     );
 
-            // Устанавливаем новое время окончания для следующей позиции
-            Date newEndDate = calculateNewEndDate(
-                    nextPosition.getTurn().getTimer()
-            );
-            nextPosition.setDateEnd(newEndDate);
-            positionRepository.save(nextPosition);
+            if (
+                    nextPosition.getTurn().getDateStart().getTime()
+                            <= System.currentTimeMillis()
+            ){
+                // Устанавливаем новое время окончания для следующей позиции
+                Date newEndDate = calculateNewEndDate(
+                        nextPosition.getTurn().getTimer()
+                );
+                nextPosition.setDateEnd(newEndDate);
+                positionRepository.save(nextPosition);
+            }
+
 
             // Обрабатываем статус участника, если это необходимо
             handleMemberStatusAfterDeletion(
